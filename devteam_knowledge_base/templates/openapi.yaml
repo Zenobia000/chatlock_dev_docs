@@ -1,0 +1,174 @@
+openapi: 3.1.0
+info:
+  title: <Service Name> API
+  version: 1.0.0
+  description: |
+    <Purpose, scope, audience>
+    See PRD: docs/prd/<feature>.md
+    See System Spec: docs/analysis/system-spec-<feature>.md
+  contact:
+    name: <BE owner>
+  license:
+    name: Internal
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production
+  - url: https://staging-api.example.com/v1
+    description: Staging
+
+# Custom governance metadata (devteam convention)
+x-governance:
+  owner: <BE / SD owner>
+  consumers: [FE, Mobile, QA, Worker]
+  contract_freeze_date: <YYYY-MM-DD>
+  change_policy: |
+    - Additive changes (new optional fields, new endpoints): minor version bump, no notice
+    - Breaking changes (remove field, change type, change semantics): major version bump,
+      require ADR + 30 days deprecation notice + parallel old/new endpoint
+  related_adr:
+    - ADR-NNN
+  related_dr: []
+
+tags:
+  - name: <resource>
+    description: <one line>
+
+paths:
+  /resource:
+    get:
+      summary: List resources
+      operationId: listResources
+      tags: [resource]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+        - name: cursor
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceList'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+    post:
+      summary: Create resource
+      operationId: createResource
+      tags: [resource]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, format: uuid }
+          description: Required for idempotent create. Same key returns same response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateResourceRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Resource' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /resource/{id}:
+    get:
+      summary: Get resource by id
+      operationId: getResource
+      tags: [resource]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Resource' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Resource:
+      type: object
+      required: [id, name, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        created_at: { type: string, format: date-time }
+
+    ResourceList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Resource' }
+        next_cursor: { type: string, nullable: true }
+
+    CreateResourceRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details: { type: object }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid auth token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Idempotency conflict or business rule violation
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: Too many requests
+      headers:
+        Retry-After:
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+security:
+  - bearerAuth: []
