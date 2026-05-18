@@ -22,6 +22,7 @@
 | Freeze gate review 觸發 | (router 內建) | `/devteam-freeze` |
 | 手動 review（任意文件） | (router + agents) | `/devteam-review` |
 | **Forum-Lite 多輪辯論（Lane B）** | (router + agents) | `/devteam-forum` |
+| **Roundtable 圓桌會議（Lane C, 探索性對話）** | **devteam-roundtable** | `/devteam-roundtable` |
 | 對外 handoff（產 specs/handoff.md） | (router 內建) | `/devteam-handoff` |
 
 ---
@@ -81,6 +82,7 @@
 | `handoff.md` | 對外 coding agent 契約（router 產出） |
 | `forum-topic.md` | Forum-Lite 議題元資料（proposer + critics 共讀） |
 | `forum-final-report.md` | Forum-Lite 收斂或升級報告（facilitator 產出） |
+| `mom.md` | **Lane C Roundtable MoM** — 大廠 PM 風格會議紀錄（業主主要閱讀產出） |
 
 ---
 
@@ -103,8 +105,9 @@
 |:-----|:-----|:-----|:------|
 | **A — Critique Pipeline** | Freeze gate ready / `/devteam-review` | 單向 critique → orchestrator merge → 業主裁決 | 5-30k |
 | **B — Forum-Lite** | Lane A 出現 `conflicts_count ≥ 2` 提示業主 / `/devteam-forum` | 多輪辯論收斂：proposer ↔ critics 來回 + facilitator 三訊號判定 | ~45k |
+| **C — Roundtable**（MoM-first PoC） | 業主自然語言「對 X 開會」/「找 Y 跟 Z 討論」/ `/devteam-roundtable` | 探索性對話。**預設 background mode** — 龍蝦背景跑、業主不看 transcript，只讀大廠 PM 風格 MoM（Executive Summary / Decisions / Action Items / Open Questions）。業主只在 Open Questions 動。Drill-down 可叫 transcript。未來 migrate Discord | ~23k |
 
-兩 lane 並存。Lane A 處理 90% review；Lane B 處理跨領域 trade-off 與衝突收斂。
+三 lane 並存。Lane A 處理 90% review；Lane B 處理跨領域 trade-off 與衝突收斂；Lane C 是早期探索 / brainstorm 對話，**業主投入時間 < 1 分鐘 / 場**（看 MoM + 回 Open Questions）。
 
 ---
 
