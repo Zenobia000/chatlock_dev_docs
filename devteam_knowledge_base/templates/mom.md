@@ -100,6 +100,18 @@
 - PRD: [`docs/prd/leave-mvp.md`](../../docs/prd/leave-mvp.md) §1.2 目標 / §2.3 KPI
 - Session narrative: [`session-2026-05-18-1110-leave-mvp.md`](../../.claude/context/devteam/session-2026-05-18-1110-leave-mvp.md)
 
+**Catalog references used**（Phase 1.5 注入給龍蝦的決策依據，影響 §Decisions 條目）：
+- [[06_quality_attributes_catalog]] §1 9 維度 → 影響 D1 / D2 量法選擇
+- [[09_observability_catalog]] §3 SLI 命名 → 影響 D1 KPI #1 命名 "月活躍員工"
+- [[10_resilience_patterns]] §4 RTO/RPO → 影響 D3 escalation rule 設計
+
+> Catalog references 寫入 `notes.yaml.catalog_refs[]`，
+> 供 `.claude/context/devteam/indexes/catalog_usage.json` 後台聚合，
+> 半年後可 query「哪些 catalog 段落實際被引用、哪些從未被引用」。
+
+**Catalog gaps**（龍蝦發言時標 [CATALOG_GAP] 的項目）：
+- 無 / 或：[CATALOG_GAP: API design catalog 缺「企業內部 SaaS vs 外部 API」的選擇樹]
+
 **本次 MoM 將被引用**：
 - ADR-005（A2 產出後）
 - PRD §2.3 v2（A1 完成後）
@@ -148,6 +160,21 @@ open_questions_count: 2
 risks_count: 2
 total_token_used: ~23000
 discord_channel: "#leave-kpi-discussion"  # Level 3 對應
+# Catalog references（Phase 1.5 注入給龍蝦的決策依據）
+catalog_refs:
+  - kb: 06_quality_attributes_catalog
+    section: "§1"
+    impact: "D1, D2 量法選擇"
+  - kb: 09_observability_catalog
+    section: "§3"
+    impact: "D1 KPI 命名"
+  - kb: 10_resilience_patterns
+    section: "§4"
+    impact: "D3 escalation rule"
+catalog_gaps:
+  - kb: 08_api_design_catalog
+    expected: "企業內部 SaaS vs 外部 API 的選擇樹"
+    raised_by: pm
 ```
 
 ---
