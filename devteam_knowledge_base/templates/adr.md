@@ -4,6 +4,10 @@
 > **Date**: <YYYY-MM-DD>
 > **Owner**: devteam-arch (Architect persona)
 > **Scope**: <feature / service / cross-team>
+> **Tags**: <topic1>, <topic2>  <!-- 供 indexes/topic_index.json 提取；建議用 auth / data-model / messaging / rollout / observability / api-style / stack / resilience / privacy 等慣用詞 -->
+> **Feature**: <feature-slug>  <!-- 對應 docs/prd/<feature>.md 的 slug；供 indexes/feature_index.json 提取 -->
+> **Related KB**: <KB-NN §X>  <!-- 引用了哪幾段 KB；供 indexes/catalog_usage.json 提取 -->
+
 
 ---
 

@@ -43,14 +43,18 @@ verify health: curl https://api.example.com/health
 
 ### Canary
 
+<!-- HINT: Canary evidence 套 KB 10 §3.3 checklist — 必含階梯 / 觀察時間 / 觀察 metric / halt 條件 / auto rollback 觸發條件。Schema 變更必先於 canary（KB 10 §3.5 expand-contract）。 -->
+
 - 1% traffic for 30m → 監控 KPI
 - 10% traffic for 30m → 監控
 - 50% for 30m → 監控
 - 100%
 
-任何階段 KPI 退化 → 自動 rollback。
+**Halt 條件**（任一觸發即 rollback）：error rate > baseline + 0.5% / p99 latency > baseline × 1.5 / 業務 KPI 退化 > 5%
 
 ### Rollback
+
+<!-- HINT: 「kubectl rollout undo」只回滾 app，**不回滾 schema / 資料**。Schema 變更必須先用 KB 10 §3.5 expand-contract 確保新舊版本相容，否則 rollback 後 app 對不上 schema。 -->
 
 ```bash
 # 立刻 rollback 到上一版
@@ -69,8 +73,10 @@ kubectl rollout undo deployment/<svc> -n <ns>
 
 ## Alerts
 
-| Alert | Condition | Severity | First responder action |
-|:------|:----------|:---------|:----------------------|
+<!-- HINT: 每個 alert 必含 KB 09 §6.3 metadata：summary / runbook link / dashboard link / SLO 對應。基於 SLI 而非 resource metric（不要用「CPU > 80%」當 alert）。Burn rate alert 設計參 KB 09 §6.2（1h 14.4x / 6h 6x 分段）。缺 runbook / dashboard link → SRE persona 必標 blocker。 -->
+
+| Alert | Condition | Severity | First responder action | Runbook link | Dashboard link |
+|:------|:----------|:---------|:----------------------|:-------------|:---------------|
 | HighErrorRate | 5xx > 1% for 5m | P1 | 看 dashboard X，查近 30m deploy，必要時 rollback |
 | HighLatency | p95 > 1s for 10m | P2 | 看 DB connection pool、cache hit rate |
 | LowAvailability | success rate < SLO - error budget | P1 | error budget review |
@@ -80,6 +86,8 @@ kubectl rollout undo deployment/<svc> -n <ns>
 ---
 
 ## Common Incidents
+
+<!-- HINT: 對應失敗類型 → 處置 pattern 參 KB 10 §1-§2.6（retry / CB / bulkhead / timeout / fallback / rate limit）；429 與 5xx 回應格式參 KB 08 §3.1。每新增 incident 必記入 KB 09 § telemetry hook 觸發紀錄供未來查 root cause。 -->
 
 ### Incident: 5xx spike after deploy
 
@@ -127,6 +135,8 @@ kubectl rollout undo deployment/<svc> -n <ns>
 ---
 
 ## Disaster Recovery
+
+<!-- HINT: RTO / RPO 等級對應技術選擇參 KB 10 §4 — 是業務決策（成本 vs 風險）不是技術自選。值需與 NFR matrix（KB 06 §1 Availability/Reliability）一致。 -->
 
 | Scenario | RTO | RPO | Procedure |
 |:---------|:----|:----|:----------|

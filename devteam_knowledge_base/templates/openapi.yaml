@@ -22,10 +22,11 @@ x-governance:
   owner: <BE / SD owner>
   consumers: [FE, Mobile, QA, Worker]
   contract_freeze_date: <YYYY-MM-DD>
+  # HINT: change_policy 套 KB 08 §4 — 注意 enum 加值對 strict parser client 也算 breaking
   change_policy: |
     - Additive changes (new optional fields, new endpoints): minor version bump, no notice
-    - Breaking changes (remove field, change type, change semantics): major version bump,
-      require ADR + 30 days deprecation notice + parallel old/new endpoint
+    - Breaking changes (remove field, change type, change semantics, enum 加值): major version bump,
+      require ADR + 2-sprint 並存期 + Deprecation/Sunset header (RFC 8594) + parallel old/new endpoint
   related_adr:
     - ADR-NNN
   related_dr: []
@@ -62,11 +63,12 @@ paths:
       operationId: createResource
       tags: [resource]
       parameters:
+        # HINT: Idempotency-Key 政策套 KB 08 §3.3 — POST 必有；Key 衝突 payload 不同 → 422 SYS-422-001
         - name: Idempotency-Key
           in: header
           required: true
           schema: { type: string, format: uuid }
-          description: Required for idempotent create. Same key returns same response.
+          description: Required for idempotent create. Same key returns same response (TTL 24h).
       requestBody:
         required: true
         content:
@@ -132,13 +134,16 @@ components:
       properties:
         name: { type: string, minLength: 1, maxLength: 200 }
 
+    # HINT: Error code 結構套 KB 08 §3.2 — 格式 <DOMAIN>-<HTTP>-<SEQ>（例 ORD-422-001）；prefix range 看 KB 08 §3.2 表；必含 trace_id 供跨服務追（連動 KB 09 §1 三柱串接）
     Error:
       type: object
-      required: [code, message]
+      required: [code, message, trace_id]
       properties:
-        code: { type: string }
-        message: { type: string }
-        details: { type: object }
+        code:     { type: string, pattern: '^[A-Z]{3,4}-\d{3}-\d{3}$' }
+        message:  { type: string }
+        details:  { type: array, items: { type: object } }
+        trace_id: { type: string }
+        doc_url:  { type: string, format: uri }
 
   responses:
     Unauthorized:

@@ -47,10 +47,12 @@ erDiagram
 
 ## Data Dictionary
 
+<!-- HINT: 每欄位的 PII 分類套 KB 11 §1（4 級 public/internal/confidential/restricted）+ §2（identifier/quasi-identifier/sensitive）；Retention 標示套 KB 11 §3.3；缺 retention / classification / jurisdictions → DBA persona 必標 blocker。 -->
+
 ### Table: `users`
 
-| Column | Type | Constraints | Index | PII | Retention | Notes |
-|:-------|:-----|:------------|:------|:----|:----------|:------|
+| Column | Type | Constraints | Index | Classification | PII type | Retention | Consent | Jurisdictions | Notes |
+|:-------|:-----|:------------|:------|:---------------|:---------|:----------|:--------|:--------------|:------|
 | id | UUID | PK, default gen_random_uuid() | PK | ✗ | indefinite | |
 | email | VARCHAR(320) | UNIQUE, NOT NULL | unique idx | **PII (Identifier)** | indefinite while active; 30d after deletion | GDPR Article 17 |
 | name | VARCHAR(200) | NOT NULL | — | **PII** | same as above | |
@@ -71,6 +73,8 @@ erDiagram
 ---
 
 ## Migration Plan
+
+<!-- HINT: Schema breaking change (drop column / rename / change type) 必走 KB 10 §3.5 expand-contract 6 步：Expand → Dual write → Backfill → Dual read → Cut over → Contract；每步可獨立 rollback。不可一步完成。 -->
 
 ### Migration: <id> — <description>
 
@@ -132,8 +136,10 @@ COMMIT;
 
 ## PII / Compliance Map
 
-| Table.column | Classification | Regulation | Action on deletion request |
-|:-------------|:---------------|:-----------|:---------------------------|
+<!-- HINT: 合規對應表套 KB 11 §3.2（GDPR Art. 5/7/15/17/20/25/32/33/44-49 + 個資法第 6/8/11/27 條）。特種個資（健康 / 性傾向 / 犯罪 / 生物特徵）必標 Sensitive。跨境傳輸必標 jurisdictions + SCC 文件連結。 -->
+
+| Table.column | Classification | Regulation | Jurisdictions | Action on deletion request |
+|:-------------|:---------------|:-----------|:--------------|:---------------------------|
 | users.email | PII Identifier | GDPR, 個資法 | hard delete after 30d |
 | users.name | PII | GDPR | same as above |
 | users.password_hash | Sensitive | PCI-adjacent | hard delete immediately |

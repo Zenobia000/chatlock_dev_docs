@@ -71,17 +71,24 @@
 
 ## Rollout Strategy
 
-- [ ] Canary plan defined (<link>)
-- [ ] Feature flag default state: <on / off>
+<!-- HINT: 策略選擇對比參 KB 10 §3.1 對比表 + §3.2 選擇樹（藍綠 / 金絲雀 / 紅黑 / shadow / feature flag）。Feature flag 用作 release toggle 時必有移除截止日（KB 10 §3.4）。Schema breaking change 必走 KB 10 §3.5 expand-contract 與 app rollout 解耦。 -->
+
+- [ ] Strategy chosen (canary / blue-green / shadow / feature flag): <which> — rationale per KB 10 §3.2
+- [ ] Canary plan defined (<link>) — evidence checklist per KB 10 §3.3
+- [ ] Feature flag default state: <on / off>; removal deadline (if release toggle): <YYYY-MM-DD>
 - [ ] Staged rollout %: <1% → 10% → 50% → 100%>
 - [ ] Mobile staged rollout %: <if applicable>
 - [ ] Communication plan (email / in-app banner): <link>
 
 ## Compliance / Risk
 
-- [ ] PII handling reviewed
-- [ ] Data retention compliant
+<!-- HINT: 合規檢查對應 KB 11 §3.2（GDPR Art. 5/7/15/17/20/25/32/33/44-49 + 個資法第 6/8/11/27 條）。72h 外洩通報路徑必於 runbook 寫明（GDPR Art. 33）。跨境傳輸必標 jurisdictions + SCC 文件。 -->
+
+- [ ] PII handling reviewed (per KB 11 §1-§3)
+- [ ] Data retention compliant; expired data 自動清除已驗證
 - [ ] Audit log enabled for new endpoints
+- [ ] Cross-border transfer reviewed (SCC / adequacy decision documented if applicable)
+- [ ] Incident notification path defined (72h per GDPR Art. 33)
 - [ ] Legal / privacy review (if applicable): <verdict>
 - [ ] Known risks documented with mitigation
 

@@ -54,6 +54,8 @@
 
 ## State Model（若適用）
 
+<!-- HINT: 選圖前先讀 KB 07 §2.1 試金石：「現在處於什麼狀態」→ state machine；「誰對誰做什麼」→ sequence；「接下來做什麼」→ activity。State machine 必標 `[*]` 終結態 (KB 07 §5 anti-pattern)。 -->
+
 ```mermaid
 stateDiagram-v2
     [*] --> Draft
@@ -73,18 +75,22 @@ stateDiagram-v2
 
 ## Events（系統事件目錄）
 
+<!-- HINT: Event 命名 + payload schema 套 KB 08 §2.4（domain.entity.action.v1 過去式）與 §6.3 envelope（必含 event_id / occurred_at / trace_id）。 -->
+
 | Event | Producer | Consumer | Payload schema |
 |:------|:---------|:---------|:---------------|
-| `order.created` | Order service | Inventory, Email | { order_id, items, ... } |
+| `orders.order.created.v1` | Order service | Inventory, Email | envelope per KB 08 §6.3 |
 
 ---
 
 ## Integration Inventory
 
-| External System | Direction | Protocol | Auth | Failure handling |
-|:----------------|:----------|:---------|:-----|:-----------------|
-| Stripe | outbound | REST | Bearer | retry + idempotency key |
-| ... | ... | ... | ... | ... |
+<!-- HINT: Protocol 欄選擇參 KB 08 §1（REST/GraphQL/gRPC/event/WebSocket 決策樹）；Auth 欄選擇參 KB 11 §6.2（場景對應推薦）；Failure handling 欄套 KB 10 §1 quick picker（retry / CB / timeout / fallback）。 -->
+
+| External System | Direction | Protocol | Auth | Failure handling | Data classification |
+|:----------------|:----------|:---------|:-----|:-----------------|:--------------------|
+| Stripe | outbound | REST | Bearer | retry + idempotency key | Restricted (payment) |
+| ... | ... | ... | ... | ... | ... |
 
 ---
 

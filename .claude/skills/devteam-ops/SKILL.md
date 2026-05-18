@@ -1,6 +1,12 @@
 ---
 name: devteam-ops
 description: DevTeam Ops driver（合併 DevOps + SRE）。負責 P5_RELEASE：Pipeline 規格、Runbook、SLO/Alerts、Release Readiness、Rollback Plan。對應 Gate 7 Release Ready，並產出 specs/<feature>/handoff.md 給外部 coding agent。
+references:
+  - devteam_knowledge_base/06_quality_attributes_catalog.md
+  - devteam_knowledge_base/08_api_design_catalog.md
+  - devteam_knowledge_base/09_observability_catalog.md
+  - devteam_knowledge_base/10_resilience_patterns.md
+  - devteam_knowledge_base/11_data_and_stack_catalog.md
 ---
 
 # DevTeam Ops Driver: Runbook / SLO / Release Readiness
@@ -20,6 +26,23 @@ description: DevTeam Ops driver（合併 DevOps + SRE）。負責 P5_RELEASE：P
 3. 讀 `devteam_knowledge_base/templates/runbook.md`、`release-readiness.md`
 4. 讀 `devteam_knowledge_base/06_quality_attributes_catalog.md` 取 SLI/SLO 參考集、DORA 指標
 5. 讀 devteam-arch 在 P2 留下的 observability 前置需求
+
+---
+
+## Phase 1.5: Consult Decision Catalogs
+
+| 工作項 | 必讀段落 |
+|:-------|:---------|
+| 2b Canary 策略 + Rollback | [[10_resilience_patterns]] §3.1 對比表、§3.2 選擇樹、§3.3 canary evidence checklist |
+| 2b Schema 變更的 rollout | [[10_resilience_patterns]] §3.5 expand-contract — 必須與 app rollout 解耦 |
+| 2c Alerts 表（每個 alert 必含 runbook + dashboard link） | [[09_observability_catalog]] §6.3 alert metadata、§6.4 severity 通道、§6.2 burn rate alert |
+| 2d Common Incidents（5xx spike / DB slow / queue depth） | [[10_resilience_patterns]] §2.1-§2.6 對應失敗類型 → 處置 pattern；[[08_api_design_catalog]] §3.1 5xx vs 429 處置 |
+| 2g Disaster Recovery RTO / RPO | [[10_resilience_patterns]] §4 — 對應技術選擇 |
+| 3 SLO 文件 | [[09_observability_catalog]] §3.3 SLI 命名、§6.2 burn rate、[[06_quality_attributes_catalog]] §2 SLO 範例集（依產品 tier） |
+| 4 Release Readiness rollout / rollback | [[10_resilience_patterns]] §3.3 必備 evidence |
+| 4 Compliance / Risk（含 PII 外洩 72h 通報） | [[11_data_and_stack_catalog]] §3.2 GDPR Art. 33、§6 auth token revoke 流程 |
+| 4 DORA 指標對齊 | [[06_quality_attributes_catalog]] §3 — 與業主團隊目標等級對齊 |
+| 6 Handoff brief 內容組裝 | `templates/handoff.md` + 各 KB 對應段（讓 coding agent 一處可查） |
 
 ---
 

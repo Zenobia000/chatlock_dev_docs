@@ -1,6 +1,13 @@
 ---
 name: devteam-design
 description: DevTeam Design driver（合併 SD + DBA）。負責 P3_DESIGN：API Contract (OpenAPI)、ERD / DDL / Migration、Module Design、Error Model。對應 Gate 5a API Contract Freeze 與 Gate 5b DB Schema Freeze。
+references:
+  - devteam_knowledge_base/06_quality_attributes_catalog.md
+  - devteam_knowledge_base/07_diagram_picker.md
+  - devteam_knowledge_base/08_api_design_catalog.md
+  - devteam_knowledge_base/09_observability_catalog.md
+  - devteam_knowledge_base/10_resilience_patterns.md
+  - devteam_knowledge_base/11_data_and_stack_catalog.md
 ---
 
 # DevTeam Design Driver: API Contract & Data Design
@@ -19,6 +26,26 @@ description: DevTeam Design driver（合併 SD + DBA）。負責 P3_DESIGN：API
 2. 讀已 frozen 的 PRD、System Spec、C4、ADR、NFR
 3. 讀 `devteam_knowledge_base/templates/openapi.yaml`、`erd.md`
 4. 讀 `devteam_knowledge_base/06_quality_attributes_catalog.md` 取 OpenAPI 必填欄位
+5. 讀 `.claude/context/devteam/indexes/feature_index.json`（若存在）取該 feature 已 Accepted 的 ADR，確認 API/DB 設計不與既有決議衝突
+
+---
+
+## Phase 1.5: Consult Decision Catalogs
+
+| 工作項 | 必讀段落 |
+|:-------|:---------|
+| 2b endpoint 推導 + path / verb 命名 | [[08_api_design_catalog]] §2.1 REST naming |
+| 2c Schema 與 enum 設計 | [[08_api_design_catalog]] §2.1（snake_case body）、§4 versioning（enum 加值算 breaking） |
+| 2d Error model（HTTP × domain code） | [[08_api_design_catalog]] §3.1（400 vs 422 試金石）、§3.2（code 結構 + prefix range） — `templates/openapi.yaml` 套用 §6.1 component |
+| 2e Idempotency / Rate Limit / Timeout | [[08_api_design_catalog]] §3.3（idempotency by method）、[[10_resilience_patterns]] §2.1（retry 前提）、§2.2（timeout 級距） |
+| 2f x-governance + breaking change policy | [[08_api_design_catalog]] §4 — 寫入 contract |
+| Event consumer / publisher 設計 | [[08_api_design_catalog]] §2.4 + §6.3 envelope；[[09_observability_catalog]] §5 telemetry hook |
+| 3a Logical Model 畫法 | [[07_diagram_picker]] §2.3（Crow's Foot 預設）、§4 起手式 |
+| 3b Data Dictionary 欄位 | [[11_data_and_stack_catalog]] §3.1 ERD column metadata（classification / pii_type / retention / consent_required / jurisdictions） |
+| 3c Migration 模式（breaking schema 變更） | [[10_resilience_patterns]] §3.5 expand-contract 6 步 |
+| 3f PII Map | [[11_data_and_stack_catalog]] §1-§3 全段、[[09_observability_catalog]] §2.3（PII 不入 log） |
+| 4 Module Design / Sequence diagram | [[07_diagram_picker]] §2.1 sequence vs state vs activity、§4.1 起手式（autonumber 必開）；[[09_observability_catalog]] §5 telemetry hook 邊界 |
+| DB 類型 / 訊息中介 / cache 確認 | 對齊 arch P2 ADR（[[11_data_and_stack_catalog]] §4-§7），若 ADR 缺則升 open question 給 arch 補 ADR，不自行決定 |
 
 ---
 

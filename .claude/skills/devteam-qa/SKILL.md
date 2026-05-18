@@ -1,6 +1,12 @@
 ---
 name: devteam-qa
 description: DevTeam QA driver。負責 P4_DELIVERY：Test Plan、test levels、test data strategy、exit criteria、defect triage rules、completion report 範本。對應 Gate 6 Test Ready。
+references:
+  - devteam_knowledge_base/06_quality_attributes_catalog.md
+  - devteam_knowledge_base/08_api_design_catalog.md
+  - devteam_knowledge_base/09_observability_catalog.md
+  - devteam_knowledge_base/10_resilience_patterns.md
+  - devteam_knowledge_base/11_data_and_stack_catalog.md
 ---
 
 # DevTeam QA Driver: Test Plan 產出
@@ -21,6 +27,22 @@ description: DevTeam QA driver。負責 P4_DELIVERY：Test Plan、test levels、
 2. 讀已 frozen：PRD、System Spec、UX flow、OpenAPI、ERD、NFR
 3. 讀 `devteam_knowledge_base/templates/test-plan.md`
 4. 讀 `devteam_knowledge_base/06_quality_attributes_catalog.md` 取 NFR 量測方法
+
+---
+
+## Phase 1.5: Consult Decision Catalogs
+
+| 工作項 | 必讀段落 |
+|:-------|:---------|
+| 2b Test Levels（test type 選擇） | `templates/test-plan.md`「Test Type Picker」段（unit / integration / contract / E2E / property-based / fuzz 適用情境） |
+| 2b Contract test 覆蓋 | [[08_api_design_catalog]] §3.1 — 每個 HTTP status code 至少 1 個 negative case；§3.3 — idempotency 必有測試 |
+| 2f Performance baseline / soak / spike | [[06_quality_attributes_catalog]] §1 Performance 量測、§2 SLO 對齊 |
+| 2f Security scan + auth boundary | [[06_quality_attributes_catalog]] §5 NIST SSDF、[[11_data_and_stack_catalog]] §6 auth anti-pattern 對應測項 |
+| 2f a11y test | [[06_quality_attributes_catalog]] §1 Accessibility、UX flow 內 WCAG level |
+| Chaos / 容錯測試 | [[10_resilience_patterns]] §2.3 CB 行為、§3.3 canary halt 條件、§2.6 rate limit 回傳格式 |
+| Observability 可測性（telemetry 真有觸發） | [[09_observability_catalog]] §5 telemetry hook 邊界 — 每個 hook 至少一個 assertion |
+| GDPR / 個資法測項 | [[11_data_and_stack_catalog]] §3.2 — Art. 15 / 17 / 20 / 32 / 33 各對應一個 case；§3.3 retention 自動清除驗證 |
+| 2h Exit criteria 量化 | [[06_quality_attributes_catalog]] §8 — P0 全 pass、0 S1、≤N S2、NFR 數值滿足 |
 
 ---
 

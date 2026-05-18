@@ -77,3 +77,92 @@
 2. 在本檔加一列
 3. 在對應 driver skill 的 SKILL.md 補產出邏輯
 4. 更新 `02_lifecycle_phases.md` 的 downstream 依賴關係表
+
+---
+
+## Reference Catalogs（KB 07-11）
+
+Template 規範「填什麼欄位」，KB 07-11 規範「該選哪一個」。Driver skill 的 `Phase 1.5: Consult Decision Catalogs` 段會把工作項 → 必讀段落對應好，這裡只是索引。
+
+| KB | 涵蓋 | 主要 driver 使用者 | 對應 critique persona |
+|:---|:-----|:-------------------|:----------------------|
+| `07_diagram_picker.md` | UML 7 種圖選擇樹、C4 4 層、ERD 3 種 notation、wireframe 4 個粒度、state coverage checklist | analyst / arch / design / ux | sa / arch / sd / ux |
+| `08_api_design_catalog.md` | REST/GraphQL/gRPC/event 選型、resource / event naming、HTTP × domain error code、idempotency、versioning | analyst / arch / design / qa / ops | sd / qa |
+| `09_observability_catalog.md` | log/metric/trace 三柱決策、SLI 命名、telemetry hook 邊界、alert routing、burn rate alert | arch / design / qa / ops | sre |
+| `10_resilience_patterns.md` | retry/CB/bulkhead/timeout/fallback、藍綠/canary/feature flag、expand-contract migration、RTO/RPO/MTTR | arch / design / qa / ops | sre / arch |
+| `11_data_and_stack_catalog.md` | 資料 4 級分類、PII 3 類、GDPR / 個資法欄位、DB / messaging / auth / cache 選型 | analyst / arch / design / qa / ops | dba |
+
+### Template 與 KB 對應快表（重點欄位）
+
+| Template | 該欄位 | 引用 KB |
+|:---------|:-------|:--------|
+| `system-spec.md` | State Model | KB 07 §2.1 |
+| `system-spec.md` | Events | KB 08 §2.4 + §6.3 |
+| `system-spec.md` | Integration Inventory | KB 08 §1、KB 11 §6 |
+| `openapi.yaml` | Error schema + components | KB 08 §3.2 + §6.1 |
+| `openapi.yaml` | Idempotency-Key | KB 08 §3.3 |
+| `openapi.yaml` | x-governance.change_policy | KB 08 §4 |
+| `erd.md` | Data Dictionary（含 jurisdictions / consent） | KB 11 §3.1 |
+| `erd.md` | Migration Plan | KB 10 §3.5 expand-contract |
+| `erd.md` | PII / Compliance Map | KB 11 §3.2 |
+| `runbook.md` | Canary | KB 10 §3.3 |
+| `runbook.md` | Rollback | KB 10 §3.5 |
+| `runbook.md` | Alerts（含 runbook/dashboard link） | KB 09 §6 |
+| `runbook.md` | Common Incidents | KB 10 §2 |
+| `runbook.md` | Disaster Recovery RTO/RPO | KB 10 §4 |
+| `release-readiness.md` | Rollout Strategy | KB 10 §3 |
+| `release-readiness.md` | Compliance / Risk | KB 11 §3.2 |
+| `test-plan.md` | Test Type Picker（in-template） | 本 template 內建 |
+| `adr.md` | Tags / Feature / Related KB（供 indexes 提取） | `.claude/context/devteam/indexes/README.md` |
+
+### ADR / DR 索引機制
+
+每份 ADR / DR 必含 frontmatter 三欄：`Tags:`、`Feature:`、`Related KB:`。這三欄由 router 在寫入後 rebuild 成 `.claude/context/devteam/indexes/` 下三份 derived 檔，供：
+
+- 新 driver 接手某 feature 時，快查既有決議避免衝突
+- arch driver 起草新 ADR 前，快查相關 topic 既有 ADR
+- 累積 KB 引用 case law（觀察哪些 KB 段真被引用 / 哪些設計失敗無人用）
+
+**目錄結構（runtime，由 router 動態建立，不入 repo）**：
+
+```
+.claude/context/devteam/
+├── adr-ledger.json              # source of truth, append-only（driver 寫入）
+└── indexes/                     # derived，router post-hook rebuild
+    ├── feature_index.json       # { "<feature-slug>": [ADR/DR entries] }
+    ├── topic_index.json         # { "<tag>": [ADR/DR entries] }
+    └── catalog_usage.json       # { "<KB filename>": [ADR/DR entries with section] }
+```
+
+**Rebuild 來源**：
+1. `.claude/context/devteam/adr-ledger.json` 內的 ledger entry
+2. `docs/architecture/adr/ADR-*.md` frontmatter（`Tags:`、`Feature:`、`Related KB:`）
+3. `docs/architecture/dr/DR-*.md` 同上
+
+**Rebuild 時機**：driver 寫入新 ADR / DR 後（router post-hook）；router session 初始化時 lazy rebuild（若 indexes 不存在或舊於 adr-ledger.json）；手動 `/devteam-status --rebuild-indexes`。
+
+**Schema 範例**：
+
+```json
+// feature_index.json
+{
+  "<feature-slug>": [
+    {"id": "ADR-007", "title": "Event bus choice", "status": "Accepted", "date": "2026-05-18", "scope": "orders"}
+  ]
+}
+
+// topic_index.json
+{
+  "messaging": [{"id": "ADR-007", "feature": "orders-mvp", "date": "2026-05-18"}],
+  "auth":      [{"id": "ADR-012", "feature": "user-auth", "date": "2026-05-20"}]
+}
+
+// catalog_usage.json
+{
+  "08_api_design_catalog.md": [
+    {"id": "ADR-009", "section": "§3.2 error code structure", "feature": "orders-mvp"}
+  ]
+}
+```
+
+**規則**：ADR / DR 缺三欄之一 → 不阻擋寫入，但於 Phase 5a critique 時請 arch persona 補；KB 完全無人引用 → 設計失敗信號，應於 retrospective 檢討。

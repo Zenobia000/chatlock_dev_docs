@@ -1,6 +1,9 @@
 ---
 name: devteam-ux
 description: DevTeam UX driver（合併 UX + UI）。負責 P1_ANALYSIS 的 user flow / journey / state coverage / a11y / wireframe 描述。對應 Gate 2 UX Flow Freeze。可與 devteam-analyst 並行。
+references:
+  - devteam_knowledge_base/06_quality_attributes_catalog.md
+  - devteam_knowledge_base/07_diagram_picker.md
 ---
 
 # DevTeam UX Driver: User Flow 與 State Coverage 產出
@@ -20,6 +23,17 @@ description: DevTeam UX driver（合併 UX + UI）。負責 P1_ANALYSIS 的 user
 3. 讀 `devteam_knowledge_base/templates/user-flow.md`
 4. 若已存在 docs/ux/user-flow-<feature>.md → 進入迭代模式
 5. 與 devteam-analyst 並行時，協調避免重複定義 actor / state
+
+---
+
+## Phase 1.5: Consult Decision Catalogs
+
+| 工作項 | 必讀段落 |
+|:-------|:---------|
+| 2b Core Flow 畫法 | [[07_diagram_picker]] §4.6 user flow 起手式、§5 anti-pattern（必含 error path） |
+| 2c State Coverage 矩陣覆蓋面 | [[07_diagram_picker]] §2.4 state coverage checklist — 6 項缺一即 blocker |
+| 2e Accessibility checklist 對應 WCAG 等級 | [[06_quality_attributes_catalog]] §1 Accessibility 維度 — 與業主確認 A/AA/AAA |
+| Wireframe annotation 規範 | [[07_diagram_picker]] §2.4 — interactive 元件必標 state、CTA 必標 → next、必含 breakpoints + a11y 註 |
 
 ---
 
