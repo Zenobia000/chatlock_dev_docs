@@ -21,6 +21,7 @@
 | Session 狀態速覽 | **devteam-status** | `/devteam-status` |
 | Freeze gate review 觸發 | (router 內建) | `/devteam-freeze` |
 | 手動 review（任意文件） | (router + agents) | `/devteam-review` |
+| **Forum-Lite 多輪辯論（Lane B）** | (router + agents) | `/devteam-forum` |
 | 對外 handoff（產 specs/handoff.md） | (router 內建) | `/devteam-handoff` |
 
 ---
@@ -44,6 +45,8 @@
 | DevOps | `devteam-devops-persona` | Pipeline gate / rollback 可執行 / 環境一致 |
 | SRE | `devteam-sre-persona` | SLO/SLI / alert 可動作 / incident path |
 | (merger) | `devteam-orchestrator` | 合併 N 份 critique 為單一 review report，失敗時降級 |
+| (proposer) | `devteam-proposer` | Forum-Lite R1 提案 + R3 回應 critique；Lane B 專用 |
+| (facilitator) | `devteam-facilitator` | Forum-Lite 三訊號 AND 收斂判定 + 升級裁決；Lane B 專用 |
 
 ---
 
@@ -76,6 +79,8 @@
 | `runbook.md` | Service runbook（Ops 產出） |
 | `release-readiness.md` | Release go/no-go 證據（Ops 產出） |
 | `handoff.md` | 對外 coding agent 契約（router 產出） |
+| `forum-topic.md` | Forum-Lite 議題元資料（proposer + critics 共讀） |
+| `forum-final-report.md` | Forum-Lite 收斂或升級報告（facilitator 產出） |
 
 ---
 
@@ -88,6 +93,18 @@
 - `session-<id>.md` — 互動 narrative
 - `reviews/<gate>-<feature>-<date>.md` — multi-role critique 合併報告
 - `evidence/<gate>-<feature>-<date>.md` — freeze 證據與業主簽核紀錄
+- `forum/<topic-id>/round-{1,2,3}/*.md` + `final-report.md` — Forum-Lite 多輪辯論紀錄
+
+---
+
+## Lane A vs Lane B（雙軌 Review 機制）
+
+| Lane | 觸發 | 用途 | Token |
+|:-----|:-----|:-----|:------|
+| **A — Critique Pipeline** | Freeze gate ready / `/devteam-review` | 單向 critique → orchestrator merge → 業主裁決 | 5-30k |
+| **B — Forum-Lite** | Lane A 出現 `conflicts_count ≥ 2` 提示業主 / `/devteam-forum` | 多輪辯論收斂：proposer ↔ critics 來回 + facilitator 三訊號判定 | ~45k |
+
+兩 lane 並存。Lane A 處理 90% review；Lane B 處理跨領域 trade-off 與衝突收斂。
 
 ---
 

@@ -17,8 +17,9 @@
 | `/devteam-qa` | P4 Delivery / Test Plan + Exit Criteria | devteam-qa |
 | `/devteam-ops` | P5 Release / Runbook + SLO + Readiness | devteam-ops |
 | `/devteam-status` | 查看當前 session 狀態（phase / gate / 文件成熟度） | devteam-status |
-| `/devteam-freeze <Gate>` | 手動觸發 freeze gate multi-role review | (router 內建) |
-| `/devteam-review <doc>` | 手動觸發任意文件的 critique（不需 gate ready） | (router + agents) |
+| `/devteam-freeze <Gate>` | 手動觸發 freeze gate multi-role review（Lane A） | (router 內建) |
+| `/devteam-review <doc>` | 手動觸發任意文件的 critique（Lane A，不需 gate ready） | (router + agents) |
+| `/devteam-forum <doc>` | **Lane B 多輪辯論**（proposer ↔ critics ↔ facilitator） | (router + agents) |
 | `/devteam-handoff <feature>` | 產 specs/handoff.md 給 coding agent | (router 內建) |
 
 ## Phase DAG
@@ -32,6 +33,15 @@ P0_DISCOVERY ──▶ Gate1_PRD ──▶ P1_ANALYSIS (analyst + ux 並行)
 ```
 
 每個 freeze gate 前自動 dispatch multi-role critique（intensity dial：light / standard / strict / dry-run）。完整規則見 `devteam_knowledge_base/02_lifecycle_phases.md` 與 `04_freeze_gates.md`。
+
+## Lane A vs Lane B Review 機制
+
+| Lane | 觸發 | 用途 |
+|:-----|:-----|:-----|
+| **A — Critique Pipeline** | Freeze gate ready / `/devteam-review` | 單向 critique → orchestrator merge → 業主裁決。90% review 走這條 |
+| **B — Forum-Lite** | Lane A 出現 `conflicts_count ≥ 2` 自動提示業主 / `/devteam-forum` | 跨領域 trade-off 與衝突收斂。proposer ↔ critics 多輪辯論，facilitator 三訊號 AND 判定收斂或強制升級。max 3 rounds，~45k token |
+
+Lane B 不取代 Lane A。Lane B 結束後業主仍走既有 driver skill 寫 ADR/DR + cascade。詳見 `devteam_knowledge_base/05_meeting_protocols.md` Forum-Lite 段落。
 
 ## 知識庫與範本
 
@@ -71,7 +81,9 @@ DevTeam state 三層持久化於 `.claude/context/devteam/`：
 
 | Agent | 用途 |
 | :--- | :--- |
-| `devteam-orchestrator` | Multi-role critique 合併、衝突點顯化、失敗降級 |
+| `devteam-orchestrator` | Multi-role critique 合併、衝突點顯化、失敗降級（output `conflicts_count` 給 router 判 Lane B 升級） |
+| `devteam-proposer` | **Lane B Forum-Lite**：R1 提案（議題 + dimensions + trade-off）/ R3 回應 critique |
+| `devteam-facilitator` | **Lane B Forum-Lite**：三訊號 AND 收斂判定 + 升級裁決，不 merge 不 critique |
 | `devteam-pm-persona` | PM critique 視角（問題 / KPI / scope） |
 | `devteam-po-persona` | PO critique 視角（backlog priority / ownership） |
 | `devteam-ba-persona` | BA critique 視角（stakeholder / rules / 合規） |

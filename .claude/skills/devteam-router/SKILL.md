@@ -206,6 +206,39 @@ dispatch `/devteam-{role}` 來產出 {expected_artifact}。
 
 **orchestrator 降級規則：** 若 orchestrator 寫不出 coherent merge，自動降級為「列 N 份原始 critique + 標衝突點」。
 
+### Phase 5b: Conflict Auto-Escalation to Forum-Lite
+
+讀 orchestrator 回傳的結構化欄位（`conflicts_count`、`escalation_recommended`）：
+
+```
+conflicts_count >= 2 (or escalation_recommended == true)
+│
+├─ Lane B 提示（業主確認才走）：
+│   ┌────────────────────────────────────────────────────────────┐
+│   │ ⚠ Critique 發現 {n} 個衝突點（跨 persona 觀點分歧）。      │
+│   │   建議升級至 Forum-Lite 多輪辯論：                          │
+│   │                                                              │
+│   │   /devteam-forum {target_doc} \                              │
+│   │     --from-review={review_id} \                              │
+│   │     --personas={原 critique personas} \                      │
+│   │     --rounds=3                                                │
+│   │                                                              │
+│   │   [Y] 啟動 forum  [n] 業主直接裁決（沿用 Lane A 流程）       │
+│   └────────────────────────────────────────────────────────────┘
+│
+└─ conflicts_count < 2
+   └─ 維持原 Lane A 流程：呈現 review report 給業主直接裁決
+```
+
+**設計約束**：
+
+- 觸發只「提示」，不自動啟動 — 業主必須明文確認
+- `--from-review=<id>` 讓 forum proposer 可引用既有 critique 作為 R1 議題背景
+- 業主回 `n` 或忽略 → 維持 Lane A，不打斷既有流程
+- Lane B forum 結束後業主仍走 `/devteam-freeze` 重 freeze（forum 不直接 freeze 文件）
+
+完整 Forum-Lite 流程見 `.claude/commands/devteam-forum.md`、`devteam_knowledge_base/05_meeting_protocols.md`。
+
 ---
 
 ## Phase 6: Cascade 影響預覽（業主修改 frozen 文件時）

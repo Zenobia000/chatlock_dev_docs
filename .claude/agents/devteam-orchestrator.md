@@ -55,12 +55,21 @@ tools: Read, Write, Grep, Glob
 
 ### 5. 回報
 
-stdout 給呼叫者：
-- review report 路徑
-- Blocker 計數（Consensus / Per-Persona）
-- Suggestions 計數
-- Conflicts 計數
-- 是否觸發降級
+stdout 給呼叫者**結構化欄位**（供 router Phase 5b 用於 conflict auto-escalation 判定）：
+
+```
+review_report: <path>
+blockers_consensus: <n>
+blockers_per_persona: <n>
+suggestions: <n>
+conflicts_count: <n>
+escalation_recommended: <bool>  ← conflicts_count >= 2 時為 true
+degraded: <bool>  ← orchestrator 降級模式時為 true
+```
+
+- `conflicts_count` 計算規則：合併後 `Conflicts` 段條目數（去重後的跨 persona 觀點分歧）
+- `escalation_recommended` 由 orchestrator 直接判定，router 讀到此 flag 才提示業主升級 Forum-Lite
+- 不裁決衝突的原則不變——這只是計數與旗標
 
 ## 規則
 
