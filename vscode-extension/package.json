@@ -1,0 +1,272 @@
+{
+  "name": "architect-copilot",
+  "displayName": "Architect Copilot",
+  "description": "Junior Architect Copilot — Enterprise Portal for the DevTeam Harness (Architecture_Autopilot)",
+  "version": "0.3.4",
+  "publisher": "architecture-autopilot",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "architectCopilot",
+          "title": "Architect Copilot",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "architectCopilot": [
+        {
+          "id": "architectCopilot.missionControl",
+          "name": "Mission Control",
+          "type": "webview"
+        },
+        {
+          "id": "architectCopilot.phasesGates",
+          "name": "Phases & Gates"
+        },
+        {
+          "id": "architectCopilot.documents",
+          "name": "Documents (DMS)"
+        },
+        {
+          "id": "architectCopilot.decisions",
+          "name": "Pending Decisions"
+        },
+        {
+          "id": "architectCopilot.personas",
+          "name": "Agents & Personas"
+        },
+        {
+          "id": "architectCopilot.kb",
+          "name": "Knowledge Base"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "architectCopilot.startBootstrap",
+        "title": "Start Bootstrap Questionnaire",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.openDashboard",
+        "title": "Open Pilot Dashboard",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.runPM",
+        "title": "Run /devteam-pm in Terminal",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.resolveNextDecision",
+        "title": "Resolve Next Pending Decision",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.freezeActiveGate",
+        "title": "Freeze Active Gate",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.refresh",
+        "title": "Refresh Portal",
+        "category": "Architect Copilot",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "architectCopilot.openDecisionCard",
+        "title": "Open Decision Card",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.openDocumentDetail",
+        "title": "Open Document Detail",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.openPhaseDetail",
+        "title": "Open Phase Detail",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.openFile",
+        "title": "Open File",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.toggleHighContrast",
+        "title": "Toggle High-Contrast (B&W) Mode",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.toggleGuidanceMode",
+        "title": "Toggle Guidance Mode (show inline help)",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.setThemeMode",
+        "title": "Set Theme Mode (System / Dark / Light)",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.editDocument",
+        "title": "Edit Document",
+        "category": "Architect Copilot",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "architectCopilot.openRoundtable",
+        "title": "Open Roundtable Detail",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.newDocFromTemplate",
+        "title": "New Document from Template",
+        "category": "Architect Copilot",
+        "icon": "$(new-file)"
+      },
+      {
+        "command": "architectCopilot.runDriver",
+        "title": "Run Driver in Terminal",
+        "category": "Architect Copilot"
+      },
+      {
+        "command": "architectCopilot.freezeGate",
+        "title": "Freeze Specific Gate",
+        "category": "Architect Copilot"
+      }
+    ],
+    "configuration": {
+      "title": "Architect Copilot",
+      "properties": {
+        "architectCopilot.forceHighContrast": {
+          "type": "boolean",
+          "default": false,
+          "description": "Force black-and-white high-contrast UI in Architect Copilot webviews, regardless of the current VS Code theme. Useful if you find the default colored pills hard to read."
+        },
+        "architectCopilot.guidanceMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show inline help text under every button explaining what it does. The ? icon next to buttons is always visible (hover for tooltip); this setting controls whether the full help text also shows inline. Default ON for novice users."
+        },
+        "architectCopilot.themeMode": {
+          "type": "string",
+          "enum": ["system", "dark", "light"],
+          "enumDescriptions": [
+            "Follow VS Code theme (default — extension UI adapts automatically)",
+            "Force dark palette in Architect Copilot webviews regardless of VS Code theme",
+            "Force light palette in Architect Copilot webviews regardless of VS Code theme"
+          ],
+          "default": "system",
+          "description": "Color theme for Architect Copilot webviews. 'system' uses VS Code theme tokens (adapts to your editor). 'dark'/'light' forces a specific palette."
+        }
+      }
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "architectCopilot.startBootstrap"
+        },
+        {
+          "command": "architectCopilot.openDashboard"
+        },
+        {
+          "command": "architectCopilot.runPM"
+        },
+        {
+          "command": "architectCopilot.resolveNextDecision"
+        },
+        {
+          "command": "architectCopilot.freezeActiveGate"
+        },
+        {
+          "command": "architectCopilot.refresh"
+        },
+        {
+          "command": "architectCopilot.toggleHighContrast"
+        },
+        {
+          "command": "architectCopilot.toggleGuidanceMode"
+        },
+        {
+          "command": "architectCopilot.setThemeMode"
+        },
+        {
+          "command": "architectCopilot.openDecisionCard",
+          "when": "false"
+        },
+        {
+          "command": "architectCopilot.openDocumentDetail",
+          "when": "false"
+        },
+        {
+          "command": "architectCopilot.openPhaseDetail",
+          "when": "false"
+        },
+        {
+          "command": "architectCopilot.openFile",
+          "when": "false"
+        },
+        {
+          "command": "architectCopilot.editDocument",
+          "when": "false"
+        },
+        {
+          "command": "architectCopilot.openRoundtable",
+          "when": "false"
+        },
+        {
+          "command": "architectCopilot.runDriver",
+          "when": "false"
+        },
+        {
+          "command": "architectCopilot.freezeGate",
+          "when": "false"
+        },
+        {
+          "command": "architectCopilot.newDocFromTemplate"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "architectCopilot.refresh",
+          "when": "view == architectCopilot.phasesGates || view == architectCopilot.documents || view == architectCopilot.decisions || view == architectCopilot.personas",
+          "group": "navigation"
+        },
+        {
+          "command": "architectCopilot.newDocFromTemplate",
+          "when": "view == architectCopilot.documents",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "watch": "npm run build -- --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "marked": "^18.0.4",
+    "yaml": "^2.3.4"
+  }
+}
