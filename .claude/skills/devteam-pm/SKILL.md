@@ -22,6 +22,10 @@ references:
 2. 讀 `.claude/context/devteam/documents/index.json` 確認 PRD 是否已存在
 3. 讀 `.claude/context/devteam/session-{id}.md` 末段取得最新 narrative
 4. 讀 `devteam_knowledge_base/templates/prd.md` 取得結構
+5. **讀 `.claude/context/devteam/bootstrap-{feature}.yaml`（若存在）取得 Architect Bootstrap Questionnaire 答案**
+   - 存在 → 進入「bootstrap 預填模式」（見 Phase 2 開頭）
+   - 不存在 → 互動式問答模式（傳統流程）
+   - 建議：若 `state.json.bootstrap_done == false` 且業主直接跳到 `/devteam-pm`，**先提示**：「偵測到尚未完成 bootstrap questionnaire，建議先執行 `/devteam-bootstrap` 確保 senior 隱性思考（規模 / 合規 / NFR baseline）有被顯化。仍要繼續用空白模板嗎？」業主明確 confirm 才走互動式問答模式
 
 若 PRD 已存在且 `status: frozen` → 業主應改用「插入變更」流程：寫新 DR 紀錄變更，本 skill 進入 Phase 5 cascade 預覽。
 
@@ -41,7 +45,37 @@ PRD 不負責「選技術」，但**負責讓 NFR 與資料敏感度有 baseline
 
 ---
 
-## Phase 2: PRD 互動式產出
+## Phase 2: PRD 產出（兩種模式）
+
+### Mode A: Bootstrap 預填模式（若 bootstrap-{feature}.yaml 存在）
+
+讀 `bootstrap-{feature}.yaml`，依下表把答案映射到 PRD 章節，**先把能填的全填好、列剩下要業主補的**：
+
+| Bootstrap 欄位 | PRD 章節 | 填法 |
+|:---|:---|:---|
+| `business.problem_statement` | §1 Problem Statement | 直接填入「現況」段，「為什麼值得解 / 不解的成本」標 `<TBD>` 留給業主 |
+| `business.user_scale` | §3 Users & Scenarios → Primary persona 規模 + §7 NFR concurrent users | 直接填數值區間 |
+| `business.latency_sensitivity` | §7 NFR Performance → latency target | 依選項對應：即時 `< 100ms p95` / 互動 `< 1s p95` / 批次 `< 10s p95` / 離線 `< 5min` |
+| `compliance.data_types` | §7 NFR Security + §3 Edge cases | 標出資料等級與對應的加密 / retention baseline |
+| `compliance.frameworks` | §7 NFR Auditability + §10 Release Plan Observability | 列合規要求，audit log 等級對應到 NFR |
+| `compliance.audit_required` | §7 NFR Auditability | 直接填 |
+| `team_timeline.team_size` | §8 Dependencies（隱含 team capacity） | 標進 Risks（單人 / 小團隊風險） |
+| `team_timeline.first_release_deadline` | §10 Release Plan timeline | 直接填 |
+| `stack.primary_language` + `stack.deployment_env` | §8 Dependencies → 既有 stack 限制 | 列為 constraint |
+| `learning.mode` | （不寫進 PRD）影響 ASSUMPTION 註記的詳細度 | educational 模式下，每個 ASSUMPTION 多寫一句「為什麼這樣假設」 |
+| `learning.weak_areas` | （不寫進 PRD）影響 §11 Decision Log 詳細度 | weak_areas 對應的決策多放教育性註解 |
+| `open_questions[]` | §9 Risks & Open Questions | 全部 carryover |
+
+完成預填後，**只對業主追問 PRD 必填但 bootstrap 沒覆蓋的部分**：
+- §1 Problem Statement 的「為什麼值得解 / 不解的成本」
+- §2 Goals & Success Metrics（**KPI 必填，bootstrap 不問**）
+- §4 Scope 的 Out of scope（強制不可空）
+- §6 Functional Requirements（具體 FR list）
+- §9 Risks 補充
+
+這比傳統 Mode B 少問 7-8 題基礎問題，業主聚焦在 PM 真正該決定的東西。
+
+### Mode B: 互動式產出（傳統，無 bootstrap 時）
 
 依 PRD 模板逐節推進。若業主輸入不足以填某節，**先填能填的、把 open questions 列出來**，不要編造。
 
@@ -49,20 +83,20 @@ PRD 不負責「選技術」，但**負責讓 NFR 與資料敏感度有 baseline
 
 1. **Problem Statement** — 現況、為什麼值得解、不解的成本
 2. **Goals & Success Metrics** — Business goal / User goal / KPI / Counter-metrics
-3. **Users & Scenarios** — Primary persona / Key scenario / Edge cases
+3. **Users & Scenarios** — Primary persona / Key scenario / Edge cases  *(bootstrap: business.user_scale)*
 4. **Scope** — In scope / Out of scope（**Out of scope 不可空**）
 5. **User Flow Links** — 連到 ux/user-flow-{feature}.md（占位指向）
 6. **Functional Requirements** — Requirement ID / Description / Acceptance criteria
-7. **Non-Functional Requirements** — Performance / Reliability / Security / Accessibility / Auditability
-8. **Dependencies** — Upstream / Downstream / External / Data / API
-9. **Risks & Open Questions**
-10. **Release Plan** — Rollout strategy / Observability / Rollback
+7. **Non-Functional Requirements** — Performance / Reliability / Security / Accessibility / Auditability  *(bootstrap: latency_sensitivity + compliance.*)*
+8. **Dependencies** — Upstream / Downstream / External / Data / API  *(bootstrap: stack.*)*
+9. **Risks & Open Questions**  *(bootstrap: open_questions[])*
+10. **Release Plan** — Rollout strategy / Observability / Rollback  *(bootstrap: team_timeline.first_release_deadline)*
 11. **Decision Log** — 連到 architecture/adr/ 或 architecture/dr/
 
-### 產出邏輯
+### 產出邏輯（兩模式共用）
 
 對每節：
-- 業主提供的資訊夠 → 直接填
+- 業主提供的資訊夠（含 bootstrap 預填） → 直接填
 - 不夠但可推論 → 填初稿並標 `<!-- ASSUMPTION: ... -->`
 - 完全沒資訊 → 列入該節末尾的「Open Questions」
 

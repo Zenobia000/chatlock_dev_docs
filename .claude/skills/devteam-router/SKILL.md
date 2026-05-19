@@ -54,7 +54,13 @@ references:
 │
 ├─ 純問題描述（「我想做 X 系統 / 解決 Y 痛點」）
 │  → current_phase = P0_DISCOVERY
-│  → next_driver = devteam-pm
+│  → 檢查 .claude/context/devteam/bootstrap-{feature}.yaml 是否存在
+│     - 不存在 / bootstrap_done == false → next_driver = devteam-bootstrap
+│       理由：先跑 Architect Bootstrap Questionnaire（agentic init），把 senior
+│             隱性思考（規模 / 合規 / 團隊 / stack / 學習目標）顯化，
+│             避免後續 PM phase 反覆追問基礎題
+│     - 已存在 / bootstrap_done == true → next_driver = devteam-pm
+│       理由：bootstrap 已提供 PRD §3/§4/§7/§8 預填資料，直接進 PRD 撰寫
 │
 ├─ 已有 PRD 雛形 + 想往下做 system spec
 │  → current_phase = P1_ANALYSIS
@@ -69,22 +75,23 @@ references:
 │  → next_driver = devteam-design
 │
 └─ 無法判斷
-   → 引導式問答 3 題：
-     1. 「你現在有什麼？（PRD draft / 規則描述 / 草圖 / 純想法）」
-     2. 「最想先解決的是？（價值定義 / 流程釐清 / 技術選型 / 介面契約）」
-     3. 「業主是誰？你？團隊？外部 stakeholder？」
+   → 一律走 devteam-bootstrap：12 題問卷會把業主的意圖結構化，
+     比舊版「3 題輕量引導」覆蓋面廣且帶教育價值。Junior 友善。
 ```
 
 ### Phase DAG 速查
 
 | current_phase | 主導 driver | 平行可選 | 後續 freeze gate |
 |:--------------|:------------|:---------|:-----------------|
-| P0_DISCOVERY | devteam-pm | — | Gate 1: PRD Freeze |
+| P0_DISCOVERY (init) | devteam-bootstrap | — | — (純 init，無 gate) |
+| P0_DISCOVERY (prd) | devteam-pm | — | Gate 1: PRD Freeze |
 | P1_ANALYSIS | devteam-analyst | devteam-ux | Gate 2 (UX) + Gate 3 (System Spec) |
 | P2_ARCHITECTURE | devteam-arch | — | Gate 4: NFR + ADR Baseline |
-| P3_DESIGN | devteam-design | — | Gate 5: API Contract + DB Schema |
+| P3_DESIGN | devteam-design | — | Gate 5a: API Contract + Gate 5b: DB Schema |
 | P4_DELIVERY | devteam-qa | — | Gate 6: Test Ready |
 | P5_RELEASE | devteam-ops | — | Gate 7: Release Ready → handoff |
+
+**P0 內部兩階段**：`bootstrap`（問卷）→ `prd`（PRD 撰寫）。`state.json.bootstrap_done` 旗標分流。
 
 完整 DAG 與 re-entry 規則見 `devteam_knowledge_base/02_lifecycle_phases.md`。
 
@@ -105,13 +112,16 @@ references:
   "active_features": ["{feature-slug}"],
   "problem_description": "{業主原始描述}",
   "phase_history": [],
+  "bootstrap_done": false,
+  "ux_mode": null,
+  "weak_areas": [],
   "freeze_gates": {
     "Gate1_PRD": "not_reached",
     "Gate2_UXFlow": "not_reached",
     "Gate3_SystemSpec": "not_reached",
     "Gate4_NFR_ADR": "not_reached",
-    "Gate5_APIContract": "not_reached",
-    "Gate5_DBSchema": "not_reached",
+    "Gate5a_API": "not_reached",
+    "Gate5b_DBSchema": "not_reached",
     "Gate6_TestReady": "not_reached",
     "Gate7_Release": "not_reached"
   },
@@ -121,6 +131,11 @@ references:
   "session_report": ".claude/context/devteam/session-{session_id}.md"
 }
 ```
+
+**新欄位說明**：
+- `bootstrap_done`：Architect Bootstrap Questionnaire 是否完成。devteam-bootstrap 跑完寫 true
+- `ux_mode`：`educational` / `balanced` / `fast-handoff`。決定後續 decision card 出現頻率與深度
+- `weak_areas`：業主自評最沒把握的領域陣列（架構選型 / DB / API / 部署 / 監控 / 測試 / 合規）。各 driver 在這些領域多花教育成本
 
 ### 3b: 建立空 documents 索引
 
