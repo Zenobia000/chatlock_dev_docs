@@ -57,8 +57,13 @@ export function getBootstrapHtml(nonce: string, cspSource: string, bodyClass: st
     .options { display: flex; flex-direction: column; gap: 6px; }
     .opt { display: flex; align-items: flex-start; gap: 8px; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
     .opt:hover { background: rgba(127, 127, 127, 0.08); }
-    .opt input { margin-top: 2px; flex-shrink: 0; }
+    .opt input[type="radio"], .opt input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
     .opt label { cursor: pointer; flex: 1; font-size: 13px; line-height: 1.4; }
+    .other-opt { margin-top: 4px; border-top: 1px dashed var(--border, rgba(127,127,127,0.3)); padding-top: 10px; }
+    .other-opt input[type="text"] { margin-left: 0; }
+    body.vscode-high-contrast .other-opt, body.vscode-high-contrast-light .other-opt, body.force-hc .other-opt {
+      border-top-style: solid; border-top-width: 1px;
+    }
     footer { display: flex; gap: 12px; align-items: center; justify-content: flex-end; padding-top: 16px; border-top: 1px solid var(--border); position: sticky; bottom: 0; background: var(--bg); margin-top: 24px; }
     .progress { margin-right: auto; color: var(--muted); font-size: 12px; }
     button { padding: 8px 16px; background: var(--btn-bg); color: var(--btn-fg); border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-family: var(--vscode-font-family); }
@@ -136,18 +141,35 @@ export function getBootstrapHtml(nonce: string, cspSource: string, bodyClass: st
     const questions = ${questionsJson};
     const total = questions.length;
 
+    function readOtherText(qid) {
+      const t = document.getElementById(qid + '_other_text');
+      return t ? t.value.trim() : '';
+    }
+
     function getAnswers() {
       const out = {};
       for (const q of questions) {
         if (q.type === 'text') {
-          const el = document.querySelector(\`[name="\${q.id}"]\`);
+          const el = document.querySelector('[name="' + q.id + '"]');
           out[q.id] = el ? el.value.trim() : '';
         } else if (q.type === 'single') {
-          const el = document.querySelector(\`[name="\${q.id}"]:checked\`);
-          out[q.id] = el ? el.value : '';
+          const el = document.querySelector('[name="' + q.id + '"]:checked');
+          if (el && el.value === '__OTHER__') {
+            const t = readOtherText(q.id);
+            out[q.id] = t; // empty string if not yet typed → counts as unanswered
+          } else {
+            out[q.id] = el ? el.value : '';
+          }
         } else if (q.type === 'multi') {
-          const els = document.querySelectorAll(\`[name="\${q.id}"]:checked\`);
-          out[q.id] = Array.from(els).map((e) => e.value);
+          const els = document.querySelectorAll('[name="' + q.id + '"]:checked');
+          const vals = Array.from(els).map((e) => e.value);
+          const idx = vals.indexOf('__OTHER__');
+          if (idx >= 0) {
+            const otherText = readOtherText(q.id);
+            if (otherText) vals[idx] = otherText;
+            else vals.splice(idx, 1);
+          }
+          out[q.id] = vals;
         }
       }
       return out;
@@ -167,12 +189,44 @@ export function getBootstrapHtml(nonce: string, cspSource: string, bodyClass: st
     function refresh() {
       const a = getAnswers();
       const n = answeredCount(a);
-      document.getElementById('progress').textContent = \`\${n} / \${total} 已回答\`;
+      document.getElementById('progress').textContent = n + ' / ' + total + ' 已回答';
       document.getElementById('submit').disabled = n < total;
     }
 
     document.addEventListener('input', refresh);
     document.addEventListener('change', refresh);
+
+    // UX 串接：當 Other 文字框 focus 或開始打字 → 自動勾上對應的 radio/checkbox
+    document.querySelectorAll('[data-other-input-for]').forEach((input) => {
+      const qid = input.getAttribute('data-other-input-for');
+      const otherToggle = document.querySelector('[data-other-for="' + qid + '"]');
+      const autoCheck = () => {
+        if (otherToggle && !otherToggle.checked && input.value.length > 0) {
+          otherToggle.checked = true;
+          refresh();
+        }
+      };
+      input.addEventListener('input', autoCheck);
+      input.addEventListener('focus', () => {
+        if (otherToggle && !otherToggle.checked) {
+          otherToggle.checked = true;
+          refresh();
+        }
+      });
+      // prevent label click from also flipping toggle when clicking inside text input
+      input.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    // 當 Other radio/checkbox 被勾 → focus 文字框
+    document.querySelectorAll('[data-other-for]').forEach((toggle) => {
+      toggle.addEventListener('change', () => {
+        if (toggle.checked) {
+          const qid = toggle.getAttribute('data-other-for');
+          const input = document.getElementById(qid + '_other_text');
+          if (input) input.focus();
+        }
+      });
+    });
 
     document.getElementById('submit').addEventListener('click', () => {
       const feature = document.getElementById('feature').value.trim() || 'default-feature';
@@ -198,38 +252,40 @@ function renderQuestion(q: { id: string; type: string; prompt: string; why: stri
         <textarea name="${idAttr}" rows="3" placeholder="${escape(q.placeholder ?? '')}"></textarea>
       </div>`;
   }
-  if (q.type === 'single') {
-    const opts = (q.options ?? [])
-      .map(
-        (o, i) => `
-        <div class="opt">
-          <input type="radio" id="${idAttr}_${i}" name="${idAttr}" value="${escape(o)}" />
-          <label for="${idAttr}_${i}">${escape(o)}</label>
-        </div>`
-      )
-      .join('');
-    return `
-      <div class="q">
-        <p class="q-prompt"><span class="q-id">${idAttr}</span>${escape(q.prompt)}</p>
-        <div class="why">${escape(q.why)}</div>
-        <div class="options">${opts}</div>
-      </div>`;
-  }
-  // multi
+
+  const inputType = q.type === 'single' ? 'radio' : 'checkbox';
   const opts = (q.options ?? [])
     .map(
       (o, i) => `
       <div class="opt">
-        <input type="checkbox" id="${idAttr}_${i}" name="${idAttr}" value="${escape(o)}" />
+        <input type="${inputType}" id="${idAttr}_${i}" name="${idAttr}" value="${escape(o)}" />
         <label for="${idAttr}_${i}">${escape(o)}</label>
       </div>`
     )
     .join('');
+
+  // "Other (specify)" affordance for both single and multi
+  const otherIndex = (q.options ?? []).length;
+  const otherOpt = `
+    <div class="opt other-opt">
+      <input type="${inputType}" id="${idAttr}_${otherIndex}" name="${idAttr}" value="__OTHER__" data-other-for="${idAttr}" />
+      <label for="${idAttr}_${otherIndex}" style="display: flex; align-items: center; gap: 8px; flex: 1;">
+        <span style="white-space: nowrap;">Other (specify):</span>
+        <input
+          type="text"
+          id="${idAttr}_other_text"
+          data-other-input-for="${idAttr}"
+          placeholder="自行輸入..."
+          style="flex: 1; padding: 4px 8px; background: var(--input-bg); color: var(--input-fg); border: 1px solid var(--border); border-radius: 3px; font-size: 12px;"
+        />
+      </label>
+    </div>`;
+
   return `
     <div class="q">
       <p class="q-prompt"><span class="q-id">${idAttr}</span>${escape(q.prompt)}</p>
       <div class="why">${escape(q.why)}</div>
-      <div class="options">${opts}</div>
+      <div class="options">${opts}${otherOpt}</div>
     </div>`;
 }
 

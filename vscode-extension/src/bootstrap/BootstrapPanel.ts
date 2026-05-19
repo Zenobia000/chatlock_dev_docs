@@ -166,8 +166,11 @@ function buildIntent(feature: string, answers: AnswerMap): BootstrapIntent {
       first_release_deadline: get('Q8'),
     },
     stack: {
-      primary_language: get('Q9'),
-      deployment_env: get('Q10'),
+      // Q9/Q10 are now multi-select; join with `, ` to keep the existing
+      // string schema in bootstrap-{feature}.yaml backward-compatible with
+      // skills that read these as comma-separated strings.
+      primary_language: getMulti('Q9').join(', '),
+      deployment_env: getMulti('Q10').join(', '),
     },
     learning: {
       mode: uxMode,
