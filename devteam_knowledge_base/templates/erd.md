@@ -1,14 +1,36 @@
-# ERD & Data Design — <Feature Name>
+# ERD & Data Design — {Feature Name}
 
-> **Owner**: devteam-design (DBA persona)
-> **Status**: draft | reviewed | frozen | superseded
-> **Version**: v<n>
-> **Last updated**: <YYYY-MM-DD>
-> **Related**: docs/analysis/system-spec-<feature>.md, docs/architecture/adr/ADR-*.md
+> **📋 Status**: draft | reviewed | frozen | superseded
+> **🗓 Last updated**: YYYY-MM-DD
+> **👤 Owner**: `devteam-design` (DBA persona)
+> **🔖 Version**: v{n}
+> **🔗 Related**: [`docs/analysis/system-spec-{feature}.md`](../../docs/analysis/system-spec-{feature}.md) · [`docs/architecture/adr/ADR-*.md`](../../docs/architecture/adr/)
 
 ---
 
-## Logical Model
+## 📋 Executive Summary
+
+> [!TIP]
+> **TL;DR (30s)**: Data model: **{N} entities**, **{M} relationships**. PII columns: **{K}**. Migration strategy: **expand-contract**. Rollback: **per migration `-rollback.sql`**.
+
+| 維度 | 摘要 |
+|:---|:---|
+| **🎯 Entities** | {N} tables |
+| **🔗 Relationships** | {M} |
+| **🔒 PII columns** | {K} (see [[11_data_and_stack_catalog]] §2) |
+| **💾 DB engine** | PostgreSQL · MySQL · SQLite · ... |
+| **🔁 Migration strategy** | expand-contract / hot upgrade / downtime |
+| **🚀 狀態** | {emoji} {status} |
+
+> [!NOTE]
+> **Cardinality legend**:
+> - `||--o{` = one-to-many (parent || -- 0+ many { child)
+> - `||--||` = one-to-one
+> - `}o--o{` = many-to-many
+
+---
+
+## 🎯 Logical Model
 
 ```mermaid
 erDiagram

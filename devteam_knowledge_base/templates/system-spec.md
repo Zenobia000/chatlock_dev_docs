@@ -1,60 +1,85 @@
-# System Spec — <Feature Name>
+# System Spec — {Feature Name}
 
-> **Owner**: devteam-analyst (SA persona)
-> **Status**: draft | reviewed | frozen | superseded
-> **Version**: v<n>
-> **Last updated**: <YYYY-MM-DD>
-> **Related PRD**: docs/prd/<feature>.md
-> **Related UX**: docs/ux/user-flow-<feature>.md
-> **Related ADR/DR**: <list>
+> **📋 Status**: draft | reviewed | frozen | superseded
+> **🗓 Last updated**: YYYY-MM-DD
+> **👤 Owner**: `devteam-analyst` (SA persona)
+> **🔖 Version**: v{n}
+> **🔗 Related PRD**: [`docs/prd/{feature}.md`](../../docs/prd/{feature}.md)
+> **🔗 Related UX**: [`docs/ux/user-flow-{feature}.md`](../../docs/ux/user-flow-{feature}.md)
+> **🔗 Related ADR/DR**: ADR-NNN · DR-NNN
 
 ---
 
-## Actors
+## 📋 Executive Summary
 
-| Actor | Type | 描述 |
-|:------|:-----|:-----|
-| <name> | human / system / time | ... |
+> [!TIP]
+> **TL;DR (30s)**: {一句話講完系統範圍 — N use cases、M actors、K events、最大整合風險。}
 
-## Use Cases
+| 維度 | 摘要 |
+|:---|:---|
+| **🎯 範圍** | {N} use cases, {M} actors, {K} events |
+| **🔌 主要整合** | {top 1-3 external systems} |
+| **⚠️ 最高風險** | {1-line description of biggest risk} |
+| **🚀 狀態** | {emoji} {status} |
+| **🎯 下一步** | {next concrete action — e.g., Gate 3 freeze} |
 
-### UC-001: <name>
+---
 
-- **Actor**: <actor>
-- **Trigger**: <event>
-- **Pre-conditions**: <state required>
-- **Main flow**:
-  1. ...
-  2. ...
-- **Alternative flows**:
-  - A1: <branch + steps>
-- **Exception flows**:
-  - E1: <error + handling>
-- **Post-conditions**: <state after>
-- **Acceptance Criteria** (Given/When/Then):
-  - Given <state>
-  - When <action>
-  - Then <result>
-- **Source**: PRD FR-001
-- **Verification method**: test (E2E)
+## 👥 Actors
+
+| Actor | Type | 描述 | 觸發頻率 |
+|:---|:---|:---|:---|
+| {name} | 👤 human · 🤖 system · ⏰ time | {description} | {e.g., per session / hourly} |
+
+---
+
+## 📋 Use Cases
+
+### UC-001: {name}
+
+| 欄位 | 內容 |
+|:---|:---|
+| **Actor** | {actor} |
+| **Trigger** | {event} |
+| **Pre-conditions** | {state required} |
+| **Post-conditions** | {state after} |
+| **Source** | PRD FR-001 |
+| **Verification** | test (E2E) |
+
+**Main flow**:
+1. ...
+2. ...
+
+**Alternative flows**:
+- A1: {branch + steps}
+
+**Exception flows**:
+- E1: {error + handling}
+
+**Acceptance Criteria** (Given/When/Then):
+- **Given** {state}
+- **When** {action}
+- **Then** {result}
 
 ### UC-002: ...
 
 ---
 
-## Business Rules Catalog
+## 📐 Business Rules Catalog
 
 | Rule ID | Description | Source | Priority | Exception | Owner |
-|:--------|:------------|:-------|:---------|:----------|:------|
-| BR-001 | <rule statement> | <stakeholder / regulation> | M / S / C | <when does not apply> | BA |
+|:---|:---|:---|:---:|:---|:---|
+| BR-001 | {rule statement} | {stakeholder / regulation} | M / S / C | {when does not apply} | BA |
 
-**禁忌**：規則只在群組長口頭存在 → 升格 blocker。
+> [!IMPORTANT]
+> **禁忌**：規則只在群組長口頭存在 → 升格 blocker。所有 BR 必須有 source（PRD section / regulation / stakeholder doc）。
 
 ---
 
-## State Model（若適用）
+## 🔄 State Model
 
-<!-- HINT: 選圖前先讀 KB 07 §2.1 試金石：「現在處於什麼狀態」→ state machine；「誰對誰做什麼」→ sequence；「接下來做什麼」→ activity。State machine 必標 `[*]` 終結態 (KB 07 §5 anti-pattern)。 -->
+> [!NOTE]
+> 選圖前先讀 [[07_diagram_picker]] §2.1：「現在處於什麼狀態」→ state machine；「誰對誰做什麼」→ sequence；「接下來做什麼」→ activity。State machine 必標 `[*]` 終結態（[[07_diagram_picker]] §5 anti-pattern）。
 
 ```mermaid
 stateDiagram-v2
@@ -67,53 +92,80 @@ stateDiagram-v2
 ```
 
 | State | Allowed transitions | Conditions |
-|:------|:--------------------|:-----------|
+|:---|:---|:---|
 | Draft | Submitted | 必填欄位齊 |
+| Submitted | Approved · Rejected | 簽核者已指派 |
 | ... | ... | ... |
 
 ---
 
-## Events（系統事件目錄）
+## 📡 Events（系統事件目錄）
 
-<!-- HINT: Event 命名 + payload schema 套 KB 08 §2.4（domain.entity.action.v1 過去式）與 §6.3 envelope（必含 event_id / occurred_at / trace_id）。 -->
+> [!NOTE]
+> Event 命名 + payload schema 套 [[08_api_design_catalog]] §2.4（`domain.entity.action.v1` 過去式）與 §6.3 envelope（必含 `event_id` / `occurred_at` / `trace_id`）。
 
-| Event | Producer | Consumer | Payload schema |
-|:------|:---------|:---------|:---------------|
-| `orders.order.created.v1` | Order service | Inventory, Email | envelope per KB 08 §6.3 |
+| Event | Producer | Consumer | Payload schema | Catalog ref |
+|:---|:---|:---|:---|:---|
+| `orders.order.created.v1` | Order service | Inventory, Email | envelope per [[08_api_design_catalog]] §6.3 | §2.4 |
+| ... | ... | ... | ... | ... |
 
 ---
 
-## Integration Inventory
+## 🔌 Integration Inventory
 
-<!-- HINT: Protocol 欄選擇參 KB 08 §1（REST/GraphQL/gRPC/event/WebSocket 決策樹）；Auth 欄選擇參 KB 11 §6.2（場景對應推薦）；Failure handling 欄套 KB 10 §1 quick picker（retry / CB / timeout / fallback）。 -->
+> [!NOTE]
+> Protocol 選擇參 [[08_api_design_catalog]] §1（REST/GraphQL/gRPC/event/WebSocket 決策樹）；Auth 選擇參 [[11_data_and_stack_catalog]] §6.2；Failure handling 套 [[10_resilience_patterns]] §1 quick picker（retry / CB / timeout / fallback）。
 
 | External System | Direction | Protocol | Auth | Failure handling | Data classification |
-|:----------------|:----------|:---------|:-----|:-----------------|:--------------------|
-| Stripe | outbound | REST | Bearer | retry + idempotency key | Restricted (payment) |
+|:---|:---|:---|:---|:---|:---|
+| Stripe | outbound | REST | Bearer | retry + idempotency key | 🔴 Restricted (payment) |
 | ... | ... | ... | ... | ... | ... |
 
 ---
 
-## Functional Boundary
+## 🎯 Functional Boundary
 
-### In Scope
+### ✅ In Scope
 - ...
 
-### Out of Scope
+### ❌ Out of Scope
+
+> [!WARNING]
+> Out of Scope 必須引用 PRD scope，不可在此擴張範圍。如需擴張寫 DR。
+
 - ... (引用 PRD scope)
 
 ---
 
-## Assumptions & Open Questions
+## ⚠️ Assumptions & Open Questions
 
-- **A-1**: <假設>
-- **OQ-1**: <open question + who decides + by when>
+| ID | Type | Statement | Owner | Due |
+|:---|:---|:---|:---|:---|
+| A-1 | Assumption | {假設} | analyst | — |
+| OQ-1 | Open Question | {question} | 業主 | YYYY-MM-DD |
 
 ---
 
-## Downstream Consumers
-- docs/architecture/c4-<feature>.md
-- docs/architecture/adr/ADR-*.md
-- docs/api/openapi-<service>.yaml
-- docs/data/erd-<feature>.md
-- docs/qa/test-plan-<release>.md
+## 🔗 Downstream Consumers
+
+| Doc | 用途 |
+|:---|:---|
+| [`docs/architecture/c4-{feature}.md`](../../docs/architecture/c4-{feature}.md) | C4 architecture diagram |
+| [`docs/architecture/adr/ADR-*.md`](../../docs/architecture/adr/) | Architecture decisions |
+| [`docs/api/openapi-{service}.yaml`](../../docs/api/openapi-{service}.yaml) | API contract |
+| [`docs/data/erd-{feature}.md`](../../docs/data/erd-{feature}.md) | Data model |
+| [`docs/qa/test-plan-{release}.md`](../../docs/qa/test-plan-{release}.md) | Test plan |
+
+---
+
+## ✍️ Sign-off
+
+- [ ] **SA / Analyst** (owner): ____________ / Date: ____________
+- [ ] **BA**: ____________ / Date: ____________
+- [ ] **Review verdict** (from `reviews/Gate3_SystemSpec-{feature}-{date}.md`): ✅ ready / ⚠️ revise / ❌ blocked
+
+---
+
+**End of System Spec**
+
+> 給業主：你主要看 **📋 Executive Summary** + **📐 Business Rules** + **⚠️ Open Questions** 三段。Use cases / Events / Integration 是給下游 phase 用。

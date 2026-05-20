@@ -1,14 +1,29 @@
-# Test Plan — <Release / Feature>
+# Test Plan — {Release / Feature}
 
-> **Owner**: devteam-qa
-> **Status**: draft | reviewed | frozen | superseded
-> **Version**: v<n>
-> **Last updated**: <YYYY-MM-DD>
-> **Related**: docs/prd/<feature>.md, docs/analysis/system-spec-<feature>.md, docs/api/openapi-<service>.yaml
+> **📋 Status**: draft | reviewed | frozen | superseded
+> **🗓 Last updated**: YYYY-MM-DD
+> **👤 Owner**: `devteam-qa`
+> **🔖 Version**: v{n}
+> **🔗 Related**: [`docs/prd/{feature}.md`](../../docs/prd/{feature}.md) · [`docs/analysis/system-spec-{feature}.md`](../../docs/analysis/system-spec-{feature}.md) · [`docs/api/openapi-{service}.yaml`](../../docs/api/openapi-{service}.yaml)
 
 ---
 
-## Scope
+## 📋 Executive Summary
+
+> [!TIP]
+> **TL;DR (30s)**: Test plan covers **{N} FRs** with **{X} unit / {Y} integration / {Z} E2E** cases. Exit: **S1=0, S2 deferred with PM signoff**. Target coverage: **unit ≥ 80%, integration ≥ 70%**.
+
+| 維度 | 摘要 |
+|:---|:---|
+| **🎯 Scope** | {N} features / FRs |
+| **🧪 總 case 數** | unit {X} · integration {Y} · E2E {Z} |
+| **✅ Exit criteria** | S1=0 · S2 deferred 有 PM 簽核 · coverage ≥ {%} |
+| **🚀 狀態** | {emoji} {status} |
+| **🎯 下一步** | Gate 6 freeze |
+
+---
+
+## 🎯 Scope
 
 ### In Scope
 - <feature(s) covered>

@@ -1,18 +1,37 @@
-# Forum Topic: <topic-id>
+# Forum Topic — {topic-id}
 
-> **Created at**: <ISO>
-> **Created by**: <user | router-auto-escalate>
-> **Target**: <docs/path or "議題：xxx">
-> **Status**: in_progress | converged | escalated_to_user | degraded
-> **Max rounds**: 3
+> **📋 Status**: in_progress | ✅ converged | ⚠️ escalated_to_user | ❌ degraded
+> **🗓 Created at**: YYYY-MM-DDTHH:MM:SS+TZ
+> **👤 Created by**: user · router-auto-escalate · driver-internal
+> **🔖 Max rounds**: 3
+> **🎯 Target**: {docs/path or "議題：xxx"}
+> **🔗 Related**: [`templates/forum-final-report.md`](./forum-final-report.md) · [[05_meeting_protocols]] §Forum-Lite
 
 ---
 
-## 議題一句話
+## 📋 Executive Summary
 
-<one-line topic statement>
+> [!TIP]
+> **TL;DR (30s)**: Forum topic on **{one-line topic}**. Triggered by **{source}**. Affected dimensions: **{list}**. Max 3 rounds.
 
-## 觸發來源
+| 維度 | 摘要 |
+|:---|:---|
+| **🎯 議題** | {one-line topic} |
+| **📍 Trigger** | user · auto-escalate · driver-internal |
+| **🎚 Affected dimensions** | reliability / cost / TTM / security / ... |
+| **👥 Required personas** | {list} |
+| **🚀 狀態** | {emoji} {status} |
+| **🎯 下一步** | 啟動 R1 Proposer |
+
+---
+
+## 🎯 議題一句話
+
+{one-line topic statement}
+
+---
+
+## 📍 觸發來源
 
 - [ ] 業主主動 `/devteam-forum`
 - [ ] Router auto-escalate from Lane A review（`--from-review=<id>`）

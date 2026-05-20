@@ -1,5 +1,14 @@
 # Minutes of Meeting (MoM) Template
 
+> **📋 Status**: template · Lane C Roundtable gold reference
+> **🗓 Last updated**: 2026-05-20
+> **👤 Owner**: DevTeam Facilitator
+> **🔖 Version**: v1.1
+> **🔗 Related**: [`KB 12 document format standard`](../12_document_format_standard.md) · [`KB 05 meeting protocols`](../05_meeting_protocols.md)
+
+---
+
+> [!NOTE]
 > 給 Lane C Roundtable 使用。寫給**業主**讀的版本（大廠 PM 風格）。
 >
 > 設計原則：
@@ -22,7 +31,8 @@
 
 ## 📋 Executive Summary
 
-> 一句話：{會議目的與結果，業主 30 秒可懂}
+> [!TIP]
+> **TL;DR (30s)**: {一句話講完會議目的與結果，業主 30 秒可懂}
 
 例：「討論請假系統 KPI 設定，敲定月活躍員工 ≥ 70% 為主要指標，
 新增主管 48h 簽核 + escalation 規則。會議共識，無 open question。」

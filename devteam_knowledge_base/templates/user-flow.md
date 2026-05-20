@@ -1,15 +1,31 @@
-# User Flow — <Feature Name>
+# User Flow — {Feature Name}
 
-> **Owner**: devteam-ux (UX persona)
-> **Status**: draft | reviewed | frozen | superseded
-> **Version**: v<n>
-> **Last updated**: <YYYY-MM-DD>
-> **Related PRD**: docs/prd/<feature>.md
-> **Related ADR/DR**: <list>
+> **📋 Status**: draft | reviewed | frozen | superseded
+> **🗓 Last updated**: YYYY-MM-DD
+> **👤 Owner**: `devteam-ux` (UX persona)
+> **🔖 Version**: v{n}
+> **🔗 Related PRD**: [`docs/prd/{feature}.md`](../../docs/prd/{feature}.md)
+> **🔗 Related ADR/DR**: ADR-NNN · DR-NNN
 
 ---
 
-## Overview
+## 📋 Executive Summary
+
+> [!TIP]
+> **TL;DR (30s)**: User flow for **{primary persona}** doing **{Job-to-be-Done}**. **{N} steps** main path, **{M} edge cases**. State coverage: loading / empty / error / success **all defined**.
+
+| 維度 | 摘要 |
+|:---|:---|
+| **👤 Primary persona** | {role} |
+| **🎯 Job-to-be-Done** | {one sentence} |
+| **📊 Main path steps** | {N} |
+| **🔁 Edge cases** | {M} |
+| **♿ A11y level** | WCAG {AA / AAA / N/A} |
+| **🚀 狀態** | {emoji} {status} |
+
+---
+
+## 🎯 Overview
 
 - **Primary Persona**: <from PRD>
 - **Primary Job-to-be-Done**: <one sentence>
