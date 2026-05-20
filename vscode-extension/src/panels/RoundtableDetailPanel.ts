@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
 import { marked } from 'marked';
+import markedAlert from 'marked-alert';
+
+// Idempotent — marked.use accumulates extensions but calling twice is harmless.
+marked.use(markedAlert());
 import { COMMON_STYLES } from './shared/styles';
 import { csp, escape, nonce, pill } from './shared/htmlUtils';
 import { StateStore } from '../state/StateStore';

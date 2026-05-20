@@ -2,6 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { marked } from 'marked';
+import markedAlert from 'marked-alert';
+
+marked.use(markedAlert());
 import { COMMON_STYLES } from './shared/styles';
 import { csp, escape, helpFor, nonce, pill, truncate } from './shared/htmlUtils';
 import { StateStore } from '../state/StateStore';

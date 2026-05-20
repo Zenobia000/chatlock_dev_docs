@@ -557,6 +557,110 @@ export const COMMON_STYLES = `
   .md-rendered em { font-style: italic; }
   .md-rendered del { color: var(--muted); }
 
+  /* ────────────────────────────────────────────────────────────
+   * GitHub-style alerts (rendered by marked-alert plugin)
+   * Maps NOTE / TIP / IMPORTANT / WARNING / CAUTION blockquote alerts
+   * to div.markdown-alert.markdown-alert-{type}
+   * ──────────────────────────────────────────────────────────── */
+  .md-rendered .markdown-alert {
+    padding: 8px 14px 8px 14px;
+    margin: 12px 0;
+    border-left-width: 4px;
+    border-left-style: solid;
+    border-radius: 4px;
+    background: rgba(127, 127, 127, 0.05);
+  }
+  .md-rendered .markdown-alert > .markdown-alert-title {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 11px;
+    margin-bottom: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .md-rendered .markdown-alert > .markdown-alert-title::before {
+    content: '';
+    font-size: 14px;
+  }
+  .md-rendered .markdown-alert p:last-child { margin-bottom: 0; }
+  .md-rendered .markdown-alert p:first-child { margin-top: 0; }
+
+  /* NOTE — blue */
+  .md-rendered .markdown-alert-note {
+    border-left-color: #4fc1ff;
+    background: rgba(79, 193, 255, 0.08);
+  }
+  .md-rendered .markdown-alert-note > .markdown-alert-title {
+    color: #4fc1ff;
+  }
+  .md-rendered .markdown-alert-note > .markdown-alert-title::before {
+    content: 'ℹ️ ';
+  }
+
+  /* TIP — green */
+  .md-rendered .markdown-alert-tip {
+    border-left-color: #73c991;
+    background: rgba(115, 201, 145, 0.08);
+  }
+  .md-rendered .markdown-alert-tip > .markdown-alert-title {
+    color: #73c991;
+  }
+  .md-rendered .markdown-alert-tip > .markdown-alert-title::before {
+    content: '💡 ';
+  }
+
+  /* IMPORTANT — purple */
+  .md-rendered .markdown-alert-important {
+    border-left-color: #b392f0;
+    background: rgba(179, 146, 240, 0.08);
+  }
+  .md-rendered .markdown-alert-important > .markdown-alert-title {
+    color: #b392f0;
+  }
+  .md-rendered .markdown-alert-important > .markdown-alert-title::before {
+    content: '📣 ';
+  }
+
+  /* WARNING — yellow */
+  .md-rendered .markdown-alert-warning {
+    border-left-color: #ffcc66;
+    background: rgba(255, 204, 102, 0.08);
+  }
+  .md-rendered .markdown-alert-warning > .markdown-alert-title {
+    color: #ffcc66;
+  }
+  .md-rendered .markdown-alert-warning > .markdown-alert-title::before {
+    content: '⚠️ ';
+  }
+
+  /* CAUTION — red */
+  .md-rendered .markdown-alert-caution {
+    border-left-color: #f48771;
+    background: rgba(244, 135, 113, 0.08);
+  }
+  .md-rendered .markdown-alert-caution > .markdown-alert-title {
+    color: #f48771;
+  }
+  .md-rendered .markdown-alert-caution > .markdown-alert-title::before {
+    content: '🛑 ';
+  }
+
+  /* HC override — all alerts use outlined style with theme foreground */
+  body.vscode-high-contrast .md-rendered .markdown-alert,
+  body.vscode-high-contrast-light .md-rendered .markdown-alert,
+  body.force-hc .md-rendered .markdown-alert {
+    background: transparent;
+    border: 1px solid var(--vscode-editor-foreground);
+    border-left-width: 4px;
+  }
+  body.vscode-high-contrast .md-rendered .markdown-alert > .markdown-alert-title,
+  body.vscode-high-contrast-light .md-rendered .markdown-alert > .markdown-alert-title,
+  body.force-hc .md-rendered .markdown-alert > .markdown-alert-title {
+    color: var(--vscode-editor-foreground) !important;
+  }
+
   /* Raw markdown view (toggle) */
   .md-raw {
     margin: 0;

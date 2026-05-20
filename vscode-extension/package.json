@@ -2,7 +2,7 @@
   "name": "architect-copilot",
   "displayName": "Architect Copilot",
   "description": "Junior Architect Copilot — Enterprise Portal for the DevTeam Harness (Architecture_Autopilot)",
-  "version": "0.3.5",
+  "version": "0.5.0",
   "publisher": "architecture-autopilot",
   "engines": {
     "vscode": "^1.85.0"
@@ -121,6 +121,11 @@
         "category": "Architect Copilot"
       },
       {
+        "command": "architectCopilot.hardReset",
+        "title": "Hard Reset Project (multi-select scope)",
+        "category": "Architect Copilot"
+      },
+      {
         "command": "architectCopilot.editDocument",
         "title": "Edit Document",
         "category": "Architect Copilot",
@@ -163,7 +168,11 @@
         },
         "architectCopilot.themeMode": {
           "type": "string",
-          "enum": ["system", "dark", "light"],
+          "enum": [
+            "system",
+            "dark",
+            "light"
+          ],
           "enumDescriptions": [
             "Follow VS Code theme (default — extension UI adapts automatically)",
             "Force dark palette in Architect Copilot webviews regardless of VS Code theme",
@@ -202,6 +211,9 @@
         },
         {
           "command": "architectCopilot.setThemeMode"
+        },
+        {
+          "command": "architectCopilot.hardReset"
         },
         {
           "command": "architectCopilot.openDecisionCard",
@@ -267,6 +279,7 @@
   },
   "dependencies": {
     "marked": "^18.0.4",
+    "marked-alert": "^2.1.2",
     "yaml": "^2.3.4"
   }
 }

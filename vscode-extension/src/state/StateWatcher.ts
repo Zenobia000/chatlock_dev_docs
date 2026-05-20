@@ -4,11 +4,14 @@ import { EventEmitter } from 'events';
 import { getDevTeamContextDir, getDocsRoot } from './paths';
 
 const DEBOUNCE_MS = 100;
+/** Poll interval to detect dir-level deletions that fs.watch may miss. */
+const POLL_MS = 3000;
 
 export class StateWatcher extends EventEmitter {
   private contextWatcher?: fs.FSWatcher;
   private docsWatcher?: fs.FSWatcher;
   private debounceTimer?: NodeJS.Timeout;
+  private pollTimer?: NodeJS.Timeout;
 
   constructor(private root: string) {
     super();
@@ -17,6 +20,19 @@ export class StateWatcher extends EventEmitter {
   start(): void {
     this.watchContextDir();
     this.watchDocsDir();
+    this.startPolling();
+  }
+
+  /**
+   * Periodic fallback poll. fs.watch on a directory becomes invalid when the
+   * directory itself is deleted (which is the case for hard-reset workflow).
+   * Polling guarantees the StateStore re-computes its snapshot within POLL_MS
+   * even if the watcher handle is dead.
+   */
+  private startPolling(): void {
+    this.pollTimer = setInterval(() => {
+      this.emit('change', { scope: 'poll', filename: '' });
+    }, POLL_MS);
   }
 
   private watchContextDir(): void {
@@ -65,6 +81,7 @@ export class StateWatcher extends EventEmitter {
 
   stop(): void {
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    if (this.pollTimer) clearInterval(this.pollTimer);
     this.contextWatcher?.close();
     this.docsWatcher?.close();
   }

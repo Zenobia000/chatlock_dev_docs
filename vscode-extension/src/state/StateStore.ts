@@ -46,6 +46,14 @@ export class StateStore extends EventEmitter {
     this.watcher.on('change', () => this.refresh());
   }
 
+  /**
+   * Events emitted (extension code subscribes):
+   *   - 'changed'        : snapshot recomputed (any field changed)
+   *   - 'context-reset'  : state.json went from present → absent (typically because
+   *                        user deleted .claude/context/devteam/ manually or via
+   *                        Hard Reset command). Triggers UI to show "fresh project" mode.
+   */
+
   start(): void {
     this.watcher.start();
   }
@@ -59,7 +67,16 @@ export class StateStore extends EventEmitter {
   }
 
   refresh(): void {
+    const prevHadState = this.snapshotCache?.state !== null && this.snapshotCache?.state !== undefined;
+    const prevSessionId = this.snapshotCache?.state?.session_id;
     this.snapshotCache = this.computeSnapshot();
+    const nowHasState = this.snapshotCache.state !== null;
+
+    if (prevHadState && !nowHasState) {
+      // state.json was just deleted — emit reset signal so panels can show
+      // a "fresh project" landing UI and toast can pop once.
+      this.emit('context-reset', { previousSessionId: prevSessionId });
+    }
     this.emit('changed', this.snapshotCache);
   }
 

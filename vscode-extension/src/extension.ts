@@ -12,6 +12,7 @@ import * as path from 'path';
 import { KB_TEMPLATES } from './data/kbCatalog';
 import { readMarkdown } from './state/reader';
 import { toDocRelPath } from './state/paths';
+import { performHardReset, HardResetOptions } from './state/hardReset';
 import { StateStore } from './state/StateStore';
 import { getProjectRoot } from './state/paths';
 import { MissionControlViewProvider } from './views/MissionControlView';
@@ -263,8 +264,99 @@ export function activate(context: vscode.ExtensionContext): void {
       ) {
         store?.refresh();
       }
+    }),
+    vscode.commands.registerCommand('architectCopilot.hardReset', async () => {
+      if (!store) return;
+      const root = store.getRoot();
+
+      type ResetItem = vscode.QuickPickItem & { key: keyof HardResetOptions };
+      const items: ResetItem[] = [
+        {
+          label: '$(database) Session state',
+          description: '.claude/context/devteam/* (state.json, sessions, bootstrap yaml, documents/, adr-ledger, roundtables)',
+          picked: true,
+          key: 'resetContext',
+        },
+        {
+          label: '$(file-code) Generated specs',
+          description: 'docs/* (PRD, governance, ux, analysis, architecture, design, qa, ops, release)',
+          picked: false,
+          key: 'resetDocs',
+        },
+        {
+          label: '$(history) Version snapshots',
+          description: '.claude/context/devteam/snapshots/* (version history — backup of every UI-edited doc)',
+          picked: false,
+          key: 'resetSnapshots',
+        },
+        {
+          label: '$(comment-discussion) Conversation history',
+          description: '~/.claude/projects/<this-project>/*.jsonl + memory/ (Claude Code chat transcripts, both Windows + WSL locations)',
+          picked: false,
+          key: 'resetConversationHistory',
+        },
+      ];
+
+      const picks = await vscode.window.showQuickPick(items, {
+        canPickMany: true,
+        placeHolder: 'Select what to wipe. Defaults to "Session state" only. ⚠ Destructive — cannot be undone.',
+        title: 'Architect Copilot: Hard Reset Project',
+      });
+      if (!picks || picks.length === 0) return;
+
+      const opts: HardResetOptions = {
+        resetContext: false,
+        resetDocs: false,
+        resetSnapshots: false,
+        resetConversationHistory: false,
+      };
+      for (const p of picks) opts[p.key] = true;
+
+      const summary = picks.map((p) => p.label.replace(/^\$\([^)]+\)\s*/, '• ')).join('\n');
+      const confirm = await vscode.window.showWarningMessage(
+        `Hard Reset will permanently delete:\n\n${summary}\n\nProceed?`,
+        { modal: true },
+        'Wipe Selected'
+      );
+      if (confirm !== 'Wipe Selected') return;
+
+      const report = performHardReset(root, opts);
+      store.refresh();
+
+      // Build informative report message
+      const lines: string[] = [];
+      lines.push(`Hard Reset complete.`);
+      if (report.removedPaths.length > 0) {
+        lines.push(`Removed ${report.removedPaths.length} path(s).`);
+      }
+      if (opts.resetConversationHistory) {
+        lines.push(
+          `Scanned ${report.scannedConversationDirs.length} conversation directory(ies); deleted ${report.removedJsonlCount} .jsonl file(s).`
+        );
+      }
+      if (report.errors.length > 0) {
+        lines.push(`⚠ ${report.errors.length} error(s) — see Output panel.`);
+        const ch = vscode.window.createOutputChannel('Architect Copilot');
+        ch.show(true);
+        for (const e of report.errors) {
+          ch.appendLine(`[error] ${e.path}: ${e.error}`);
+        }
+      }
+      lines.push('');
+      lines.push(
+        '⚠ Current Claude Code conversation (L5) still has session memory. Run /clear in your Claude Code chat, or open a new conversation, to fully reset.'
+      );
+
+      vscode.window.showInformationMessage(lines.join('\n'), { modal: true }, 'OK');
     })
   );
+
+  // Subscribe to context-reset for one-shot toast notification
+  store.on('context-reset', (info: { previousSessionId?: string }) => {
+    vscode.window.showInformationMessage(
+      `Architect Copilot: context wiped (was session ${info.previousSessionId ?? 'unknown'}). Portal is now in fresh state. Run /clear in Claude Code to also reset chat memory.`
+    );
+  });
 }
 
 function ensureWorkspace(): boolean {
