@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智慧鎖平台 — 決策面板</title>
+<style>
+:root {
+  --navy: #1e3a8a;
+  --navy-light: #3b5bdb;
+  --cream: #fefce8;
+  --bg: #f8fafc;
+  --ink: #0f172a;
+  --ink-soft: #475569;
+  --ink-mute: #94a3b8;
+  --border: #e2e8f0;
+  --amber: #f59e0b;
+  --green: #16a34a;
+  --red: #dc2626;
+  --blue: #2563eb;
+  --gray-card: #ffffff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  font-size: 15px;
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+header {
+  background: var(--navy);
+  color: white;
+  padding: 32px 24px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+}
+header h1 { font-size: 28px; margin-bottom: 8px; font-weight: 600; }
+header .subtitle { opacity: 0.85; font-size: 14px; }
+header .meta { margin-top: 16px; display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; opacity: 0.85; }
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--gray-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+.stat-card .label {
+  font-size: 12px;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.stat-card .value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1;
+}
+.stat-card .value.amber { color: var(--amber); }
+.stat-card .value.green { color: var(--green); }
+.stat-card .value.red { color: var(--red); }
+.stat-card .hint { font-size: 12px; color: var(--ink-soft); margin-top: 8px; }
+
+.progress {
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), var(--navy-light));
+  width: 0%;
+  transition: width 0.4s ease;
+}
+
+/* Section */
+.section { margin-bottom: 40px; }
+.section h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section h2 .count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-mute);
+  background: var(--border);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+.section .lead { color: var(--ink-soft); margin-bottom: 16px; font-size: 14px; }
+
+/* Filter */
+.filter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: var(--gray-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.filter button {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.filter button:hover { background: var(--bg); }
+.filter button.active {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+
+/* Group label */
+.group-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 24px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Card */
+.card {
+  background: var(--gray-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+.card.decided { opacity: 0.65; background: #fafafa; }
+.card.urgent { border-left: 4px solid var(--red); }
+.card.blocking { border-left: 4px solid var(--amber); }
+.card-header {
+  padding: 18px 20px;
+  cursor: pointer;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.card-header:hover { background: var(--cream); }
+.card.decided .card-header:hover { background: #f5f5f5; }
+
+.card-id {
+  font-size: 11px;
+  color: var(--ink-mute);
+  font-family: ui-monospace, monospace;
+  padding: 3px 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.card-title-block { flex: 1; min-width: 0; }
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.card-pain {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.card-badges { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.badge.blocking { background: #fef3c7; color: #92400e; }
+.badge.urgent { background: #fee2e2; color: #991b1b; }
+.badge.normal { background: #dbeafe; color: #1e40af; }
+.badge.eternal { background: #dcfce7; color: #166534; }
+.badge.transient { background: #f3e8ff; color: #6b21a8; }
+.badge.decided {
+  background: var(--green);
+  color: white;
+}
+
+.card-status {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.card-status.pending { color: var(--ink-mute); }
+.card-status.chosen { color: var(--green); }
+
+/* Card body */
+.card-body {
+  padding: 0 20px 20px 20px;
+  border-top: 1px solid var(--border);
+  display: none;
+}
+.card.open .card-body { display: block; }
+.card-section { margin-top: 16px; }
+.card-section-label {
+  font-size: 11px;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.card-section p { color: var(--ink); font-size: 14px; }
+
+.options { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.option {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  transition: all 0.15s;
+  background: white;
+}
+.option:hover { border-color: var(--navy-light); background: #f8fafc; }
+.option.selected {
+  border-color: var(--navy);
+  background: #eff6ff;
+  border-width: 2px;
+  padding: 11.5px 13.5px;
+}
+.option.selected.recommended { border-color: var(--green); background: #f0fdf4; }
+.option-marker {
+  font-size: 13px;
+  font-weight: 700;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--border);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.option.recommended .option-marker { background: var(--green); }
+.option .option-marker.a { background: var(--blue); }
+.option .option-marker.b { background: var(--amber); }
+.option-content { flex: 1; }
+.option-label { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.option-detail { font-size: 13px; color: var(--ink-soft); }
+.option-cost { font-size: 12px; color: var(--red); margin-top: 4px; font-style: italic; }
+
+.consequence {
+  background: #fef3c7;
+  border-left: 3px solid var(--amber);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #78350f;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.blocking-list {
+  background: #fef2f2;
+  border-left: 3px solid var(--red);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #7f1d1d;
+  border-radius: 4px;
+}
+
+/* Meeting note inputs (per-card) */
+.card-note-input,
+.pm-note-input {
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: #fafafa;
+  resize: vertical;
+  transition: border-color 0.15s, background 0.15s;
+}
+.card-note-input:focus,
+.pm-note-input:focus {
+  outline: none;
+  border-color: var(--navy-light);
+  background: white;
+}
+.card-note-input::placeholder,
+.pm-note-input::placeholder {
+  color: var(--ink-mute);
+  font-style: italic;
+}
+.pm-note-input {
+  background: rgba(255,255,255,0.92);
+}
+.note-filled-indicator {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+/* Footer actions */
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 32px 0 24px;
+  padding: 20px;
+  background: var(--gray-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  align-items: center;
+}
+.actions button {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--ink);
+}
+.actions button:hover { background: var(--bg); }
+.actions button.primary {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+.actions button.primary:hover { background: var(--navy-light); }
+.actions .hint { color: var(--ink-mute); font-size: 13px; margin-left: auto; }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink-mute);
+  font-size: 14px;
+}
+
+footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 12px;
+  color: var(--ink-mute);
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+}
+
+@media print {
+  body { background: white; font-size: 11pt; }
+  header { background: white !important; color: var(--ink) !important; border-bottom: 2px solid var(--ink); }
+  .filter, .actions, .card-status { display: none !important; }
+  .card { break-inside: avoid; box-shadow: none; }
+  .card-body { display: block !important; }
+  .option { break-inside: avoid; }
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.modal.open { display: flex; }
+.modal-content {
+  background: white;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 28px;
+}
+.modal-content h3 { font-size: 18px; margin-bottom: 16px; }
+.modal-content pre {
+  background: var(--bg);
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  overflow-x: auto;
+  font-family: ui-monospace, monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.modal-close {
+  float: right;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--ink-mute);
+  font-family: inherit;
+}
+
+/* ========== Pre-mortem Section ========== */
+.premortem-wrap {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  color: white;
+  padding: 36px 28px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+}
+.premortem-wrap h2 { color: white; font-size: 22px; margin-bottom: 6px; }
+.premortem-wrap .lead {
+  color: rgba(255,255,255,0.85);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.premortem-wrap .frame {
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  font-style: italic;
+  margin-bottom: 24px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.06);
+  border-left: 3px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+}
+.premortem-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 16px;
+}
+.premortem-card {
+  background: rgba(255,255,255,0.97);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 20px;
+  border-left: 4px solid var(--red);
+  display: flex;
+  flex-direction: column;
+}
+.premortem-card[data-severity="medium"] { border-left-color: var(--amber); }
+.premortem-card[data-severity="strategic"] { border-left-color: #7c3aed; }
+.premortem-card .pm-id {
+  font-size: 11px;
+  color: var(--ink-mute);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.premortem-card .pm-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.premortem-card .pm-scenario {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.65;
+  margin-bottom: 14px;
+  border-left: 3px solid var(--border);
+  padding: 4px 0 4px 12px;
+  font-style: italic;
+}
+.premortem-card .pm-block {
+  margin-top: 12px;
+  font-size: 13px;
+}
+.premortem-card .pm-block-label {
+  font-size: 10px;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+.pm-defense {
+  background: #f0fdf4;
+  border-left: 3px solid var(--green);
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #14532d;
+  line-height: 1.6;
+}
+.pm-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.pm-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pm-status-dot.done { background: var(--green); }
+.pm-status-dot.partial { background: var(--amber); }
+.pm-status-dot.todo { background: var(--red); }
+.pm-questions {
+  background: #fffbeb;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-top: 10px;
+  border-left: 3px solid var(--amber);
+}
+.pm-questions-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 6px;
+}
+.pm-questions ol {
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--ink);
+  margin: 0;
+}
+.pm-questions li {
+  margin-bottom: 5px;
+  line-height: 1.5;
+}
+.pm-vote {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+}
+.pm-vote button {
+  flex: 1;
+  padding: 9px 10px;
+  border: 1.5px solid var(--border);
+  background: white;
+  border-radius: 7px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--ink-soft);
+  font-weight: 600;
+  transition: all 0.15s;
+  line-height: 1.3;
+}
+.pm-vote button:hover { background: var(--bg); }
+.pm-vote button.voted-agree { background: var(--red); color: white; border-color: var(--red); }
+.pm-vote button.voted-disagree { background: var(--green); color: white; border-color: var(--green); }
+.pm-vote button.voted-need-info { background: var(--amber); color: var(--ink); border-color: var(--amber); }
+.pm-summary {
+  background: rgba(255,255,255,0.08);
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.92);
+}
+.pm-summary-item { display: flex; align-items: center; gap: 6px; }
+.pm-summary-num { font-weight: 700; font-size: 18px; }
+
+@media print {
+  .premortem-wrap { background: white !important; color: var(--ink) !important; }
+  .premortem-wrap h2, .premortem-wrap .lead, .premortem-wrap .frame { color: var(--ink) !important; }
+  .pm-summary { background: var(--bg) !important; color: var(--ink) !important; }
+  .pm-vote { display: none !important; }
+  .card-note-input, .pm-note-input {
+    background: white !important;
+    border-color: var(--border) !important;
+    min-height: 32px;
+  }
+  .card-note-input:placeholder-shown,
+  .pm-note-input:placeholder-shown { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>智慧鎖售後服務平台 — 決策面板</h1>
+  <p class="subtitle">把 §F 的 24 個關鍵決定攤在桌上，看一眼就知道哪些該本週拍板。</p>
+  <div class="meta">
+    <span>📌 來源：PAIN-POINTS-SUMMARY v2 §F + 24 份 ADR 草稿</span>
+    <span>📁 對應檔：dev_docs/3-adr/</span>
+    <span id="date-meta">更新日期 2026-05-22</span>
+  </div>
+</header>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat-card">
+    <div class="label">總共要決定</div>
+    <div class="value" id="stat-total">24</div>
+    <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="hint"><span id="stat-decided">0</span> 已圈選 / <span id="stat-pending">24</span> 待您拍板</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">本週必須決定（Top 5）</div>
+    <div class="value red" id="stat-urgent">5</div>
+    <div class="hint">阻擋 Phase I 出貨；不決定下週客服 / 派工 / AI 三條線同時卡住</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">阻擋 Coding 的決定</div>
+    <div class="value amber" id="stat-blocking">14</div>
+    <div class="hint">需要在「正式開發前」拍板，否則後端 schema 改不動</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">可延後的決定</div>
+    <div class="value green" id="stat-defer">10</div>
+    <div class="hint">運維 / 治理層；Phase II Finance 啟動前完成即可</div>
+  </div>
+</div>
+
+<!-- Pre-mortem (合夥人方向對齊) -->
+<div class="premortem-wrap">
+  <h2>合夥人會議 ‧ 七種未來死法</h2>
+  <p class="lead">在拍板 24 個決定之前，先對齊「我們可能怎麼死」。每張卡片是一個 5-10 年後可能成真的失敗劇本。</p>
+  <div class="frame">用法：合夥人逐張閱讀 → 對「這是大風險嗎」投票 → 看「我們現在防到哪」進度燈 → 用「給合夥人的問題」展開討論 → 共識後再回頭看下方 24 個 ADR 圈選。</div>
+
+  <div class="pm-summary">
+    <div class="pm-summary-item"><span class="pm-summary-num" id="pm-agree-count">0</span><span>認同這是大風險</span></div>
+    <div class="pm-summary-item"><span class="pm-summary-num" id="pm-disagree-count">0</span><span>認為過慮</span></div>
+    <div class="pm-summary-item"><span class="pm-summary-num" id="pm-need-info-count">0</span><span>需更多資訊</span></div>
+    <div class="pm-summary-item"><span class="pm-summary-num" id="pm-undecided-count">7</span><span>尚未表態</span></div>
+  </div>
+
+  <div class="premortem-cards" id="premortem-list"></div>
+</div>
+
+<!-- Top Urgent -->
+<div class="section">
+  <h2>本週必須拍板 <span class="count">5 條</span></h2>
+  <p class="lead">這 5 條一個都不能拖，每一條都直接擋住下個月的工程或合約交付。</p>
+  <div id="urgent-list"></div>
+</div>
+
+<!-- All Decisions -->
+<div class="section">
+  <h2>全部 24 個決定 <span class="count" id="all-count">24 條</span></h2>
+  <p class="lead">每張卡片展開後看：問題 / 推薦做法 / 替代方案 / 不決定會怎樣 / 對應檔案。</p>
+
+  <div class="filter">
+    <button class="active" data-filter="all">全部</button>
+    <button data-filter="pending">未決定</button>
+    <button data-filter="decided">已決定</button>
+    <button data-filter="blocking">阻擋 Coding</button>
+    <button data-filter="urgent">本週必須</button>
+    <button data-filter="ai">AI 相關</button>
+    <button data-filter="finance">財務相關</button>
+    <button data-filter="rbac">權限相關</button>
+  </div>
+
+  <div class="group-label" data-group-section="gap">第一組：8 個跨團隊 GAP 決策（最緊）</div>
+  <div id="group-gap"></div>
+
+  <div class="group-label" data-group-section="p0">第二組：7 個 P0 業務規則決策</div>
+  <div id="group-p0"></div>
+
+  <div class="group-label" data-group-section="ai">第三組：9 個 AI 邊界 + 治理決策</div>
+  <div id="group-ai"></div>
+</div>
+
+<div class="actions">
+  <button class="primary" id="btn-export">📋 匯出會議 Report（下載 .md + 複製剪貼簿）</button>
+  <button id="btn-print">🖨️ 列印此頁（會議用）</button>
+  <button id="btn-reset">↺ 清空所有圈選</button>
+  <span class="hint">所有圈選自動存在本機瀏覽器（localStorage）；換電腦會清空。</span>
+</div>
+
+<footer>
+  <p>對應原始文件：<code>dev_docs/0-strategy/PAIN-POINTS-SUMMARY-2026-05-21.md</code> §F + <code>dev_docs/3-adr/</code></p>
+  <p>圈選後請通知 AI Specialist，把對應 ADR draft 的 frontmatter status: draft → accepted</p>
+</footer>
+
+</div>
+
+<div class="modal" id="export-modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="document.getElementById('export-modal').classList.remove('open')">×</button>
+    <h3>會議 Report（已複製到剪貼簿 + 觸發下載）</h3>
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px;">Markdown 格式：含每張卡圈選 / Pre-mortem 投票 / 全部會議備註。檔案已下載到瀏覽器，剪貼簿同步可用。</p>
+    <pre id="export-text"></pre>
+  </div>
+</div>
+
+<script>
+const DECISIONS = [
+  // ========== GAP DECISIONS ==========
+  {
+    id: "ADR-0031", group: "gap", urgent: true, blocking: true, tags: ["ai"],
+    title: "AI 能不能自己幫客人開工單？",
+    pain: "目前每張工單都要客服人工確認，每筆多花 5-10 秒。但 AI 自己開單一旦地址 / 品牌錯了，截圖傳開信任崩盤。",
+    options: [
+      { key: "recommend", label: "AI 先草擬，客服按一下確認", detail: "AI 把資料填好，客服只需按 1-click 確認。HITL 邊界鎖死。", cost: "客服每筆多 5-10 秒；UI 多一個確認按鈕" },
+      { key: "a", label: "低風險場景全自動", detail: "保固期內 + 已知品牌 + 標準工項 + 同區地址，AI 直接轉單。", cost: "月省 ~30 人時，但 1 次客訴成本可能 = 全年節省" },
+      { key: "b", label: "永遠純手動建單", detail: "AI 只輔助查詢，工單一律客服手動建。", cost: "客服每筆多 30-60 秒；業務量會被人力卡住" }
+    ],
+    consequence: "不決定：派工自動化全卡住，Phase I 出不了；AI 演進無方向。",
+    blocks: "Phase I exit / 派工自動化 / ADR-0028 charter Forbidden 寫不完"
+  },
+  {
+    id: "ADR-0032", group: "gap", urgent: true, blocking: true, tags: ["rbac"],
+    title: "客人不給地址，工單還能不能開？",
+    pain: "地址不全會讓師傅空跑、客戶不滿。但全部強制收齊，50% 客人會在地址這關放棄。",
+    options: [
+      { key: "recommend", label: "三段補：對話追問 → 後台補 → 無地址直接擋", detail: "無地址工單一律 422 拒絕，但前面給足兩次補救機會。", cost: "~5% 工單在地址環節放棄（可降至 2%）" },
+      { key: "a", label: "工單可以先開，地址後補", detail: "派工後再追，師傅自己 confirm。", cost: "派錯地址 / 師傅空跑 / 對帳混亂" },
+      { key: "b", label: "對話內 100% 收齊才能進下一步", detail: "AI 強制每個欄位都要齊。", cost: "50% 客人在地址環節流失" }
+    ],
+    consequence: "不決定：派工系統的 schema 寫不死，後端要被改三次。",
+    blocks: "WorkOrder created 前置條件 / 派工後端 / 422 error handling"
+  },
+  {
+    id: "ADR-0033", group: "gap", urgent: true, blocking: true, tags: ["ai"],
+    title: "問題卡資料不齊全，要不要硬派工？",
+    pain: "問題卡分數 0~1，越完整越高。低分硬派工 → 師傅到場才知道狀況不對。",
+    options: [
+      { key: "recommend", label: "0.85 分是門檻，低於需客服 override", detail: "低分案件不自動派，走 Exception module 客服判斷。", cost: "低分案件多 1 步人工" },
+      { key: "a", label: "不設門檻，照樣自動派", detail: "AI 信心多少都派下去。", cost: "派錯案件率 ↑，客訴成本爆增" },
+      { key: "b", label: "0.95 極嚴", detail: "幾乎完美才能派。", cost: "AI 投資報酬 -30%，太多卡關" }
+    ],
+    consequence: "不決定：派工演算法跑不起來，師傅滿意度也測不出。",
+    blocks: "ProblemCard schema / 派工演算法 / Exception module 設計"
+  },
+  {
+    id: "ADR-0034", group: "gap", urgent: false, blocking: true, tags: ["ai"],
+    title: "什麼算「急件」？",
+    pain: "目前 urgent 標籤散在 PC / SLA / AI 轉真人多處，定義不一致。",
+    options: [
+      { key: "recommend", label: "4 類具名：被鎖門外 / 門內受困 / 安全風險 / 怒客高風險", detail: "進 Domain Event Catalog，新類型走 ADR review。", cost: "每年校準 1 次" },
+      { key: "a", label: "AI 自己判斷", detail: "LLM 看文字決定急不急。", cost: "綁特定模型，model swap 全要重測" },
+      { key: "b", label: "客服主管手動標", detail: "完全人工。", cost: "SLA 不可預測，自動化失效" }
+    ],
+    consequence: "不決定：SLA monitor 啟動不了，急件 5 分鐘規則沒地方掛。",
+    blocks: "SLA monitor / AI 轉真人觸發 / Event Catalog"
+  },
+  {
+    id: "ADR-0035", group: "gap", urgent: false, blocking: true, tags: ["ai", "finance"],
+    title: "保固期內 / 建案案件 AI 能報價嗎？",
+    pain: "AI 一旦給保固個案 final quote，等於替公司做了法律承諾，一次失準就法務糾紛。",
+    options: [
+      { key: "recommend", label: "AI 可給範圍（如 NTD 1500-3500），永禁 final quote", detail: "教育性 range OK，個案承諾禁止。Guardrail 自動偵測 + regen。", cost: "客戶等真人多 5-15 分鐘" },
+      { key: "a", label: "AI 給 final quote + 免責條款", detail: "AI 直接報，附小字免責。", cost: "一次糾紛成本可能 = 全年 AI 報價節省" },
+      { key: "b", label: "連 range 都不能說", detail: "保固 / 建案完全靜默轉真人。", cost: "客戶體驗下降，自助率 -20%" }
+    ],
+    consequence: "不決定：ADR-0028 charter Forbidden 沒法定型，每個 skill 都自己解讀邊界。",
+    blocks: "AI Guardrail / Eval set / charter Forbidden"
+  },
+  {
+    id: "ADR-0036", group: "gap", urgent: false, blocking: false, tags: ["ai"],
+    title: "同一個對話可以有幾張問題卡？",
+    pain: "今天問鎖 A、明天問鎖 B、後天追 A 的進度。一個對話多張 PC 後續對帳會亂。",
+    options: [
+      { key: "recommend", label: "同一 active 問題一張卡；新症狀 / 新設備可另開", detail: "規則簡單覆蓋 90%，多設備家庭仍能服務。", cost: "新症狀判定要先問客戶" },
+      { key: "a", label: "完全不限", detail: "想開幾張開幾張。", cost: "後續對帳惡夢 / BI 失準" },
+      { key: "b", label: "一對話只能一張", detail: "新問題要新對話。", cost: "多設備家庭體驗差" }
+    ],
+    consequence: "不決定：PC unique constraint 寫不死，可能跑出資料亂象。",
+    blocks: "ProblemCard schema / idempotency key"
+  },
+  {
+    id: "ADR-0037", group: "gap", urgent: false, blocking: true, tags: [],
+    title: "AI 遠端解決完，對話什麼時候關？",
+    pain: "永遠不關，DB 累積殭屍對話；客服主動結案，工作量爆量。",
+    options: [
+      { key: "recommend", label: "客戶點「已解決」or 48h 沒回應自動關", detail: "留 audit 標 auto-closed；7 天內客人有訊息可 reopen。", cost: "對話 state machine 多一個狀態" },
+      { key: "a", label: "全部客服手動結案", detail: "AI 不關，客服每天清。", cost: "客服工作量 +20%" },
+      { key: "b", label: "永遠不自動關", detail: "對話永久 active。", cost: "DB 膨脹，BI 分析失準" }
+    ],
+    consequence: "不決定：BI 報表的「解決率」算不出來，合約 KPI 漂移。",
+    blocks: "Conversation state machine / BI 報表"
+  },
+  {
+    id: "ADR-0038", group: "gap", urgent: false, blocking: true, tags: ["ai"],
+    title: "AI 寫的 SOP 草稿誰來審？",
+    pain: "全自動入庫會污染知識庫；全部雙審，知識更新慢一半。",
+    options: [
+      { key: "recommend", label: "高風險（報價/退款/法律）雙審，FAQ 類單審", detail: "客服主管 + Domain expert 共審高風險 SOP；FAQ 由 Knowledge Owner 單審。", cost: "雙審高風險多 1 工作日" },
+      { key: "a", label: "AI 寫完直接入庫", detail: "全自動，事後抓錯。", cost: "知識污染 / AI 越說越錯" },
+      { key: "b", label: "所有 SOP 都雙審", detail: "嚴審到底。", cost: "月新增 SOP -50%，AI 演進受阻" }
+    ],
+    consequence: "不決定：SOP 螺旋（知識護城河）動不起來，AI 三個月後就停止進化。",
+    blocks: "SOP review queue / 知識護城河 D2"
+  },
+
+  // ========== P0 DECISIONS ==========
+  {
+    id: "ADR-0039", group: "p0", urgent: true, blocking: true, tags: ["finance"],
+    title: "客人取消怎麼收費？",
+    pain: "目前未決，導致 AR 模組阻擋 + 客服面對爭議沒一致說法。",
+    options: [
+      { key: "recommend", label: "5 階段：報價未確認免費 → 已派工未出發收檢測費 → 出發後收車馬費 → 到場後車馬+檢測 → 已施工按比例", detail: "金額 configurable per brand。Backend 自動推算階段。", cost: "5 階段要 UI 清楚呈現" },
+      { key: "a", label: "3 階段簡化（未派 / 已派 / 已施工）", detail: "顆粒度粗一點。", cost: "客訴爭議 ↑，師傅出發 vs 到場 差異無法表達" },
+      { key: "b", label: "每個品牌合約各自定", detail: "Per brand contract。", cost: "30 品牌 = 30 套規則，培訓爆炸" }
+    ],
+    consequence: "不決定：AR module 整個卡住，Phase II Finance 沒法啟動。",
+    blocks: "AR module / Refund Ledger / Exception module"
+  },
+  {
+    id: "ADR-0040", group: "p0", urgent: true, blocking: true, tags: ["finance", "rbac"],
+    title: "退款誰能批准？",
+    pain: "小額退款卡主管 / 大額退款被客服輕易放行，都是合規風險。",
+    options: [
+      { key: "recommend", label: "5 層金額分層（≤1k / 1-5k / 5-30k / 30k+ / 100k+雙簽）", detail: "依金額對應不同層級審核者，配合 RBAC 4 層原則。", cost: "邊界數字要嚴格（4999 vs 5001）" },
+      { key: "a", label: "依責任歸屬分層（品牌 / 平台 / 師傅）", detail: "看誰負責決定誰批。", cost: "矩陣維度 ↑ 2x（5×3=15 種組合）" },
+      { key: "b", label: "全走主管 + 會計雙簽", detail: "一律最嚴。", cost: "小額 SLA -50%，客訴上升" }
+    ],
+    consequence: "不決定：退款服務無法上線，客戶投訴累積。",
+    blocks: "RefundService / Refund Ledger"
+  },
+  {
+    id: "ADR-0041", group: "p0", urgent: false, blocking: true, tags: ["finance"],
+    title: "車馬費怎麼分？",
+    pain: "全給師傅平台沒收入，全平台收師傅生態崩潰。",
+    options: [
+      { key: "recommend", label: "80% 師傅 / 20% 平台（同區 500 / 跨區 800 / 遠距 1200）", detail: "進 Dispatcher Commission ledger。建商 / 品牌合約可 override。", cost: "平台機會成本 -20%" },
+      { key: "a", label: "100% 給師傅", detail: "車馬費完全是師傅的。", cost: "平台收入 -100%，難以持續經營" },
+      { key: "b", label: "全平台收，師傅領固定", detail: "車馬費歸平台。", cost: "師傅生態崩潰（D3 護城河受損）" }
+    ],
+    consequence: "不決定：師傅月結算不準，影響師傅留任。",
+    blocks: "Dispatcher Commission ledger / 師傅 AP 月結"
+  },
+  {
+    id: "ADR-0042", group: "p0", urgent: true, blocking: true, tags: ["rbac"],
+    title: "誰能看什麼資料？（RBAC 矩陣）",
+    pain: "18 個角色（客服 / 派工 / 師傅 / 會計 / 主管 / IT / 品牌 / 經銷 / 建商 / 家族覆核員 ...）的精確權限矩陣未閉環。",
+    options: [
+      { key: "recommend", label: "4 層原則固化 + 具體欄位 configurable", detail: "顧客 / 營運 / 財務 / 治理 4 層永遠不變；具體可看 / 可改 / 可核准透過 RBAC engine 動態設定。", cost: "RBAC engine 開發成本中等" },
+      { key: "a", label: "ABAC 全屬性導向", detail: "完全靠 attribute 動態判斷。", cost: "開發成本 +50%，新角色仍要重設 attribute" },
+      { key: "b", label: "每角色硬寫矩陣", detail: "全手動列。", cost: "換品牌全重做，維護惡夢" }
+    ],
+    consequence: "不決定：Admin Panel 開發卡住，合約 4.4(d) 家族覆核員上不去。",
+    blocks: "Admin Panel V1.0 / 合約 4.4(d) 驗收 / Brand User 隔離"
+  },
+  {
+    id: "ADR-0043", group: "p0", urgent: false, blocking: true, tags: ["rbac"],
+    title: "品牌 / 建商合約怎麼掛？",
+    pain: "30 個品牌每個都不同合約：SLA / 月結 / 保固 / 可見性。寫死會崩，靠外部 CRM 主權外移。",
+    options: [
+      { key: "recommend", label: "合約模板物件（Contract Template）+ tenant scope", detail: "每個 partner 對應一個合約 instance，內含 SLA / 月結 / 保固 / 責任分配。新 partner 走 configuration 零 code change。", cost: "Contract Template schema 要謹慎設計" },
+      { key: "a", label: "每個案子 hardcode", detail: "Per-project 寫 code。", cost: "30 建案 = 30 套 code，不可持續" },
+      { key: "b", label: "走外部 CRM（Salesforce）", detail: "合約資料放外部。", cost: "主權外移，護城河流失" }
+    ],
+    consequence: "不決定：Phase III Partner Portal 整個卡住。",
+    blocks: "Phase III Partner Portal / B2B settlement / 品牌隔離"
+  },
+  {
+    id: "ADR-0044", group: "p0", urgent: false, blocking: true, tags: ["finance"],
+    title: "保固從哪天開始算？",
+    pain: "B2C 是購買日；建商案件要點交日；專案案件要啟用日。寫死「購買日」會傷建案。",
+    options: [
+      { key: "recommend", label: "Device 加 warranty_start_mode 欄位（5 模式可選）", detail: "purchase_date / handover_date / activation_date / contract_date / manual_override 五選一。", cost: "Device schema 多 2 欄 + migration" },
+      { key: "a", label: "強制購買日", detail: "全平台統一購買日。", cost: "建案 use case 不支援，大量手動 override" },
+      { key: "b", label: "依品牌規則動態判斷", detail: "每品牌 SOP 各寫。", cost: "邏輯散落，難維護" }
+    ],
+    consequence: "不決定：保固爭議無一致答案，RMA 案件常爆。",
+    blocks: "Device schema / RMA 流程 / 建商案件"
+  },
+  {
+    id: "ADR-0045", group: "p0", urgent: false, blocking: true, tags: [],
+    title: "師傅多久要接單？",
+    pain: "全平台統一不能調整 VIP 品牌會跑；per region 浮動 KPI 不可比。",
+    options: [
+      { key: "recommend", label: "一般 10 分鐘 / 急件 5 分鐘 + 合約可 override", detail: "Per brand contract 可自訂（VIP 客戶 5 min）。", cost: "SLA monitor 要支援 per-contract override" },
+      { key: "a", label: "全平台統一不可改", detail: "10/5 min 通用。", cost: "高端品牌不滿，VIP 合約難談" },
+      { key: "b", label: "Per region 浮動（鄉鎮 vs 都會）", detail: "依區域不同。", cost: "KPI 不可比，客戶投訴難判定" }
+    ],
+    consequence: "不決定：派工 escalation 規則寫不出，師傅 SLA 月結扣分無依據。",
+    blocks: "Dispatch / SLA monitor / 師傅績效"
+  },
+
+  // ========== AI DECISIONS ==========
+  {
+    id: "ADR-0046", group: "ai", urgent: false, blocking: true, tags: [],
+    title: "改價格 / 改權限 / 改規則的流程",
+    pain: "目前散落各處（後台 UI / 直接改 DB / 口頭）。Phase II Finance 一啟動就會「上週改的價格是誰核准的？」",
+    options: [
+      { key: "recommend", label: "ChangeRequest 物件化（申請 → 核准 → 生效日 → audit）", detail: "所有政策 / 價格 / 權限 / SLA / 模板變更走此 workflow。緊急可走 emergency track。", cost: "ChangeRequest UI 要建" },
+      { key: "a", label: "走 Git PR 流程", detail: "工程式變更管理。", cost: "業務角色不會用，治理仍會斷" },
+      { key: "b", label: "Slack 通知 + 口頭", detail: "保留現狀。", cost: "治理斷鏈，無 audit trail" }
+    ],
+    consequence: "不決定：Phase II 一啟動，半年內政策變更就會混亂。",
+    blocks: "Phase II Finance / Pricing / RBAC / SOP 審核"
+  },
+  {
+    id: "ADR-0047", group: "ai", urgent: true, blocking: true, tags: ["ai"],
+    title: "AI 哪些事絕對不能做？（Forbidden 清單）",
+    pain: "「AI 可以做 X 嗎？」散落 ADR / PRD / SKILL.md / safety_gate code。每次新 skill 都要重新對齊。",
+    options: [
+      { key: "recommend", label: "Forbidden 集中入 ADR-0028 charter + 自動測試把關", detail: "Final quote / 退款核准 / 保固判定 / 法律承諾 / 跨租戶 / 直接呼叫 convert_to_wo 等全列入。每次部署跑 200 題 Eval pass<95% block。", cost: "Eval pipeline 要建 + 每次部署 +5-10 min" },
+      { key: "a", label: "AI 自己判斷邊界", detail: "靠 LLM 自我約束。", cost: "邊界漂移，model swap 重訓" },
+      { key: "b", label: "純黑名單關鍵字", detail: "字串比對。", cost: "高 false positive，UX 差" }
+    ],
+    consequence: "不決定：F3 防線（AI 越權）完全沒有。一次重大客訴 = 品牌信任歸零。",
+    blocks: "AI Guardrail / charter / Eval pipeline"
+  },
+  {
+    id: "ADR-0048", group: "ai", urgent: false, blocking: true, tags: ["ai"],
+    title: "AI 什麼時候該轉真人？",
+    pain: "目前 prompt 引導 + LLM 自判，模糊。該轉沒轉 → 邊界漂移；硬轉 → AI 投資沒效益。",
+    options: [
+      { key: "recommend", label: "7 條硬規則：急件 / 怒客 / 高金額 / 保固不明 / 退款 / 法律安全 / 3 次失敗", detail: "任一觸發強制 transfer_to_human，沒有 LLM judgment 餘地。Eval 200+ 題回歸。", cost: "轉真人率 +5-10%" },
+      { key: "a", label: "LLM 自判斷", detail: "全靠模型決定。", cost: "綁特定模型，model swap 重訓" },
+      { key: "b", label: "全部轉真人", detail: "最保守。", cost: "AI ROI -50%，自助率歸零" }
+    ],
+    consequence: "不決定：合約 4.4(a) 負面情緒 ≥90% 沒有測試依據。",
+    blocks: "AI Guardrail / 合約 4.4(a) UAT / 情緒分流"
+  },
+  {
+    id: "ADR-0049", group: "ai", urgent: false, blocking: true, tags: ["finance"],
+    title: "現場加價怎麼防爭議？",
+    pain: "師傅到場發現要加價，目前流程不一致（口頭 / 拍照 / 事後補）。爭議發生無法追溯。",
+    options: [
+      { key: "recommend", label: "三件套：客戶簽名 + Evidence 照片 + audit log", detail: "缺一不可。金額分層：≤500 師傅可確認 / 501-2000 客服 LINE 確認 / >2000 主管核可 + 三方在線。", cost: "加價流程 +2 分鐘" },
+      { key: "a", label: "客戶口頭 + 客服紀錄", detail: "保留現狀。", cost: "法律爭議風險高" },
+      { key: "b", label: "客戶簽名即可（無照片）", detail: "簡化但有簽名。", cost: "Evidence 缺失，RMA 責任不清" }
+    ],
+    consequence: "不決定：加價爭議是高頻客訴源，無證據鏈就無法判定。",
+    blocks: "Onsite App / Evidence chain / Exception module"
+  },
+  {
+    id: "ADR-0050", group: "ai", urgent: false, blocking: true, tags: ["rbac"],
+    title: "Evidence（照片 / 簽名 / 發票）誰能看？",
+    pain: "Evidence 涉及 PII + 商業機密。客戶不該看成本拆分；師傅不該看其他人案件；品牌商不該看競品。",
+    options: [
+      { key: "recommend", label: "角色 × 案件生命週期 × 屬性過濾矩陣", detail: "客戶看自家工單施工照 + 簽名（90 天）；師傅看自己負責的（30 天）；會計看財務 Evidence（永久）；稽核唯讀全看。", cost: "可見性 engine 複雜度 +20%" },
+      { key: "a", label: "全公開（所有角色看全部）", detail: "簡單但危險。", cost: "PII 外洩 / 商業機密外洩" },
+      { key: "b", label: "全私有（只有主管能看）", detail: "鎖到最緊。", cost: "品牌 / 師傅 / 客戶體驗差" }
+    ],
+    consequence: "不決定：個資法稽核會直接扣分；合約 4.4(d) 家族覆核員權限定不下來。",
+    blocks: "RBAC / 個資合規 / 合約 4.4(d)"
+  },
+  {
+    id: "ADR-0051", group: "ai", urgent: false, blocking: false, tags: ["rbac"],
+    title: "Evidence 要保存多久？",
+    pain: "太短法律糾紛沒證據；太長 GDPR / 個資法違反 + 儲存成本爆炸。",
+    options: [
+      { key: "recommend", label: "1 年預設 / RMA+3 年 / 法律相關永久 / 客戶刪除 7 天執行", detail: "依案件類型自動分層；客戶 GDPR forget 7 天內執行。", cost: "Retention 判定要在 Evidence 建立時設定 mode" },
+      { key: "a", label: "永久全保留", detail: "什麼都不刪。", cost: "GDPR 違反 + 儲存成本爆炸" },
+      { key: "b", label: "90 天統一", detail: "全部短期。", cost: "法律糾紛 / RMA 爭議無證據" }
+    ],
+    consequence: "不決定：個資法稽核失分；法律糾紛時翻不出證據。",
+    blocks: "Evidence schema / GDPR 流程"
+  },
+  {
+    id: "ADR-0052", group: "ai", urgent: false, blocking: true, tags: ["finance"],
+    title: "材料 / 零件由誰買誰收？",
+    pain: "師傅墊付材料費對帳難、品牌商保固件不算成本、平台採購批量料用於多 case。",
+    options: [
+      { key: "recommend", label: "Material 加 owner 欄位：platform / brand / locksmith 三選一", detail: "月結時依 owner 自動分流到三個 ledger。", cost: "Material schema 多 1 欄 + 師傅 App 加發票上傳" },
+      { key: "a", label: "統一平台庫存", detail: "所有材料平台採購。", cost: "師傅體驗差，生態流失" },
+      { key: "b", label: "純師傅自管", detail: "平台不管。", cost: "對帳惡夢，保固件責任不可追" }
+    ],
+    consequence: "不決定：月結算不準，師傅 / 品牌會吵翻。",
+    blocks: "Material schema / 師傅 AP 月結 / Brand Settlement"
+  },
+  {
+    id: "ADR-0053", group: "ai", urgent: false, blocking: true, tags: [],
+    title: "什麼零件要記序號（Serial）？",
+    pain: "全部強制 serial 現場流程爆炸；全部選填保固爭議無法追。",
+    options: [
+      { key: "recommend", label: "主鎖 + 高價零件（>1000）強制，低價選填", detail: "80/20 原則，覆蓋 95% 保固爭議來源。OCR 條碼掃描輔助。", cost: "現場每個強制項多 30 秒" },
+      { key: "a", label: "全部選填", detail: "看師傅自願。", cost: "保固爭議無法追，RMA 責任不清" },
+      { key: "b", label: "全部強制", detail: "每個耗材都記。", cost: "現場 friction +30%，浪費時間" }
+    ],
+    consequence: "不決定：保固生效 + RMA 責任無一致依據。",
+    blocks: "Device schema / Material master / 完工 gate"
+  },
+  {
+    id: "ADR-0054", group: "ai", urgent: false, blocking: false, tags: ["ai", "finance"],
+    title: "AI 全域報價邊界（與 D05 同主題，獨立留證）",
+    pain: "ADR-0035 聚焦保固 / 建案場景；本條為「所有對話」AI 報價邊界一致原則，供 charter Forbidden 引用。",
+    options: [
+      { key: "recommend", label: "AI 可給範圍，永禁 final quote + 折扣承諾 + 保固免費承諾", detail: "Guardrail 三規則：偵測 NTD<number> 無修飾語 / 折扣關鍵字 / 保固免費。", cost: "Eval set 50+ 題誘導測試" },
+      { key: "a", label: "AI 給 final quote + 免責條款", detail: "同 ADR-0035 Option A。", cost: "F3 高 + 法律風險" },
+      { key: "b", label: "連 range 都不能說", detail: "同 ADR-0035 Option B。", cost: "F1 弱，自助率下降" }
+    ],
+    consequence: "不決定：charter Forbidden 條目沒有 ADR 引用源，可能被工程單方面解除。",
+    blocks: "charter ADR-0028 / Eval set / Guardrail"
+  }
+];
+
+const PREMORTEM = [
+  {
+    id: "F1", severity: "high",
+    title: "資料淺薄死 — 三年後我們累積的資料一文不值",
+    scenario: "2029 年。某 AI 大廠推出 vertical locksmith agent，用公開知識 + 更強模型，準確率比我們高。我們三年累積的 30 萬筆 ProblemCard 沒結構化成 ML signal，只是 raw log。投資人問：你的 data moat 在哪？我們答不出來。",
+    cause: "資料只當 audit 用，沒當 training & evaluation signal",
+    defense: "§B1 資料主權層 / §D1 資料護城河 / §E1 Bronze→Silver→Gold Medallion 三層資料管線",
+    status: "todo",
+    statusLabel: "紅燈 — SOW 寫了 Medallion 但實際只到 Bronze；ETL 升 Silver/Gold 未閉環",
+    questions: [
+      "我們現在累積的對話、工單、證據，三年後估值多少？評估過嗎？",
+      "願意在 Phase 0 多花 20% 成本把所有對話結構化、可重播嗎？",
+      "哪些資料是「即使換掉 LLM 廠商也帶得走」的？哪些只是 vendor lock-in 的副產物？"
+    ]
+  },
+  {
+    id: "F2", severity: "high",
+    title: "知識被技術綁架死 — 換 LLM 廠商等於過去三年 SOP 全重寫",
+    scenario: "當前主力 LLM 突然停服或漲價 10 倍。我們發現 SKILL.md 內混了 vendor-specific 格式、prompt template 跟特定 function-calling spec 綁死。換廠商要重寫 1500 條 SKILL.md，工程估時 6 個月。期間 AI 客服降級到人工。",
+    cause: "知識存在「執行框架」而非「資料層」",
+    defense: "§B3 政策與契約層（vendor-neutral markdown）/ §D2 知識護城河 / §E2 7 層記憶（Episodic / Semantic 永恆）",
+    status: "partial",
+    statusLabel: "黃燈 — SKILL.md 是 markdown 但 Eval set / Tool 介面綁定特定廠商；可攜性未驗證過",
+    questions: [
+      "SKILL.md 寫純 markdown vs 寫 vendor-specific prompt，差多少錢、多少時間？",
+      "換 LLM 廠商的成本上限我們能承受多少？（量化：人月、停機天、客訴件）",
+      "願意 Phase 0 多花 30% 工程時間做 vendor-neutral 抽象層嗎？"
+    ]
+  },
+  {
+    id: "F3", severity: "high",
+    title: "HITL 邊界漂移死 — AI 自作主張承諾退款，一次客訴搞垮品牌",
+    scenario: "客戶報修後，AI 為了讓客戶開心，承諾「這次免費保固」。實際上保固已過期。客戶拿截圖去消保官 / 媒體。一週後品牌信任崩盤，新客上門率 -40%。我們花一年蓋的客服系統一夜歸零。",
+    cause: "AI 不可決策清單寫在 prompt 而非合約契約；model swap 邊界稀釋",
+    defense: "§B3 永恆禁區 / ADR-0028 AI Employee Charter / ADR-0047 Forbidden 集中 + 自動 guardrail test",
+    status: "partial",
+    statusLabel: "黃燈 — Charter 已建但 Forbidden 散落 ADR / SKILL / safety_gate，Eval set 200 題未到位",
+    questions: [
+      "AI 越權的「最壞情境」我們能承受多大成本？（量化：客訴金額、品牌損失、法務費）",
+      "用 hard rule 鎖死 vs LLM 自判 + 人工抽查，哪個方向？這是合夥人哲學選擇。",
+      "邊界一旦定下，工程不能單方面解除，這條紀律我們守得住嗎？合夥人會議是 final court？"
+    ]
+  },
+  {
+    id: "F4", severity: "high",
+    title: "合規崩潰死 — 一次 PII 外洩或合約 4.4 不達標，甲方終止合約",
+    scenario: "甲方季度稽核發現負面情緒識別率只有 78%（合約要求 90%）；同時師傅 App 把客戶地址記在本地未加密，被資安公司紅隊測出。甲方依合約第 9 條終止。三個月後現金流斷裂。",
+    cause: "合規視為「附加項」而非「主動脈」",
+    defense: "§B3 + §B4 金融完整性 + §B5 證據可稽核 + ADR-0050/0051 PII retention + Family Reviewer 角色",
+    status: "todo",
+    statusLabel: "紅燈 — 合約 4.4(a) 90% 情緒識別 UAT 未通過、4.4(d) 家族覆核機制未建、PII retention engine 未建",
+    questions: [
+      "合約 4.4 三條款（情緒 90% / 照片引導 / 家族覆核）目前測試覆蓋率多少？",
+      "個資外洩的罰款 + 品牌損失上限各多少？產品責任險買了嗎？",
+      "願意 Phase I 內把完整 PII retention engine 做完，還是先過 UAT 再說？"
+    ]
+  },
+  {
+    id: "F5", severity: "medium",
+    title: "規模困境死 — 第二個甲方 / 海外擴張時要重寫 60% 程式",
+    scenario: "2028 年談下日本鎖匠連鎖。發現：地址格式、品牌主檔、保固規則、發票格式、貨幣、語言全部 hardcode 在 service layer。光是讓系統能跑日文 + JPY 就要 4 個月，更別說合約規則。日方等不及取消合約。",
+    cause: "Tenant / Brand / Locale 沒在 day 1 設計進主檔",
+    defense: "§B1 一級欄位 tenant_id / brand_scope / locale / ADR-0030 tenant propagation / ADR-0043 Contract Template",
+    status: "partial",
+    statusLabel: "黃燈 — ADR-0030 已啟蒙但 locale 完全沒設計；Contract Template ADR 仍是草稿",
+    questions: [
+      "V1 單一甲方 OK 是真話還是 wishful thinking？商業計劃時間表是？",
+      "進入第 2 個甲方 / 海外的時間表是 6 個月、2 年、還是 5 年？",
+      "multi-tenant + i18n 現在投資 vs 三年後重寫，成本估算過嗎？合夥人是否接受 V1 過度設計？"
+    ]
+  },
+  {
+    id: "F6", severity: "strategic",
+    title: "人才流失死 — 資深技師 / Domain expert 離職，隱性知識消失",
+    scenario: "2027 年。資深技師 A 跳槽到競品，帶走他腦中對 50+ 品牌的 troubleshooting know-how。我們系統內的 SOP 螺旋只跑了一年，知識資產化 KPI 沒達標。新進客服上線後準確率掉到 65%，回到創業初期水準。",
+    cause: "SOP 螺旋未閉環，知識仍依賴個人腦中",
+    defense: "§D2 知識護城河 + §E2 知識螺旋 S6 Human Correction + ADR-0038 SOP 雙審入庫",
+    status: "todo",
+    statusLabel: "紅燈 — SOP 螺旋未閉環，Domain expert 角色 / 留任機制未定義",
+    questions: [
+      "資深技師 / Domain expert 真的會留嗎？他們有股權 / 留任金 / 知識資產分潤嗎？",
+      "知識資產化的 KPI 是什麼？每月入庫幾條 approved SOP 算合格？",
+      "願意在 Phase 0 投資 Domain Expert 駐廠/兼職機制？預算多少？"
+    ]
+  },
+  {
+    id: "F7", severity: "strategic",
+    title: "被 AI 巨頭吞噬死 — 三年後出現鎖匠 vertical agent，我們變 commodity",
+    scenario: "2029 年。某大廠在學會發表「Locksmith Agent」論文，準確率比我們高，整合所有公開品牌手冊，且接近免費。我們的 LLM 層被完全 commoditize。沒有師傅生態 / 證據鏈 / 月結帳本的硬資產，估值砍半。",
+    cause: "沒有「無法被 LLM 廠商複製」的層",
+    defense: "§D3 信任與生態護城河（線下師傅 + 物理證據 + 合約履約 三個生態）+ §B4 金融完整性",
+    status: "partial",
+    statusLabel: "黃燈 — 師傅生態啟動中（M07 Workforce）、Partner Portal 未建（M14）、月結帳本 V2 才上",
+    questions: [
+      "AI 巨頭出 vertical agent 後，我們的不可複製性是什麼？線下、物理、合約。哪個最硬？",
+      "線下師傅 + 物理證據 + 合約履約 三個生態，投資排序怎麼排？三年要做幾個？",
+      "三年後我們對投資人 / 媒體的差異化敘事是什麼？現在能講清楚嗎？"
+    ]
+  }
+];
+
+const STORAGE_KEY = "smartlock-decisions-v1";
+const PM_STORAGE_KEY = "smartlock-premortem-v1";
+const NOTES_KEY = "smartlock-decision-notes-v1";
+const PM_NOTES_KEY = "smartlock-pm-notes-v1";
+
+function loadState() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch (e) { return {}; }
+}
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function loadPmState() {
+  try {
+    return JSON.parse(localStorage.getItem(PM_STORAGE_KEY)) || {};
+  } catch (e) { return {}; }
+}
+function savePmState(s) {
+  localStorage.setItem(PM_STORAGE_KEY, JSON.stringify(s));
+}
+function loadNotes() {
+  try { return JSON.parse(localStorage.getItem(NOTES_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveNotes(n) {
+  localStorage.setItem(NOTES_KEY, JSON.stringify(n));
+}
+function loadPmNotes() {
+  try { return JSON.parse(localStorage.getItem(PM_NOTES_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function savePmNotes(n) {
+  localStorage.setItem(PM_NOTES_KEY, JSON.stringify(n));
+}
+
+function escapeAttr(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+let state = loadState();
+let pmState = loadPmState();
+let notes = loadNotes();
+let pmNotes = loadPmNotes();
+let currentFilter = "all";
+
+function renderCard(d) {
+  const chosen = state[d.id];
+  const isDecided = !!chosen;
+  const noteText = notes[d.id] || "";
+  const cardCls = ["card"];
+  if (isDecided) cardCls.push("decided");
+  if (d.urgent) cardCls.push("urgent");
+  else if (d.blocking) cardCls.push("blocking");
+
+  const optsHtml = d.options.map(opt => {
+    const isSelected = chosen === opt.key;
+    const cls = ["option"];
+    if (opt.key === "recommend") cls.push("recommended");
+    if (isSelected) cls.push("selected");
+    const marker = opt.key === "recommend" ? "✓" : opt.key === "a" ? "A" : "B";
+    const markerCls = opt.key === "recommend" ? "" : opt.key === "a" ? "a" : "b";
+    const label = opt.key === "recommend" ? "推薦做法" : opt.key === "a" ? "替代方案 A" : "替代方案 B";
+    return `
+      <div class="${cls.join(' ')}" data-id="${d.id}" data-opt="${opt.key}">
+        <div class="option-marker ${markerCls}">${marker}</div>
+        <div class="option-content">
+          <div class="option-label">${label}：${opt.label}</div>
+          <div class="option-detail">${opt.detail}</div>
+          <div class="option-cost">代價：${opt.cost}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const badges = [];
+  if (d.urgent) badges.push('<span class="badge urgent">本週必須</span>');
+  if (d.blocking) badges.push('<span class="badge blocking">阻擋 Coding</span>');
+  if (d.tags.includes("ai")) badges.push('<span class="badge normal">AI 治理</span>');
+  if (d.tags.includes("finance")) badges.push('<span class="badge normal">財務</span>');
+  if (d.tags.includes("rbac")) badges.push('<span class="badge normal">權限</span>');
+  if (isDecided) badges.push('<span class="badge decided">已決定</span>');
+
+  const statusText = isDecided
+    ? `<span class="card-status chosen">已選：${chosen === "recommend" ? "推薦" : chosen === "a" ? "A" : "B"}</span>`
+    : '<span class="card-status pending">待您拍板 →</span>';
+
+  return `
+    <div class="${cardCls.join(' ')}" data-card-id="${d.id}" data-tags="${d.tags.join(',')}" data-urgent="${d.urgent}" data-blocking="${d.blocking}" data-decided="${isDecided}">
+      <div class="card-header" onclick="toggleCard('${d.id}')">
+        <div class="card-id">${d.id}</div>
+        <div class="card-title-block">
+          <div class="card-title">${d.title}</div>
+          <div class="card-pain">${d.pain}</div>
+          <div class="card-badges">${badges.join('')}</div>
+        </div>
+        ${statusText}
+      </div>
+      <div class="card-body">
+        <div class="card-section">
+          <div class="card-section-label">三個選項，點一個圈選</div>
+          <div class="options">${optsHtml}</div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-label">如果繼續不決定會怎樣</div>
+          <div class="consequence">${d.consequence}</div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-label">會擋住誰</div>
+          <div class="blocking-list">${d.blocks}</div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-label">會議備註${noteText ? '<span class="note-filled-indicator">● 已填</span>' : ''}</div>
+          <textarea class="card-note-input" data-id="${d.id}" placeholder="為什麼選這個？誰提出反對？追蹤事項？(自動存)">${escapeAttr(noteText)}</textarea>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleCard(id) {
+  const card = document.querySelector(`[data-card-id="${id}"]`);
+  if (card) card.classList.toggle("open");
+}
+
+function selectOption(id, opt) {
+  state[id] = opt;
+  saveState(state);
+  renderAll();
+}
+
+function renderPremortemCard(pm) {
+  const vote = pmState[pm.id];
+  const pmNoteText = pmNotes[pm.id] || "";
+  const questionsHtml = pm.questions.map(q => `<li>${q}</li>`).join('');
+  const agreeCls = vote === "agree" ? "voted-agree" : "";
+  const disagreeCls = vote === "disagree" ? "voted-disagree" : "";
+  const infoCls = vote === "need-info" ? "voted-need-info" : "";
+
+  return `
+    <div class="premortem-card" data-severity="${pm.severity}">
+      <div class="pm-id">${pm.id}</div>
+      <div class="pm-title">${pm.title}</div>
+      <div class="pm-scenario">${pm.scenario}</div>
+
+      <div class="pm-block">
+        <div class="pm-block-label">死因關鍵</div>
+        <p>${pm.cause}</p>
+      </div>
+
+      <div class="pm-block">
+        <div class="pm-block-label">我們有什麼武器防它</div>
+        <div class="pm-defense">${pm.defense}</div>
+        <div class="pm-status-row">
+          <span class="pm-status-dot ${pm.status}"></span>
+          <span>${pm.statusLabel}</span>
+        </div>
+      </div>
+
+      <div class="pm-questions">
+        <div class="pm-questions-label">給合夥人的 3 個問題</div>
+        <ol>${questionsHtml}</ol>
+      </div>
+
+      <div class="pm-vote">
+        <button class="${agreeCls}" data-pm="${pm.id}" data-vote="agree">這是大風險</button>
+        <button class="${disagreeCls}" data-pm="${pm.id}" data-vote="disagree">過慮了</button>
+        <button class="${infoCls}" data-pm="${pm.id}" data-vote="need-info">需更多資訊</button>
+      </div>
+
+      <div class="pm-block">
+        <div class="pm-block-label">會議備註${pmNoteText ? '<span class="note-filled-indicator">● 已填</span>' : ''}</div>
+        <textarea class="pm-note-input" data-pm="${pm.id}" placeholder="關鍵討論點？需要追蹤的問題？反方意見？(自動存)">${escapeAttr(pmNoteText)}</textarea>
+      </div>
+    </div>`;
+}
+
+function votePremortem(id, vote) {
+  if (pmState[id] === vote) {
+    delete pmState[id];
+  } else {
+    pmState[id] = vote;
+  }
+  savePmState(pmState);
+  renderAll();
+}
+
+function renderAll() {
+  // Pre-mortem cards
+  const pmHtml = PREMORTEM.map(renderPremortemCard).join('');
+  document.getElementById("premortem-list").innerHTML = pmHtml;
+
+  // PM summary
+  let agree = 0, disagree = 0, info = 0;
+  Object.values(pmState).forEach(v => {
+    if (v === "agree") agree++;
+    else if (v === "disagree") disagree++;
+    else if (v === "need-info") info++;
+  });
+  document.getElementById("pm-agree-count").textContent = agree;
+  document.getElementById("pm-disagree-count").textContent = disagree;
+  document.getElementById("pm-need-info-count").textContent = info;
+  document.getElementById("pm-undecided-count").textContent = PREMORTEM.length - agree - disagree - info;
+
+  // Attach pm vote handlers
+  document.querySelectorAll(".pm-vote button").forEach(b => {
+    b.addEventListener("click", () => votePremortem(b.dataset.pm, b.dataset.vote));
+  });
+
+  const gap = DECISIONS.filter(d => d.group === "gap").map(renderCard).join('');
+  const p0 = DECISIONS.filter(d => d.group === "p0").map(renderCard).join('');
+  const ai = DECISIONS.filter(d => d.group === "ai").map(renderCard).join('');
+  document.getElementById("group-gap").innerHTML = gap;
+  document.getElementById("group-p0").innerHTML = p0;
+  document.getElementById("group-ai").innerHTML = ai;
+
+  const urgent = DECISIONS.filter(d => d.urgent).map(renderCard).join('');
+  document.getElementById("urgent-list").innerHTML = urgent;
+
+  // Stats
+  const total = DECISIONS.length;
+  const decided = Object.keys(state).length;
+  const pending = total - decided;
+  document.getElementById("stat-decided").textContent = decided;
+  document.getElementById("stat-pending").textContent = pending;
+  document.getElementById("progress-bar").style.width = (decided / total * 100) + "%";
+
+  // Re-attach option clicks
+  document.querySelectorAll(".option").forEach(el => {
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      selectOption(el.dataset.id, el.dataset.opt);
+    });
+  });
+
+  // ADR card notes — save on input, do NOT re-render (would steal focus)
+  document.querySelectorAll(".card-note-input").forEach(el => {
+    el.addEventListener("input", () => {
+      const v = el.value;
+      if (v.trim() === "") delete notes[el.dataset.id];
+      else notes[el.dataset.id] = v;
+      saveNotes(notes);
+    });
+    // stop click on textarea from bubbling to card-header (toggleCard)
+    el.addEventListener("click", e => e.stopPropagation());
+  });
+
+  // Pre-mortem notes
+  document.querySelectorAll(".pm-note-input").forEach(el => {
+    el.addEventListener("input", () => {
+      const v = el.value;
+      if (v.trim() === "") delete pmNotes[el.dataset.pm];
+      else pmNotes[el.dataset.pm] = v;
+      savePmNotes(pmNotes);
+    });
+  });
+
+  applyFilter(currentFilter);
+}
+
+function applyFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll(".filter button").forEach(b => {
+    b.classList.toggle("active", b.dataset.filter === f);
+  });
+  document.querySelectorAll("[data-card-id]").forEach(card => {
+    const tags = (card.dataset.tags || "").split(",");
+    const urgent = card.dataset.urgent === "true";
+    const blocking = card.dataset.blocking === "true";
+    const decided = card.dataset.decided === "true";
+    let show = true;
+    if (f === "pending") show = !decided;
+    else if (f === "decided") show = decided;
+    else if (f === "blocking") show = blocking;
+    else if (f === "urgent") show = urgent;
+    else if (f === "ai") show = tags.includes("ai");
+    else if (f === "finance") show = tags.includes("finance");
+    else if (f === "rbac") show = tags.includes("rbac");
+    card.style.display = show ? "" : "none";
+  });
+  // Count visible
+  const visibleInAll = document.querySelectorAll('#group-gap [data-card-id]:not([style*="display: none"]), #group-p0 [data-card-id]:not([style*="display: none"]), #group-ai [data-card-id]:not([style*="display: none"])').length;
+  document.getElementById("all-count").textContent = visibleInAll + " 條";
+}
+
+function buildMarkdownReport() {
+  const today = new Date().toISOString().split("T")[0];
+  const totalDecisions = DECISIONS.length;
+  const decidedCount = Object.keys(state).length;
+  const totalPm = PREMORTEM.length;
+  let pmAgree = 0, pmDisagree = 0, pmInfo = 0;
+  Object.values(pmState).forEach(v => {
+    if (v === "agree") pmAgree++;
+    else if (v === "disagree") pmDisagree++;
+    else if (v === "need-info") pmInfo++;
+  });
+  const noteCount = Object.keys(notes).length + Object.keys(pmNotes).length;
+
+  const lines = [];
+  lines.push(`# 智慧鎖平台 — 決策會議 Report`);
+  lines.push("");
+  lines.push(`- **日期**：${today}`);
+  lines.push(`- **ADR 圈選進度**：${decidedCount} / ${totalDecisions}`);
+  lines.push(`- **Pre-mortem 投票**：✓ 認同 ${pmAgree}　× 過慮 ${pmDisagree}　? 待補資訊 ${pmInfo}　[未表態] ${totalPm - pmAgree - pmDisagree - pmInfo}`);
+  lines.push(`- **填入備註數**：${noteCount}`);
+  lines.push("");
+  lines.push(`---`);
+  lines.push("");
+
+  // Pre-mortem section
+  lines.push(`## 一、合夥人 Pre-mortem 共識`);
+  lines.push("");
+  PREMORTEM.forEach(pm => {
+    const vote = pmState[pm.id];
+    const voteLabel = vote === "agree" ? "✓ 認同是大風險"
+      : vote === "disagree" ? "× 認為過慮"
+      : vote === "need-info" ? "? 需更多資訊"
+      : "_[尚未表態]_";
+    lines.push(`### ${pm.id} — ${pm.title}`);
+    lines.push("");
+    lines.push(`- **情境**：${pm.scenario}`);
+    lines.push(`- **死因關鍵**：${pm.cause}`);
+    lines.push(`- **防禦武器**：${pm.defense}`);
+    lines.push(`- **現況**：${pm.statusLabel}`);
+    lines.push(`- **合夥人投票**：${voteLabel}`);
+    const nt = pmNotes[pm.id];
+    if (nt && nt.trim()) {
+      lines.push(`- **會議備註**：`);
+      nt.split(/\r?\n/).forEach(l => lines.push(`  > ${l}`));
+    }
+    lines.push("");
+  });
+  lines.push(`---`);
+  lines.push("");
+
+  // Decision groups
+  const groups = { gap: "二、GAP 跨團隊決策", p0: "三、P0 業務規則", ai: "四、AI 邊界 + 治理" };
+  ["gap", "p0", "ai"].forEach(g => {
+    lines.push(`## ${groups[g]}`);
+    lines.push("");
+    DECISIONS.filter(d => d.group === g).forEach(d => {
+      const chosen = state[d.id];
+      const opt = chosen ? d.options.find(o => o.key === chosen) : null;
+      const tag = chosen === "recommend" ? "✓ 推薦做法"
+        : chosen === "a" ? "替代方案 A"
+        : chosen === "b" ? "替代方案 B"
+        : "_[尚未決定]_";
+
+      lines.push(`### ${d.id} — ${d.title}`);
+      lines.push("");
+      lines.push(`- **痛點**：${d.pain}`);
+      if (opt) {
+        lines.push(`- **拍板**：**${tag}** — ${opt.label}`);
+        lines.push(`  - 內容：${opt.detail}`);
+        lines.push(`  - 代價：${opt.cost}`);
+      } else {
+        lines.push(`- **拍板**：${tag}`);
+        lines.push(`- **不決定後果**：${d.consequence}`);
+        lines.push(`- **阻擋範圍**：${d.blocks}`);
+      }
+      const nt = notes[d.id];
+      if (nt && nt.trim()) {
+        lines.push(`- **會議備註**：`);
+        nt.split(/\r?\n/).forEach(l => lines.push(`  > ${l}`));
+      }
+      lines.push("");
+    });
+    lines.push(`---`);
+    lines.push("");
+  });
+
+  // Footer
+  lines.push(`## Action Items`);
+  lines.push("");
+  lines.push(`- [ ] AI Specialist 把已圈選 ADR 的 frontmatter status 從 draft → accepted`);
+  lines.push(`- [ ] 待決 ADR (${totalDecisions - decidedCount} 條) 安排補開會議`);
+  if (pmInfo > 0) lines.push(`- [ ] Pre-mortem 標記「需更多資訊」(${pmInfo} 條) 派人補資料`);
+  lines.push("");
+  lines.push(`_由 decision-dashboard.html 自動產出_`);
+
+  return lines.join("\n");
+}
+
+function exportSelections() {
+  const md = buildMarkdownReport();
+  const today = new Date().toISOString().split("T")[0];
+  const filename = `meeting-report-${today}.md`;
+
+  // Download as .md file
+  const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  // Copy to clipboard + show preview modal
+  const showModal = () => {
+    document.getElementById("export-text").textContent = md;
+    document.getElementById("export-modal").classList.add("open");
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(md).then(showModal).catch(showModal);
+  } else {
+    showModal();
+  }
+}
+
+document.getElementById("btn-export").addEventListener("click", exportSelections);
+document.getElementById("btn-print").addEventListener("click", () => window.print());
+document.getElementById("btn-reset").addEventListener("click", () => {
+  if (confirm("確定清空所有圈選？（含 Pre-mortem 投票 + 24 個 ADR 圈選 + 全部會議備註）")) {
+    state = {};
+    pmState = {};
+    notes = {};
+    pmNotes = {};
+    saveState(state);
+    savePmState(pmState);
+    saveNotes(notes);
+    savePmNotes(pmNotes);
+    renderAll();
+  }
+});
+
+document.querySelectorAll(".filter button").forEach(b => {
+  b.addEventListener("click", () => applyFilter(b.dataset.filter));
+});
+
+renderAll();
+</script>
+</body>
+</html>
