@@ -3,24 +3,31 @@ title: 業主必答問題清單（2026-05-22 會議後）
 date: 2026-05-22
 audience: 業主（PM / 甲方）
 purpose: 阻擋 V1.0 進入 Coding 階段的待決事項
-status: answered (2026-05-22) — Q2 / Q3 需追問細節
+status: fully-answered (2026-05-22, 3 rounds) — V1.0 scope 確認為完整 SaaS
 answered_date: 2026-05-22
+revision_history:
+  - 2026-05-22 r1: Q1/Q4/Q6/Q7 已答 + Q2/Q3 follow-up 已答
+  - 2026-05-22 r2: Q8 工單平台 detail 補答（一度誤判為 master system）
+  - 2026-05-22 r3: 校正誤判 — 工單平台是我們開發的 SaaS，ChatLock = first customer
 ---
 
-## 🟢 業主答覆摘要（2026-05-22，兩輪）
+## 🟢 業主答覆摘要（2026-05-22，三輪後最終版）
 
 | # | 業主答案 | 狀態 |
 |---|---|---|
 | Q1 部署環境 | ✅ **GCP 雲端** | 落地 |
-| Q2 真人轉接 | ✅ **LINE → 工單平台網頁 → 撥客服手機** | 落地（F2.1 audit 機制建議 C） |
-| Q3 LINE LIFF | ✅ **取消 LIFF，改 LINE Flex + 工單平台** | 落地 |
-| Q4 外部知識平台 | ✅ **AEOS platform**，**先離線作業** | 落地 |
-| Q5 會計軟體 | ⏸ TBD | 可緩至 W10 |
+| Q2 真人轉接 | ✅ **LINE → 我們系統 web → 撥客服手機 + 錄音** | 落地 |
+| Q3 LIFF | ✅ **取消 LIFF，改 LINE Flex + 我們 web** | 落地 |
+| Q4 知識平台 | ✅ **AEOS**，離線批次匯入 | 落地 |
+| Q5 會計軟體 | ⏸ TBD（W10 前回）| 延後 |
 | Q6 消費者付款 | ✅ **現金 / 刷卡 / 匯款後 5 碼比對** | 落地 |
-| Q7 IoT 廠商 | ✅ **chatlock** | 業務聯繫中 |
-| **Q8 工單平台** | 🆕 **新冒出**：工單平台是 master system，但 detail 未提供 | **必答** |
+| Q7 IoT 廠商 | ✅ **ChatLock**（與 Q8 customer 合一）| 業務聯繫 LOI |
+| Q8 工單平台 | ✅ **我們自己開發的 SaaS**，ChatLock 是 first 客戶 | 落地 |
+| F2.1 通話 audit | ✅ **B 錄音 + STT 摘要** | 待開 ADR-0060 |
+| ChatLock 銷售階段 | ✅ **LOI** | 可做 alpha tester |
+| ChatLock 雙身份 | ✅ **單一 entity**（customer + locks_vendor）| ADR-0043 / 0056 schema 調整 |
 
-**整體結論**：6 題明確答覆，但揭露 V1.0 與「工單平台」的整合是核心架構，**必須補答 Q8 才能進入設計**。
+**整體結論**：**7 題 + 3 follow-up 全部落地**。V1.0 完整 SaaS scope 確認，29 條 ADR 假設全部正確，可立即進入 P3 Design 階段。
 
 ---
 
@@ -189,106 +196,60 @@ answered_date: 2026-05-22
 
 ---
 
-## 🚨 重大架構級結論（業主 2026-05-22 補答後揭露）
+## ✅ 架構定位（r3 校正後 — 2026-05-22）
 
-業主補答 Q2 / Q3 揭露了一個之前所有 ADR 都沒明確寫出的**核心系統定位**：
+> ⚠️ **r2 曾誤判「工單平台 = master system，我們 = satellite」，r3 業主澄清後撤回**。
+> 正確版本如下：
 
-> **「工單平台」是 master system，我們的 V1.0 = LINE 端 AI 客服前哨**。
+### 三方角色
 
-具體：
-- 「外部網站」= 工單平台
-- 「客服系統」= 工單平台（兩者合一）
-- LIFF 取消，所有 UI 走 **LINE Flex Message + 工單平台 web**
-- 客服在工單平台看 ProblemCard、接客戶手機通話
-- 我們系統的職責：**只負責 LINE Bot + AI 客服 + ProblemCard 蒐集 + 同步推送到工單平台**
-
-### 對既有 29 條 ADR 的影響（必須 revisit）
-
-| ADR | 原假設 | 重新定位後 |
+| 角色 | 是誰 | 職責 |
 |---|---|---|
-| ADR-0031 AI convert_to_wo | 我們系統建 WorkOrder | **改為**：AI 在我們系統建 ProblemCard → push 到工單平台 → 工單平台 owner 建 WO |
-| ADR-0032 地址 hard gate | 在 WO state machine | **改為**：地址 gate 屬工單平台責任，我們只在 PC 收集 + 同步 |
-| ADR-0034 urgent 4 類 | 我們 Domain Event | **改為**：與工單平台共享 schema |
-| ADR-0035 / 0054 AI 報價 | 我們系統的報價邊界 | 仍我們負責（AI 端 guardrail）|
-| ADR-0038 SOP 雙審 | Knowledge Owner 在 Admin Panel | **改為**：審核可能在工單平台執行 |
-| ADR-0040 退款核准分層 | 我們 Admin Panel | **改為**：工單平台責任 |
-| ADR-0041 車馬費 80/20 | 我們 Settlement ledger | **改為**：工單平台責任 |
-| ADR-0042 RBAC 4 層 | 我們 Admin Panel 內建 | **改為**：工單平台責任，我們僅 LINE 端 |
-| ADR-0043 Contract Template | 兩邊都需要？ | 待定 |
-| ADR-0046 ChangeRequest | 我們 Admin Panel | **改為**：工單平台責任 |
-| ADR-0049 現場加價三件套 | 我們執行 | **改為**：工單平台責任 |
-| ADR-0050 Evidence 可見性 | 我們 RBAC engine | **改為**：工單平台主責，我們的對話紀錄是上游 |
-| ADR-0051 Evidence Retention | 我們 retention engine | **改為**：對話紀錄 retention 我們負責，其他工單平台 |
-| ADR-0052 Material owner | 我們 ledger | **改為**：工單平台責任 |
-| ADR-0053 Serial 控制 | 我們 Device schema | **改為**：工單平台責任 |
+| **我們** | 開發團隊 | 開發完整的 **客服機器人 + 工單系統 SaaS** 平台 |
+| **ChatLock** | first 目標客戶（**LOI 階段**）| 賣鎖的代工廠起家、軟硬體自研；同時是 **first 客戶 + first IoT 鎖供應商**，**雙身份合一**為單一 partner entity |
+| **AEOS** | 知識傳承平台 vendor | 提供 domain expert 知識，**離線批次匯入**到我們 SOP 庫 |
 
-### 我們系統的「真正 scope」（V1.0）
+### V1.0 完整 Scope（所有 29 條 ADR 假設正確，**無需 revisit**）
 
-✅ **要做的**：
+✅ **要做的（完整 SaaS）**：
 1. LINE Bot 接入 + 對話管理
 2. AI 客服（ProblemCard 收集 + 三層解決 L1/L2/L3）
-3. 知識庫 / RAG（per ADR-0057）+ SOP 螺旋（AEOS 離線批次入庫 per ADR-0058）
-4. ProblemCard → 工單平台 push contract（**新需求**）
-5. LINE Flex Message 模板（取代原 LIFF）
+3. 知識庫 / RAG（per ADR-0057）+ SOP 螺旋（AEOS 離線批次 per ADR-0058）
+4. **工單系統 + Admin Panel + Web**（V1.0 Epic 5 per ADR-0042 RBAC）
+5. LINE Flex Message 模板（取代 LIFF）+ deeplink 跳我們的 Admin Panel
 6. AI 行為 charter / Forbidden / Eval pipeline（ADR-0028 / 0047 / 0055 / 0057）
-7. 情緒分流（合約 4.4(a)）+ 觸發推播給工單平台 → 客服
+7. 情緒分流（合約 4.4(a)）+ 推播給客服
+8. **客服系統**（在 Admin Panel 內，含 ProblemCard view + **通話錄音 audit** + audit log）
+9. 派工 / 帳務 / 退款 / 月結（V2.0 per PRD-0001 Epic 7-10）
+10. **多租戶 essentials**（per ADR-0030 / ADR-0043，雖然 V1.0 first tenant 是 ChatLock）
+11. **ChatLock IoT 鎖訊號接入**（per ADR-0059，因 ChatLock 雙身份）
+12. Evidence retention + Family Reviewer（per ADR-0050 / 0051 / ADR-0042）
 
-❌ **不做的**（移到工單平台）：
-- Admin Panel V1.0 / V2.0
-- RBAC engine
-- 派工系統 + 技師工作台
-- 帳務 + 月結 + 退款流程
-- Evidence retention engine（除了對話紀錄）
-- Family Reviewer 角色實作
-- Material / Serial / Inventory
+❌ **不在 V1.0 scope**（per PRD）：
+- LIFF（業主決議取消，改 LINE Flex Message）
+- 線上金流串接（Q6 採現金 / 刷卡 / 匯款 5 碼比對）
+- 多語言（合約 SOW Out of Scope）
 
-**這是好事**：V1.0 scope 大幅收斂（估時可能從 6 個月縮到 3 個月）。但**必須先釐清「工單平台」detail 才能落地**。
+### 對既有 29 條 ADR 的影響
+
+✅ **無需 revisit**。r2 那份「12 條 ADR 失效」清單**已作廢**。所有 29 條 ADR 原假設與 r3 校正後架構一致。
+
+### r3 業主新答覆（解鎖最後 3 件）
+
+| Follow-up | 業主答案 | 影響 |
+|---|---|---|
+| **F2.1 通話 audit** | ✅ **B 錄音** | 通話自動錄音 + STT 摘要 + 寫回 ProblemCard。需新開 **ADR-0060「通話錄音 + audit 機制」**。PII 風險（需消費者通話前同意）+ 儲存成本需設計 |
+| **ChatLock 銷售階段** | ✅ **LOI（意向書）** | 可拿 ChatLock 做 alpha tester / 需求對齊，但合約細節 still negotiating。V1.0 設計**不可寫死 ChatLock 特性**，必須 generic 多租戶 |
+| **ChatLock 雙身份合一** | ✅ **單一 entity**（customer + locks_vendor）| ChatLock 是代工廠起家、軟硬體自研，雙角色由同一 partner 提供。ADR-0043 Contract Template + ADR-0056 廠商合約附件 schema 採 `partner_roles: [customer, locks_vendor]` 而非分兩筆 |
 
 ---
 
-## 🆕 新冒出的 1 題關鍵問題（最 critical）
+## 🗑 Q8「工單平台」追問（已作廢）
 
-### Q8. 「工單平台」到底是什麼？（最高優先）
+> r2 一度誤判工單平台為外部系統，列出 F8.1~F8.4 追問題。r3 業主澄清：
+> **工單平台是我們自己開發的，ChatLock 是客戶。本 Q8 整段追問作廢。**
 
-業主多次提到「工單平台 / 外部工單系統」，但我們對它一無所知。請業主答：
-
-#### F8.1 工單平台是誰開發 / 誰負責？
-
-- ☐ A. 甲方既有的系統（已上線）
-- ☐ B. 甲方自己團隊正在開發中
-- ☐ C. 另一家 vendor / 廠商開發中
-- ☐ D. 還沒有，本專案要附帶開發
-
-**廠商 / 團隊名稱**：__________________
-**目前狀態**：__________________
-
-#### F8.2 工單平台有 API 嗎？
-
-- ☐ A. 有完整 REST API，文件齊全
-- ☐ B. 有部分 API，文件待補
-- ☐ C. 沒有 API，但有 webhook 機制
-- ☐ D. 完全沒對外介面，只有 web UI
-- ☐ E. 不知道，需要去問
-
-**API spec / 文件位置**：__________________
-**對接窗口**：__________________
-
-#### F8.3 我們系統與工單平台的整合介面要怎麼設計？
-
-| 場景 | 我們 push 到工單平台 | 我們從工單平台 pull |
-|---|---|---|
-| 新對話建立 ProblemCard | ✓ 必須 push | ☐ 是否要 pull existing PC？ |
-| ProblemCard 完成 → 轉真人 / 派工 | ✓ 必須 push | |
-| LINE Flex Message 顯示「進度查詢」 | | ✓ 需要 pull WO 狀態 |
-| LINE Flex Message 顯示「報價確認」 | | ✓ 需要 pull 報價 |
-| 完工通知客戶 | | ✓ 工單平台 push 給我們 |
-
-✅ 業主能否提供：☐ 工單平台技術窗口 ☐ 已有的 API 文件
-
-#### F8.4 認證 / 安全性？
-
-- 兩個系統間怎麼認證？（API key / OAuth / VPN）：__________________
-- 客戶資料（PII）在兩邊都存？還是只在工單平台？（影響 ADR-0051 retention）
+歷史紀錄保留於 r2 git commit（`1318755`），供日後 audit。
 
 ---
 
@@ -333,33 +294,35 @@ answered_date: 2026-05-22
 
 ---
 
-## 📋 答覆後狀態速覽（更新）
+## 📋 全部答覆後狀態速覽（r3 最終版）
 
 | # | 業主答覆 | 狀態 | 阻擋 |
 |---|---|---|---|
-| Q1 部署環境 | ✅ GCP 雲端 | 落地 | 無 |
-| Q2 真人轉接 | ✅ LINE → 工單平台 → 撥客服手機 | 落地 | F2.1 audit 待確認（建議 C 客服寫摘要）|
-| Q3 LIFF | ✅ 取消 LIFF，改 LINE Flex | 落地 | 無 |
+| Q1 部署 | ✅ GCP 雲端 | 落地 | 無 |
+| Q2 真人轉接 | ✅ LINE → 我們 web → 撥客服手機 + 錄音 | 落地 | 無 |
+| Q3 LIFF | ✅ 取消，改 LINE Flex | 落地 | 無 |
 | Q4 知識平台 | ✅ AEOS 離線批次 | 落地 | 無 |
-| Q5 會計軟體 | ⏸ TBD | 延後 | W10 前回 |
-| Q6 消費者付款 | ✅ 現金 / 刷卡 / 匯款 5 碼 | 落地 | 無 |
-| Q7 IoT 廠商 | ✅ chatlock | 落地 | 業務聯繫中 |
-| **Q8 工單平台 detail** | 🆕 **未答** | **阻擋核心架構** | **必答** |
+| Q5 會計軟體 | ⏸ TBD | 延後 W10 前回 | V1.0 後期才阻擋 |
+| Q6 付款 | ✅ 現金 / 刷卡 / 匯款 5 碼 | 落地 | 無 |
+| Q7 + Q8 ChatLock | ✅ first customer LOI + 雙身份合一 | 落地 | 業務需取 LOI 細節 |
+| F2.1 | ✅ B 錄音 | 落地 | 待開 ADR-0060 |
+
+**全綠燈**。V1.0 可立即進入 P3 Design 階段。
 
 ---
 
-## 🎯 下一步 Action Items（更新）
+## 🎯 下一步 Action Items（r3 最終版）
 
-| Action | Owner | 觸發條件 |
-|---|---|---|
-| ADR-0058 更新為「AEOS offline batch ingestion」 | Claude | 立即 |
-| ADR-0059 PoC partner 寫入 chatlock | Claude | 立即 |
-| 新開 **ADR-0060「真人轉接電話 + audit 機制」** | Claude | F2.1 業主確認 audit 方式後 |
-| 新開 **ADR-0061「外部工單平台整合契約 + V1.0 系統角色定位」** | Claude | **Q8 業主補答後**（最關鍵）|
-| PRD-0001 + ARCH-0001 加 GCP 部署決策 | Claude | 立即 |
-| PRD-0001 + ARCH-0001 加「工單平台 = master system」架構級重新定位 | Claude | Q8 答覆後 |
-| Revisit 12 條 ADR（見上「對既有 29 條 ADR 的影響」表）| Claude | Q8 答覆後 |
-| 啟動 Epic 2 ProblemCard OpenAPI + ERD 設計 | Claude | **可立即啟動**（純 LINE 對話階段，不依賴工單平台 detail）|
+| # | Action | Owner | 觸發 |
+|---|---|---|---|
+| 1 | ADR-0058 更新為「AEOS offline batch ingestion」 | Claude | 立即 |
+| 2 | ADR-0059 PoC partner 寫入 ChatLock + 註記雙身份 | Claude | 立即 |
+| 3 | 新開 **ADR-0060「真人轉接電話 + 錄音 audit 機制」** | Claude | 立即（F2.1 已答 B 錄音）|
+| 4 | ADR-0043 / ADR-0056 加 `partner_roles: [customer, locks_vendor]` schema | Claude | 立即 |
+| 5 | PRD-0001 + ARCH-0001 加 GCP 部署 + ChatLock LOI customer 定位 | Claude | 立即 |
+| 6 | 業務 / BD 取 ChatLock LOI 簽署文件 + 啟動需求對齊 alpha test | 業務 | W1 內 |
+| 7 | 啟動 **P3 Design** — Epic 2 ProblemCard OpenAPI + ERD（首切片）| Claude | **立即**（不阻擋）|
+| 8 | r2 那段「12 條 ADR 失效」誤判內容**已撤回作廢** | Claude | 已完成 |
 
 ---
 
