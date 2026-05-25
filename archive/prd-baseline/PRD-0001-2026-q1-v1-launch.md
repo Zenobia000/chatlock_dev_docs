@@ -395,9 +395,9 @@ V2.0 技師派工與帳務平台 (W18-W31, 共 14 週)
 
 業主於 2026-05-22 一次拍板 **29 條 ADR**（ADR-0031 ~ ADR-0059），涵蓋 GAP 跨團隊決策 / P0 業務規則 / AI 邊界 + 治理 / Pre-mortem 應對。完整索引見：
 
-- [`3-adr/INDEX.md`](../../3-adr/INDEX.md) — 全 29 條 ADR 主索引
-- [`2-meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md`](../../2-meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md) — 會議 punch list + Cascade 進度
-- [`0-strategy/PAIN-POINTS-SUMMARY-2026-05-21.md §A.1`](../../0-strategy/PAIN-POINTS-SUMMARY-2026-05-21.md) — Pre-mortem F1~F7 裁決狀態
+- [`docs/architecture/adr/INDEX.md`](../../docs/architecture/adr/INDEX.md) — 全 29 條 ADR 主索引
+- [`archive/meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md`](../../archive/meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md) — 會議 punch list + Cascade 進度
+- [`archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md §A.1`](../../archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md) — Pre-mortem F1~F7 裁決狀態
 
 **對 PRD 影響最大的 ADR**：
 

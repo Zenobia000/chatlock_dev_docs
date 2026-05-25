@@ -29,5 +29,7 @@ tmp/
 
 # DevTeam runtime / 業主使用 harness 產出的 working data
 .claude/context/
-docs/
 MODIFICATION-PLAN.md
+
+# Note: docs/ 自 2026-05-25 改為 source-of-truth 主目錄（PRD / ADR / OpenAPI / ERD / Test Plan / Runbook 等）。
+# 開發團隊讀 docs/，archive/ 為純歷史 reference。

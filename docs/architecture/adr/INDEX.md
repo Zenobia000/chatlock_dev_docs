@@ -3,7 +3,7 @@ title: ADR Drafts (2026-05-21) — §F Trade-off 落地索引
 date: 2026-05-21
 last_updated: 2026-05-22
 status: 24 accepted + 5 new accepted (2026-05-22 業主拍板)
-source: dev_docs/0-strategy/PAIN-POINTS-SUMMARY-2026-05-21.md §F + dev_docs/2-meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md
+source: dev_docs/archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md §F + dev_docs/archive/meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md
 ---
 
 # ADR Drafts — §F Trade-off 落地索引
@@ -13,7 +13,7 @@ source: dev_docs/0-strategy/PAIN-POINTS-SUMMARY-2026-05-21.md §F + dev_docs/2-m
 > **圈選流程**：
 > 1. 業主針對每份 ADR 在 `### Acceptance Criteria` 圈選 ✅推薦 / A / B
 > 2. 圈完一批後改 `status: draft → accepted` 並補 `deciders` 簽核欄
-> 3. promote 到 `4-prd-fr-arch/04-architecture/adr/` 正式 ADR 系列（ADR-0031~0054）
+> 3. promote 到 `docs/architecture/adr/` 正式 ADR 系列（ADR-0031~0054）
 >
 > **編號規劃**：既有 ADR 編到 ADR-0030，本批草稿從 **ADR-0031** 起。
 
@@ -146,7 +146,7 @@ Draft — 待業主於 §Acceptance Criteria 圈選 ✅/A/B
 2. AI Specialist 補完 Consequences / Mitigation 量化數字
 3. Owner / Reviewer 簽核（frontmatter `deciders` 補名）
 4. 改 `status: draft → accepted`
-5. 複製到 `4-prd-fr-arch/04-architecture/adr/`（snapshot 不直接編輯，只接收 accepted 版本）
+5. 複製到 `docs/architecture/adr/`（snapshot 不直接編輯，只接收 accepted 版本）
 6. 更新 PAIN-POINTS-SUMMARY §0 TL;DR：標 ✅ 已關閉
 
 ---

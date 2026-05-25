@@ -1,0 +1,629 @@
+openapi: 3.1.0
+info:
+  title: Smart Lock SaaS Platform API
+  version: 1.0.0-v1
+  description: |
+    V1.0 API contract — frozen at 2026-05-22 per Gate 5a.
+    Source: Forum F-01 Option C++ / ADR-0060 / ADR-0061.
+
+    Contract design principles (sd):
+    - **Contract first**: every endpoint has happy + error path enumerated
+    - **Idempotency**: POST mutations require `Idempotency-Key` header (24h dedup for LINE webhook; per-request for others)
+    - **Error model exhaustive**: each endpoint enumerates 400/403/404/409/422/425/423 where applicable. No generic 500-as-business-error
+    - **Status codes precise**: 409 = state conflict, 422 = schema validation, 423 = resource locked (legal_hold), 425 = too early (precondition not met)
+    - **Telemetry hooks**: every endpoint emits OTel spans with `tenant_id`, `actor_role`, `idempotency_key` tags
+    - **Cursor pagination** on all list endpoints (no offset/page; avoids deep-skip cost)
+    - **tenant_id propagation** enforced at handler entry (ADR-0030); cross-tenant write returns 403 CROSS_TENANT_WRITE
+    - **Additive-only V2 evolution**: V2 workflow uses sub-resource actions (`/contract-templates/{id}:submit`) — V1 client never breaks
+    - **Forbidden actions**: AI agent cannot call `convert_to_work_order` directly; CS 1-click required (ADR-0031); enforced at API layer via `created_by_role` check
+
+    Error code catalogue (cross-endpoint):
+      - 403 CROSS_TENANT_WRITE (ADR-0030)
+      - 403 AI_FORBIDDEN_ACTION (ADR-0031 / 0047)
+      - 403 DGS_LEGAL_HOLD_ACTIVE (ADR-0061)
+      - 409 CONTRACT_VERSION_CONFLICT (ADR-0060)
+      - 422 PC_UNIQUE_VIOLATION (ADR-0036)
+      - 422 SCOPE_OVERLAP (ADR-0060)
+      - 422 ADDRESS_REQUIRED_FOR_CLOSE (ADR-0032)
+      - 423 LEGAL_HOLD_BLOCKS_FORGET (GDPR Art.17 + customer notice; ADR-0061)
+      - 425 SOP_DUAL_REVIEW_NOT_DONE (FR-NEW-5)
+  contact:
+    name: devteam-design (sd)
+    url: https://github.com/lock-smith-project/dev-docs
+
+servers:
+  - url: https://api.smart-lock-saas.com/v1
+    description: V1 production
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: LINE Bot
+  - name: ProblemCard
+  - name: WorkOrder
+  - name: Onsite
+  - name: Quote
+  - name: Settlement
+  - name: ContractTemplate (ADR-0060 V1)
+  - name: DGS (ADR-0061 V1)
+  - name: ChangeRequest (ADR-0046)
+  - name: SOP Review
+  - name: Admin / RBAC
+  - name: Eval
+  - name: Voucher (ADR-VCH-001/002 V1)  # v2.2 added per MoM #2
+
+paths:
+  ## --- LINE Bot intake / observability ---
+  /webhook/line:
+    post:
+      tags: [LINE Bot]
+      summary: LINE Messaging API webhook
+      operationId: lineWebhook
+      parameters:
+        - name: X-Line-Signature
+          in: header
+          required: true
+          schema: { type: string }
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string }
+          description: 24h dedup window (FR-0024)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LineWebhookEvents' }
+      responses:
+        '200': { description: ack }
+        '409': { description: 'duplicate idempotency key', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '500': { description: 'will retry; DLQ if persistent' }
+
+  ## --- ProblemCard ---
+  /problem-cards:
+    post:
+      tags: [ProblemCard]
+      summary: Create ProblemCard
+      operationId: createProblemCard
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProblemCardCreate' }
+      responses:
+        '201': { content: { application/json: { schema: { $ref: '#/components/schemas/ProblemCard' } } } }
+        '422': { description: 'completeness < 0.85 → Exception module', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    get:
+      tags: [ProblemCard]
+      summary: List ProblemCards (cursor pagination)
+      parameters:
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, maximum: 100, default: 20 } }
+        - { name: tenant_id, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { content: { application/json: { schema: { $ref: '#/components/schemas/ProblemCardList' } } } }
+  /problem-cards/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [ProblemCard]
+      responses:
+        '200': { content: { application/json: { schema: { $ref: '#/components/schemas/ProblemCard' } } } }
+    patch:
+      tags: [ProblemCard]
+      summary: 'Update PC (only state in {incomplete, draft})'
+      responses:
+        '200': { content: { application/json: { schema: { $ref: '#/components/schemas/ProblemCard' } } } }
+        '422': { description: PC unique constraint violation (ADR-0036) }
+
+  ## --- WorkOrder ---
+  /work-orders:
+    post:
+      tags: [WorkOrder]
+      summary: Create WorkOrder (AI draft + CS 1-click confirm per ADR-0031)
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WorkOrderCreate' }
+      responses:
+        '201': { description: created (address optional at this stage per ADR-0032) }
+        '403': { description: AI tried to call directly (forbidden per ADR-0031) }
+  /work-orders/{id}/close:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [WorkOrder]
+      summary: Close WorkOrder (422 hard gate on null address per ADR-0032)
+      responses:
+        '200': { description: completed }
+        '422':
+          description: address is null - hard gate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: ADDRESS_REQUIRED_FOR_CLOSE
+                message: address must not be null when closing a WO
+
+  ## --- Onsite (scope change 三件套) ---
+  /work-orders/{id}/onsite/scope-change:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [Onsite]
+      summary: Scope change with 三件套 (signature + photo + audit)
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScopeChange' }
+      responses:
+        '201': { description: created with audit }
+        '422': { description: missing one of signature/photo/audit }
+        '403': { description: amount tier violation (per ADR-0049) }
+
+  ## --- Contract Template (ADR-0060 — V1 draft-state CRUD only) ---
+  /contract-templates:
+    post:
+      tags: ['ContractTemplate (ADR-0060 V1)']
+      summary: Create Contract Template (draft state)
+      parameters: [{ name: Idempotency-Key, in: header, required: true, schema: { type: string } }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContractTemplate' }
+      responses:
+        '201': { content: { application/json: { schema: { $ref: '#/components/schemas/ContractTemplate' } } } }
+        '403':
+          description: CROSS_TENANT_WRITE
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '409':
+          description: CONTRACT_VERSION_CONFLICT
+        '422':
+          description: SCOPE_OVERLAP or schema validation failed
+    get:
+      tags: ['ContractTemplate (ADR-0060 V1)']
+      summary: List Contract Templates (cursor pagination)
+      parameters:
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, maximum: 100, default: 20 } }
+        - { name: tenant_id, in: query, required: true, schema: { type: string } }
+        - { name: partner_id, in: query, schema: { type: string } }
+      responses:
+        '200': { content: { application/json: { schema: { $ref: '#/components/schemas/ContractTemplateList' } } } }
+  /contract-templates/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: ['ContractTemplate (ADR-0060 V1)']
+      responses:
+        '200': { content: { application/json: { schema: { $ref: '#/components/schemas/ContractTemplate' } } } }
+    patch:
+      tags: ['ContractTemplate (ADR-0060 V1)']
+      summary: 'PATCH only allowed in state=draft (additive-only)'
+      responses:
+        '200': { content: { application/json: { schema: { $ref: '#/components/schemas/ContractTemplate' } } } }
+        '403': { description: not in draft state (V2 uses :action endpoints) }
+    delete:
+      tags: ['ContractTemplate (ADR-0060 V1)']
+      summary: 'DELETE only allowed in state=draft (soft delete)'
+      responses:
+        '204': { description: soft deleted }
+
+  ## V2 sub-resource actions (placeholder for V2 — NOT IMPLEMENTED IN V1)
+  # /contract-templates/{id}:submit       — V2
+  # /contract-templates/{id}:approve      — V2
+  # /contract-templates/{id}:publish      — V2
+  # /contract-templates/{id}:retire       — V2
+  # /contract-templates/{id}:clone-version — V2
+  # /contract-templates/{id}:diff          — V2
+
+  ## --- DGS (ADR-0061 — V1 P0-critical) ---
+  /dgs/evidence/{id}/purge:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: ['DGS (ADR-0061 V1)']
+      summary: Two-phase purge (T0 crypto-shred DEK + soft-delete)
+      security: [{ bearerAuth: [], dgsExecutor: [] }]
+      parameters: [{ name: Idempotency-Key, in: header, required: true, schema: { type: string } }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, enum: [retention_expired, gdpr_forget, manual] }
+                requested_by: { type: string }
+      responses:
+        '202': { description: purge queued (outbox tx written) }
+        '403': { description: legal_hold active OR not dgs_executor }
+        '409': { description: already in pending_purge state }
+
+  /dgs/evidence/{id}/legal-hold:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: ['DGS (ADR-0061 V1)']
+      summary: Flip legal_hold (push invalidation ≤ 5s)
+      security: [{ bearerAuth: [], legalRole: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [legal_hold, hold_reason_id]
+              properties:
+                legal_hold: { type: boolean }
+                hold_reason_id: { type: string }
+        responses:
+          '200': { description: flip persisted + invalidation dispatched }
+
+  /dgs/forget:
+    post:
+      tags: ['DGS (ADR-0061 V1)']
+      summary: GDPR forget request
+      security: [{ bearerAuth: [], dpoOrDataSubject: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id]
+              properties:
+                customer_id: { type: string }
+                requested_by: { type: string }
+      responses:
+        '202': { description: forget queued (7d SLA) }
+        '423':
+          description: 'legal_hold blocks forget; customer notice required'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerNotice'
+
+  /dgs/policy/version:
+    get:
+      tags: ['DGS (ADR-0061 V1)']
+      summary: Get current Rego policy version + hash
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version: { type: string, example: 'v1.0.0' }
+                  hash: { type: string }
+                  signed_by: { type: array, items: { type: string }, example: ['legal', 'dpo'] }
+                  effective_at: { type: string, format: date-time }
+
+  ## --- ChangeRequest (ADR-0046) ---
+  /change-requests:
+    post:
+      tags: ['ChangeRequest (ADR-0046)']
+      summary: Apply a change request (policy/price/rbac/sla/template/contract)
+      parameters: [{ name: Idempotency-Key, in: header, required: true, schema: { type: string } }]
+      responses:
+        '201': { content: { application/json: { schema: { $ref: '#/components/schemas/ChangeRequest' } } } }
+  /change-requests/{id}/approve:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: ['ChangeRequest (ADR-0046)']
+      responses: { '200': { description: approved with audit } }
+
+  ## --- SOP Review (FR-NEW-5 family reviewer SLA) ---
+  /sops/{id}/review/dual:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [SOP Review]
+      summary: 'Dual review (CS supervisor + Domain Expert)'
+      responses: { '200': { description: dual review complete } }
+  /sops/{id}/review/family:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [SOP Review]
+      summary: 'Family Reviewer 100% gate (SLA 24h)'
+      responses:
+        '200': { description: approved or rejected }
+        '425': { description: 'too early - dual review not done' }
+
+  ## --- AI Forbidden Eval ---
+  /eval/forbidden/run:
+    post:
+      tags: [Eval]
+      summary: Run AI Forbidden 200-question Eval (block-deploy gate per ADR-0047)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pass_rate: { type: number }
+                  block_deploy: { type: boolean, description: 'true if pass_rate < 0.95' }
+                  details: { type: array, items: { type: object } }
+
+  ## --- Voucher (ADR-VCH-001/002 V1) — v2.2 added per MoM #2 ---
+  ## Design notes (sd):
+  ## - CQRS: write-side via journal_entry trigger (no public POST)
+  ## - read-side: GET single + GET list (cursor) + V2.1 export endpoint preview
+  ## - Append-only contract (no PATCH/DELETE); void via dedicated :void sub-resource action
+  ## - Hash chain enforced at DB; API surface is透明 (no hash exposure unless explicitly requested)
+  ## - Platform = keeper (per ADR-VCH-001); voucher.issuer_party != 'platform' for sub-contractor flows
+  /vouchers/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: ['Voucher (ADR-VCH-001/002 V1)']
+      summary: Read single voucher
+      responses:
+        '200': { content: { application/json: { schema: { $ref: '#/components/schemas/Voucher' } } } }
+        '403': { description: CROSS_TENANT_READ }
+        '404': { description: not found }
+        '410': { description: VOUCHER_VOIDED, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /vouchers:
+    get:
+      tags: ['Voucher (ADR-VCH-001/002 V1)']
+      summary: List vouchers (cursor pagination, max 100)
+      parameters:
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: period, in: query, required: true, schema: { type: string, pattern: '^\d{4}-\d{2}$' }, description: 'YYYY-MM' }
+        - { name: tenant_id, in: query, required: true, schema: { type: string } }
+        - { name: issuer_party, in: query, schema: { type: string, enum: [platform, locksmith, brand] } }
+        - { name: limit, in: query, schema: { type: integer, maximum: 100, default: 20 } }
+      responses:
+        '200': { content: { application/json: { schema: { $ref: '#/components/schemas/VoucherList' } } } }
+        '422': { description: invalid period format }
+  /vouchers/{id}/void:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: ['Voucher (ADR-VCH-001/002 V1)']
+      summary: Void voucher (writes red entry; original row never modified)
+      security: [{ bearerAuth: [], keeperRole: [] }]
+      parameters: [{ name: Idempotency-Key, in: header, required: true, schema: { type: string } }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, enum: [error_correction, customer_dispute, tax_adjust] }
+                comment: { type: string }
+      responses:
+        '201':
+          description: Red entry voucher created (new voucher_no with reverses_voucher_id FK)
+          content: { application/json: { schema: { $ref: '#/components/schemas/Voucher' } } }
+        '409': { description: already voided }
+        '410': { description: original already voided }
+
+  ## V2.1 preview (NOT IMPLEMENTED IN V1; schema reserved per ADR-VCH-002)
+  /vouchers/export:
+    get:
+      tags: ['Voucher (ADR-VCH-001/002 V1)']
+      summary: '[V2.1 preview] Async export job for ERP / 電子發票 ED4'
+      security: [{ bearerAuth: [], keeperRole: [] }]
+      parameters:
+        - { name: format, in: query, required: true, schema: { type: string, enum: [csv, json, ed4] } }
+        - { name: period, in: query, required: true, schema: { type: string, pattern: '^\d{4}-\d{2}$' } }
+      responses:
+        '202':
+          description: Job queued (async); poll /exports/{job_id} for signed URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id: { type: string }
+                  estimated_ready_at: { type: string, format: date-time }
+        '501': { description: 'V2.1 only; V1 returns Not Implemented' }
+  /exports/{job_id}:
+    parameters: [{ name: job_id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: ['Voucher (ADR-VCH-001/002 V1)']
+      summary: '[V2.1 preview] Poll export job; returns signed URL (15min TTL) when ready'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [pending, ready, expired, failed] }
+                  signed_url: { type: string, nullable: true }
+                  ttl_seconds: { type: integer }
+                  audit_log_hash_head: { type: string, description: 'Latest hash chain head at export time, for downstream verify' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, enum: [CROSS_TENANT_WRITE, CROSS_TENANT_READ, CONTRACT_VERSION_CONFLICT, SCOPE_OVERLAP, ADDRESS_REQUIRED_FOR_CLOSE, PC_UNIQUE_VIOLATION, AI_FORBIDDEN_ACTION, DGS_LEGAL_HOLD_ACTIVE, VOUCHER_VOIDED, VOUCHER_ALREADY_VOIDED, LEGAL_HOLD_BLOCKS_FORGET, SOP_DUAL_REVIEW_NOT_DONE] }
+        message: { type: string }
+        request_id: { type: string }
+
+    LineWebhookEvents:
+      type: object
+      properties:
+        events:
+          type: array
+          items: { type: object }
+
+    ProblemCard:
+      type: object
+      required: [id, tenant_id, conversation_id, brand, model, symptom, urgency, completeness_score, state]
+      properties:
+        id: { type: string }
+        tenant_id: { type: string }
+        conversation_id: { type: string }
+        device_id: { type: string }
+        brand: { type: string }
+        model: { type: string }
+        symptom: { type: array, items: { type: string } }
+        urgency:
+          type: string
+          enum: [normal, locked_out, trapped_inside, safety_risk, angry_customer_high_risk]
+          description: ADR-0034 4 類 urgent + normal
+        completeness_score: { type: number, minimum: 0, maximum: 1 }
+        media_refs: { type: array, items: { type: string } }
+        state: { type: string, enum: [incomplete, draft, confirmed, resolved] }
+
+    ProblemCardCreate:
+      allOf:
+        - $ref: '#/components/schemas/ProblemCard'
+        - required: [tenant_id, conversation_id]
+
+    ProblemCardList:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ProblemCard' } }
+        next_cursor: { type: string, nullable: true }
+
+    WorkOrderCreate:
+      type: object
+      required: [pc_id, tenant_id, created_by_role]
+      properties:
+        pc_id: { type: string }
+        tenant_id: { type: string }
+        address: { type: string, nullable: true, description: 'address optional at creation (ADR-0032); required at close' }
+        created_by_role: { type: string, enum: [customer_service], description: 'AI cannot create directly (ADR-0031)' }
+
+    ScopeChange:
+      type: object
+      required: [customer_signature_ref, evidence_photo_ref, amount_delta, tier]
+      properties:
+        customer_signature_ref: { type: string }
+        evidence_photo_ref: { type: string }
+        audit_note: { type: string }
+        amount_delta: { type: number }
+        tier:
+          type: string
+          enum: [self_confirm_le_500, cs_line_501_2000, supervisor_plus_3way_gt_2000]
+          description: ADR-0049 amount tiers
+
+    ContractTemplate:
+      type: object
+      required: [id, tenant_id, partner_id, version, scope, liability_matrix, visibility_rule, state]
+      properties:
+        id: { type: string }
+        tenant_id: { type: string }
+        partner_id: { type: string }
+        version: { type: integer }
+        effective_date: { type: string, format: date }
+        scope:
+          type: object
+          properties:
+            brand_scope: { type: array, items: { type: string } }
+            site_group_scope: { type: array, items: { type: string } }
+        liability_matrix:
+          type: object
+          required: [brand_pct, platform_pct, locksmith_pct, customer_pct]
+          properties:
+            brand_pct: { type: number }
+            platform_pct: { type: number }
+            locksmith_pct: { type: number }
+            customer_pct: { type: number }
+            dispute_resolution_party: { type: string, enum: [brand, platform, locksmith, arbitration] }
+            secondary_responsible: { type: string, nullable: true }
+        visibility_rule:
+          type: object
+          required: [allowed_roles, effective_scope_snapshot]
+          description: 'Snapshot of effective scope at the time, NOT just a reference (per ADR-0060)'
+          properties:
+            allowed_roles: { type: array, items: { type: string } }
+            effective_scope_snapshot: { type: object }
+        sla_definition: { type: object }
+        monthly_settlement_rule: { type: object }
+        cancellation_fee_tiers: { type: array, items: { type: object } }
+        travel_fee_split: { type: object }
+        state:
+          type: string
+          enum: [draft]
+          description: 'V1 supports draft only; V2 will introduce submitted/approved/published/retired'
+
+    ContractTemplateList:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ContractTemplate' } }
+        next_cursor: { type: string, nullable: true }
+
+    CustomerNotice:
+      type: object
+      properties:
+        deadline_days: { type: integer, default: 7 }
+        reason: { type: string, example: legal_hold_active }
+        expected_unlock_date: { type: string, format: date, nullable: true }
+
+    ChangeRequest:
+      type: object
+      required: [id, type, apply_by, state, audit_trail]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [policy, price, rbac, sla, template, contract] }
+        apply_by: { type: string }
+        approve_chain: { type: array, items: { type: object } }
+        state: { type: string, enum: [pending, approved, effective, rejected] }
+        effective_date: { type: string, format: date }
+        audit_trail: { type: array, items: { type: object } }
+
+    # v2.2 added per ADR-VCH-001/002 + MoM #2
+    Voucher:
+      type: object
+      required: [voucher_no, period, ledger_id, amount, reason_code, reference_type, payment_method, issuer_party, legal_basis, hash_self]
+      properties:
+        voucher_no: { type: string, pattern: '^\d{6}-\d+$', example: '202606-12345', description: 'yyyymm-seq; unique within partition' }
+        period: { type: string, pattern: '^\d{4}-\d{2}$' }
+        ledger_id: { type: string }
+        tenant_id: { type: string }
+        debit_account: { type: string }
+        credit_account: { type: string }
+        amount: { type: number, format: decimal, minimum: 0 }
+        reason_code:
+          type: string
+          enum: [dispatch_complete, refund_full, refund_partial, brand_settle, tax_adjust, reversal]
+        reference_type:
+          type: string
+          enum: [wo, rma, refund, settlement, invoice]
+        reference_id: { type: string }
+        payment_method:
+          type: string
+          enum: [onsite_cash, payment_link, bank_transfer]
+          description: 'OQ-008 三路收款'
+        issuer_party:
+          type: string
+          enum: [platform, locksmith, brand]
+          description: 'ADR-VCH-001 keeper schema: 平台只 keep，發票由 issuer 自開'
+        tax_doc_ref:
+          type: object
+          properties:
+            type: { type: string, enum: [GUI, EINV, RECEIPT], description: '統一發票 / 電子發票 / 收據' }
+            doc_id: { type: string }
+            issuer_tax_id: { type: string }
+        legal_basis:
+          type: string
+          enum: [TAX_ACT_§38, BIZ_ACCT_§11_1, BOTH]
+          description: 'ADR-VCH-002 保存期法源'
+        hash_prev: { type: string, description: 'Hash chain: 前一筆 row 的 hash_self' }
+        hash_self: { type: string, description: 'sha256(hash_prev + serialize(row)); 不可竄改保證' }
+        reverses_voucher_id:
+          type: string
+          nullable: true
+          description: 'Void 用：紅字憑證指向原 voucher_no'
+        created_at: { type: string, format: date-time }
+
+    VoucherList:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Voucher' } }
+        next_cursor: { type: string, nullable: true }

@@ -326,8 +326,8 @@ revision_history:
 
 ---
 
-_本檔狀態：Q1/Q4/Q6/Q7 已落地，Q2/Q3 follow-up 待業主補答。完整脈絡見 [`../../0-strategy/PAIN-POINTS-SUMMARY-2026-05-21.md`](../../0-strategy/PAIN-POINTS-SUMMARY-2026-05-21.md) 與 [`ACTION-ITEMS-2026-05-22.md`](./ACTION-ITEMS-2026-05-22.md)。_
+_本檔狀態：Q1/Q4/Q6/Q7 已落地，Q2/Q3 follow-up 待業主補答。完整脈絡見 [`../../archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md`](../../archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md) 與 [`ACTION-ITEMS-2026-05-22.md`](./ACTION-ITEMS-2026-05-22.md)。_
 
 ---
 
-_本檔由 Claude 整理自 PRD-0001 §5.2 / ADR-0058 / ADR-0059 / PAIN-POINTS Pre-mortem 排程。完整脈絡見 [`../../0-strategy/PAIN-POINTS-SUMMARY-2026-05-21.md`](../../0-strategy/PAIN-POINTS-SUMMARY-2026-05-21.md) 與 [`ACTION-ITEMS-2026-05-22.md`](./ACTION-ITEMS-2026-05-22.md)。_
+_本檔由 Claude 整理自 PRD-0001 §5.2 / ADR-0058 / ADR-0059 / PAIN-POINTS Pre-mortem 排程。完整脈絡見 [`../../archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md`](../../archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md) 與 [`ACTION-ITEMS-2026-05-22.md`](./ACTION-ITEMS-2026-05-22.md)。_

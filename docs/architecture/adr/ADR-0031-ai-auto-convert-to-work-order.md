@@ -8,7 +8,7 @@ deciders: [業主]
 accepted_date: 2026-05-22
 related:
   - "./ADR-0028-ai-employee-charter.md"
-  - "../4-prd-fr-arch/01-prd/DISC-0001-blueprint-snapshot-2026-05-16.md"
+  - "../docs/prd/DISC-0001-blueprint-snapshot-2026-05-16.md"
   - 02-ai-chatbot-sync-final-spec-20260520.xlsx#sheet-19
   - 02-ai-chatbot-sync-final-spec-20260520.xlsx#sheet-04 (G7)
 pre_mortem: F3 (HITL 邊界漂移死)

@@ -3,14 +3,14 @@ title: 智慧鎖售後服務平台 — 痛點總結結構化文件（v2 Pre-mort
 date: 2026-05-21
 version: v2.0
 sources:
-  - 4-prd-fr-arch/01-prd/PRD-0001-2026-q1-v1-launch.md
-  - 4-prd-fr-arch/01-prd/SOW-0001-2026-q1.md
-  - 4-prd-fr-arch/01-prd/BIZ-0001-executive-architecture-overview.md
-  - 4-prd-fr-arch/01-prd/DISC-0001-blueprint-snapshot-2026-05-16.md
-  - 4-prd-fr-arch/02-fr/FR-0001 ~ FR-0025 (25 份)
-  - 4-prd-fr-arch/03-nfr/PRIN-0002-frontend-quality-attributes.md
-  - 4-prd-fr-arch/04-architecture/ARCH-0001-architecture-overview.md
-  - 4-prd-fr-arch/04-architecture/adr/ADR-0001 ~ ADR-0030 (30 份)
+  - archive/prd-baseline/PRD-0001-2026-q1-v1-launch.md
+  - docs/prd/SOW-0001-2026-q1.md
+  - docs/prd/BIZ-0001-executive-architecture-overview.md
+  - docs/prd/DISC-0001-blueprint-snapshot-2026-05-16.md
+  - docs/analysis/fr/FR-0001 ~ FR-0025 (25 份)
+  - docs/architecture/nfr/PRIN-0002-frontend-quality-attributes.md
+  - docs/architecture/ARCH-0001-architecture-overview.md
+  - docs/architecture/adr/ADR-0001 ~ ADR-0030 (30 份)
   - 01-workorder-erp-final-spec-20260520.xlsx (40 sheets, 165 Q&A + 64 rules)
   - 02-ai-chatbot-sync-final-spec-20260520.xlsx (44 sheets, A01-A12 + S01-S06)
 status: draft
@@ -71,7 +71,7 @@ status: draft
 **ADR 拍板統計**：
 - 原 §F 24 條 trade-off → 24 條 ADR 全部 accepted ✅（ADR-0031~0054）
 - 會議新發現 → 5 條新 ADR accepted ✅（**ADR-0055~0059**）
-- 詳見 [`3-adr/INDEX.md`](../3-adr/INDEX.md) 與 [`ACTION-ITEMS-2026-05-22.md`](../2-meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md)
+- 詳見 [`docs/architecture/adr/INDEX.md`](../docs/architecture/adr/INDEX.md) 與 [`ACTION-ITEMS-2026-05-22.md`](../archive/meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md)
 
 **兩條 ADR 業主備註調整**（與推薦做法有差）：
 - **ADR-0032 地址**：推薦做法 + 加碼**結案前硬 gate**（派工不擋、師傅可 skip、結案 422 強制驗證）

@@ -200,7 +200,7 @@ accepted_date: 2026-05-22
 
 | 拍板 | 下游檔案 | 動作 |
 |---|---|---|
-| ADR-0031 | `4-prd-fr-arch/02-fr/FR-XXXX-ai-work-order-convert.md`（待建）| 寫 UAT：「AI 永不直接 call `convert_to_work_order`」+ Eval set 200 題 |
+| ADR-0031 | `docs/analysis/fr/FR-XXXX-ai-work-order-convert.md`（待建）| 寫 UAT：「AI 永不直接 call `convert_to_work_order`」+ Eval set 200 題 |
 | ADR-0032 | FR-XXXX 地址政策、`PRD-0001` Epic 11 | 結案前 gate 寫進 acceptance criteria |
 | ADR-0033 | `FR-0002-problem-card-triage.md` §3.1 | completeness_score gate 0.85 從合約 9.3 條延伸到自動派工門檻 |
 | ADR-0034 | `ARCH-0001` Domain Event Catalog、SLA monitor 章節 | 4 類 urgent 寫進 event schema |
@@ -219,7 +219,7 @@ accepted_date: 2026-05-22
 
 | 階段 | 範圍 | 狀態 | 檔案 |
 |---|---|---|---|
-| Level 1 | 24 個 ADR frontmatter status: draft → accepted + accepted_date | ✅ 完成 | `3-adr/ADR-0031~0054.md` |
+| Level 1 | 24 個 ADR frontmatter status: draft → accepted + accepted_date | ✅ 完成 | `docs/architecture/adr/ADR-0031~0054.md` |
 | Level 2 | ADR-0032 + ADR-0039 Decision 段重寫（業主備註版）| ✅ 完成 | `ADR-0032-missing-address-policy.md` / `ADR-0039-cancellation-fee-tiers.md` |
 | 新 ADR | ADR-0055 ~ 0059 撰寫（5 條，全 accepted）| ✅ 完成 | `ADR-0055~0059`（5 個新檔）+ `INDEX.md` Group 4 |
 | Level 3 | PAIN-POINTS-SUMMARY F1~F7 + GAP 表 + LEGAL 同步 | ✅ 完成 | `PAIN-POINTS-SUMMARY-2026-05-21.md` 新增 §A.1 / §F 表 / LEGAL-01/03 |

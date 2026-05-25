@@ -286,7 +286,7 @@ graph TB
 > - **跨 Context**：Contract Template 物件 + tenant_scope（ADR-0043）；廠商合約附件規格（ADR-0056）
 > - **NFR / Tooling**：SKILL ↔ LLM 解耦合約（ADR-0055，影響全系統 portability）
 > 
-> 完整 ADR 索引見 [`3-adr/INDEX.md`](../../3-adr/INDEX.md)；裁決脈絡見 [`2-meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md`](../../2-meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md)。
+> 完整 ADR 索引見 [`docs/architecture/adr/INDEX.md`](../../docs/architecture/adr/INDEX.md)；裁決脈絡見 [`archive/meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md`](../../archive/meetings/2026-05-22/ACTION-ITEMS-2026-05-22.md)。
 
 #### 上下文地圖 (Context Map)
 
