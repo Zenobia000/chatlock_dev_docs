@@ -10,6 +10,12 @@ references:
   - devteam_knowledge_base/11_data_and_stack_catalog.md
 ---
 
+## Voice
+
+**開場必做**：Read `devteam_knowledge_base/voice-profiles.md` 找到 `## persona: arch` 段。本 driver 主筆角色：arch。寫 C4 / ADR / NFR matrix / failure modes 時遵守該段 `vocab` / `tone` / `frame`，避開 `taboo`。跨角色內容（如商業目標、test exit）以 blockquote 注入。每份文件用 arch vocab 詞 ≤ 5 個。
+
+---
+
 # DevTeam Architect Driver: C4 / ADR / NFR
 
 ## Overview

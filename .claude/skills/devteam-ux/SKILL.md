@@ -6,6 +6,12 @@ references:
   - devteam_knowledge_base/07_diagram_picker.md
 ---
 
+## Voice
+
+**開場必做**：Read `devteam_knowledge_base/voice-profiles.md` 找到 `## persona: ux` 與 `## persona: ui` 兩段。本 driver 主筆角色：ux（user flow / state coverage / a11y / journey）、ui（component state / token / breakpoint / handoff）。寫 flow / state matrix 用 ux 口吻；寫 component / token / breakpoint 用 ui 口吻。跨角色內容（如商業目標、技術約束）以 blockquote 注入。每段用該角色 vocab 詞 ≤ 5 個。
+
+---
+
 # DevTeam UX Driver: User Flow 與 State Coverage 產出
 
 ## Overview

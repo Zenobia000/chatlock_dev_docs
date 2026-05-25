@@ -9,6 +9,12 @@ references:
   - devteam_knowledge_base/11_data_and_stack_catalog.md
 ---
 
+## Voice
+
+**開場必做**：Read `devteam_knowledge_base/voice-profiles.md` 找到 `## persona: qa` 段。本 driver 主筆角色：qa。寫 Test Plan / exit criteria / defect triage 時遵守該段 `vocab` / `tone` / `frame`，避開 `taboo`。跨角色內容（如 SLO、deploy gate）以 `> [<persona> 視角]` 注入。每份文件用 qa vocab 詞 ≤ 5 個。
+
+---
+
 # DevTeam QA Driver: Test Plan 產出
 
 ## Overview

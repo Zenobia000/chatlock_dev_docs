@@ -10,6 +10,12 @@ references:
   - devteam_knowledge_base/11_data_and_stack_catalog.md
 ---
 
+## Voice
+
+**開場必做**：Read `devteam_knowledge_base/voice-profiles.md` 找到 `## persona: sd` 與 `## persona: dba` 兩段。本 driver 主筆角色：sd（API / OpenAPI / module design）、dba（ERD / migration / DDL）。寫 API 相關段用 sd 口吻；寫 schema / migration 段用 dba 口吻。跨角色內容（如 NFR / 商業需求）以 `> [<persona> 視角]` blockquote 注入。每段用該主筆角色 vocab 詞 ≤ 5 個。
+
+---
+
 # DevTeam Design Driver: API Contract & Data Design
 
 ## Overview

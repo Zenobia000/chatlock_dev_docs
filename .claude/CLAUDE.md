@@ -56,6 +56,7 @@ Lane B 不取代 Lane A，Lane C 不取代 A/B。Lane C 結束後業主回 Open 
 - `devteam_knowledge_base/04_freeze_gates.md` — 7 個 gate 的 owner / evidence / personas
 - `devteam_knowledge_base/05_meeting_protocols.md` — Multi-role review prompt + orchestrator 合併
 - `devteam_knowledge_base/06_quality_attributes_catalog.md` — NFR / SLO / DORA / ISO 29148 / NIST SSDF
+- `devteam_knowledge_base/voice-profiles.md` — 12 角色語言指紋（vocab / tone / taboo / frame / example）。persona agent 與 driver skill 開場必讀對應段
 - `devteam_knowledge_base/templates/` — PRD / User Flow / System Spec / C4 / ADR / DR / OpenAPI / ERD / Test Plan / Runbook / Release Readiness / Handoff
 
 ## Session 狀態

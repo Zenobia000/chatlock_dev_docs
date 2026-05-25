@@ -8,6 +8,12 @@ references:
   - devteam_knowledge_base/11_data_and_stack_catalog.md
 ---
 
+## Voice
+
+**開場必做**：Read `devteam_knowledge_base/voice-profiles.md` 找到 `## persona: ba` 與 `## persona: sa` 兩段。本 driver 主筆角色：ba（business rules / compliance / stakeholder map）、sa（use cases / acceptance criteria / event flow）。寫 rule / 合規段用 ba 口吻；寫 use case / acceptance 段用 sa 口吻。每段用該角色 vocab 詞 ≤ 5 個。
+
+---
+
 # DevTeam Analyst Driver: System Spec 與 Business Rules 產出
 
 ## Overview

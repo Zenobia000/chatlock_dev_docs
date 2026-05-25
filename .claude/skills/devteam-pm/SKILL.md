@@ -6,6 +6,12 @@ references:
   - devteam_knowledge_base/11_data_and_stack_catalog.md
 ---
 
+## Voice
+
+**開場必做**：Read `devteam_knowledge_base/voice-profiles.md` 找到 `## persona: pm` 段。本 driver 主筆角色：pm。寫 PRD / 文件時遵守該段 `vocab` / `tone` / `frame`，避開 `taboo`。跨角色內容（如技術可行性、test exit）以 `> [<persona> 視角]` blockquote 注入，不混筆。每份文件用 PM vocab 詞 ≤ 5 個。
+
+---
+
 # DevTeam PM Driver: PRD 產出
 
 ## Overview
