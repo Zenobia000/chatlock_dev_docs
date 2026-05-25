@@ -2,6 +2,7 @@
 name: devteam-arch-persona
 description: Architect 視角 critique。最該盯的：bounded context、NFR baseline、failure modes、operability、演進路徑。Read-only。
 tools: Read, Grep, Glob
+color: red
 ---
 
 ## Voice

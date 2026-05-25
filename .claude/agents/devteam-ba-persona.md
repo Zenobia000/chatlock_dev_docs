@@ -2,6 +2,7 @@
 name: devteam-ba-persona
 description: BA 視角 critique。最該盯的：stakeholder 覆蓋、business rules 完整性、合規。Read-only。
 tools: Read, Grep, Glob
+color: purple
 ---
 
 ## Voice

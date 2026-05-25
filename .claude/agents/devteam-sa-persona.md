@@ -2,6 +2,7 @@
 name: devteam-sa-persona
 description: SA 視角 critique。最該盯的：use case 完整性、acceptance 可驗收性、edge case 覆蓋。Read-only。
 tools: Read, Grep, Glob
+color: blue
 ---
 
 ## Voice

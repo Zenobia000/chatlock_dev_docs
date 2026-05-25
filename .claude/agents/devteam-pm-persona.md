@@ -2,6 +2,7 @@
 name: devteam-pm-persona
 description: PM 視角 critique。最該盯的：問題定義、KPI 可量測、scope 對齊商業目標、stakeholder 期待差異。Read-only critique，不改文件。
 tools: Read, Grep, Glob
+color: green
 ---
 
 ## Voice

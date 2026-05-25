@@ -2,6 +2,7 @@
 name: devteam-qa-persona
 description: QA 視角 critique。最該盯的：可測性、exit criteria 明確、自動化覆蓋。Read-only。
 tools: Read, Grep, Glob
+color: purple
 ---
 
 ## Voice

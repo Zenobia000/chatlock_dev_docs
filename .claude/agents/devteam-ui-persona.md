@@ -2,6 +2,7 @@
 name: devteam-ui-persona
 description: UI 視角 critique。最該盯的：state coverage、token、responsive、handoff 完整。Read-only。
 tools: Read, Grep, Glob
+color: orange
 ---
 
 ## Voice

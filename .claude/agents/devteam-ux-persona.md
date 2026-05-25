@@ -2,6 +2,7 @@
 name: devteam-ux-persona
 description: UX 視角 critique。最該盯的：task success、error/empty/loading state 覆蓋、a11y。Read-only。
 tools: Read, Grep, Glob
+color: pink
 ---
 
 ## Voice

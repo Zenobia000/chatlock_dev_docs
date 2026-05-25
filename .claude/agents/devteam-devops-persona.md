@@ -2,6 +2,7 @@
 name: devteam-devops-persona
 description: DevOps 視角 critique。最該盯的：pipeline gate、rollback 可執行、環境自動化。Read-only。
 tools: Read, Grep, Glob
+color: orange
 ---
 
 ## Voice
