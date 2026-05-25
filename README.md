@@ -1,222 +1,320 @@
-# Architecture Autopilot — DevTeam Harness
+# Smart Lock SaaS — 智慧鎖 AI 客服與派工平台
 
-> 業主提出痛點 → AI agent harness 扮演整個軟體開發團隊 → 產出所有規範文件 → 交給外部 coding agent 實作。
+> LINE Bot AI 客服 + 智慧派工 + 自動結算的 SaaS 平台。把電子鎖售後從「靠老師傅腦袋」變成「LINE 進來、AI 接、結構化資料、可分潤」。
+>
+> **狀態**：📋 PRD v2.2 frozen（2026-05-24）／ V1.0 上線目標 W17 ／ V2.0 W31
 
-把「梳理邏輯、產出規範、追蹤決策鏈、確保 freeze 不漏 evidence」這些勞役式的工作 harness 化，讓業主把心力放在**架構品味與系統判斷**——這是 AI 取代不了的稀缺能力。
-
----
-
-## 為什麼做這件事
-
-AI Agent 把「寫程式碼」壓到零成本，但真正稀缺的不是打字速度，是**上下文管理、驗證能力、架構品味、責任承擔**。本系統不取代這些判斷——它把判斷之外的事自動化：
-
-- **產出 PRD / User Flow / System Spec / ADR / C4 / OpenAPI / ERD / Test Plan / Runbook / Release Readiness** — 真實軟體團隊會有的文件全部都產
-- **依照 Phase DAG 迭代式推進** — 不是序列式一步到位，從模糊到清晰，每次變更都寫 ADR/DR 並追蹤 cascade
-- **Freeze gate 前自動 multi-role critique** — 12 個角色視角並行 review，orchestrator 合併，業主只裁決不勞役
-- **最後產出 handoff brief** — 給 Claude Code / Cursor / Aider 一個入口，coding agent 不需要再讀 11 份分散文件推理依賴
-
-設計依據：本 repo 內的 [`archive/strategy/deep-research-report.md`](./archive/strategy/deep-research-report.md)（11 階段 × 12 角色 × 三條並行主線 × 分層 freeze 的真實軟體團隊運作模式）。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docs](https://img.shields.io/badge/docs-single--source--of--truth-blue)](./docs/)
+[![ADR](https://img.shields.io/badge/ADR-66%20accepted-green)](./docs/architecture/adr/)
 
 ---
 
-## 快速開始
+## 📋 30 秒摘要
 
-在這個 repo 內開啟 Claude Code，輸入：
+售後客服痛點：新人 3 個月才上手、紙本對帳一個月吵一次、派錯案件就賠錢。本平台用 LINE Bot AI 把對話自動結構化成 ProblemCard，三層解決（案例庫 → 手冊 RAG → 真人），失敗時草擬工單給客服一鍵確認派工。V1.0 上線 AI 客服 + 後台（W17）；V2.0 接派工與帳務（W31）。
+
+**最大爭議 + 紅線**：AI 不能亂承諾報價 / 退款 / 保固，合約 4.4 條規定的情緒識別 ≥ 90% / 家族覆核 / 個資保留期一條都不能破。
+
+---
+
+## 📚 Table of Contents
+
+- [產品定位](#-產品定位)
+- [KPI 與合約紅線](#-kpi-與合約紅線)
+- [V1.0 / V2.0 範圍](#-v10--v20-範圍)
+- [技術架構](#-技術架構)
+- [文件導覽 by 角色](#-文件導覽-by-角色)
+- [Repo 結構](#-repo-結構)
+- [開發團隊起手式](#-開發團隊起手式)
+- [業主決策歷程](#-業主決策歷程)
+- [這個 repo 怎麼來的](#-這個-repo-怎麼來的)
+
+---
+
+## 🎯 產品定位
+
+| 維度 | 內容 |
+|:---|:---|
+| **解什麼問題** | 售後服務沒人標準化，新客服訓練成本高、對帳爭議頻繁、派工容易出錯 |
+| **使用者是誰** | LINE 上的消費者（V1 同時 50 人 / V2 100 人 / 3-5 年 30 萬戶）、簽約師傅（V2 目標 500 人 / 22 縣市）、客服 + 管理員 |
+| **要做到什麼** | AI 準確率 ≥ 80% · 自助解決率 ≥ 60% · 接單 SLA 10/5 分 · 系統 Uptime ≥ 95% |
+| **商業目標** | 客服人力省 60% · 月結對帳從 3 天降到 4 小時 · 多甲方架構先打底 |
+
+詳細見 [`docs/prd/smart-lock-saas.md`](./docs/prd/smart-lock-saas.md)（PM 主檔，業主 / PM < 5 分鐘讀完）。
+
+---
+
+## 📊 KPI 與合約紅線
+
+### KPI（業主簽核）
+
+| 編號 | 指標 | 目標 |
+|:---|:---|:---|
+| **K1** | AI 準確率 | ≥ **80%**（50 題標準集） |
+| **K2** | 自助解決率 | ≥ **60%**（上線 3 個月後） |
+| **K3** ⚠️ | 家族覆核 event log 完整率 | ≥ **95%** + dispute rate ≤ 3%（合約 4.4(d) 履約方式詮釋）|
+| **K5** | 接單 SLA | 10 分 / 急件 5 分，達成率 ≥ 95% |
+| **K7** | 系統 Uptime | ≥ **95%**（合約 baseline） |
+| **K8** ⚠️ | AI Forbidden Eval | ≥ **95%**，否則禁止部署（200 題 Domain Expert 出題）|
+
+完整 K1~K9 + counter-metric C1~C4 見 PRD §KPI 表。
+
+### 🚨 合約紅線（違反 = 合約 §9 終止風險）
+
+1. **合約 4.4(a)** 負面情緒識別 ≥ 90%（UAT + 持續監控）
+2. **合約 4.4(d)** 家族覆核紀錄（採 [Option A 降級履約](./docs/governance/legal-memo-retrospective-review.md)）
+3. **合約 9.3** ProblemCard 完整率 ≥ 85%
+4. **合約 SOW 2.1(4)** AI 影像辨識**禁用**（violation count = 0）
+5. **AI Forbidden Eval ≥ 95%** 每次 deploy
+6. **跨租戶資料零洩漏**（[ADR-0030](./docs/architecture/adr/ADR-0030-tenant-id-propagation.md)）
+7. **GDPR forget ≤ 7 天**（[BR-PII-001](./docs/policy/br-pii-001.rego)）
+
+任一違反 = block release。
+
+---
+
+## 🎯 V1.0 / V2.0 範圍
+
+### ✅ V1.0（W1-W17）— AI 客服 + 合規
+
+- LINE Bot AI 客服（文字、圖、對話記憶、情緒分流）
+- ProblemCard 結構化問題卡 + 主動引導補資訊
+- 三層解決機制（案例庫 → 手冊 RAG → 轉真人）
+- 後台管理（知識庫、對話監看、儀表板、RBAC 四層權限）
+- 合約 4.4 整套（90% 情緒識別、家族覆核 event log、個資保留期）
+- 多甲方架構底層 schema 預埋（[ADR-0060](./docs/architecture/adr/ADR-0060-contract-template-schema-freeze-v1.md)）
+- Data Governance Service 獨立服務（[ADR-0061](./docs/architecture/adr/ADR-0061-data-governance-service-boundary.md)）
+- AI 禁區 200 題 Eval pipeline（block-deploy gate）
+- Voucher 內部憑證 schema（[ADR-VCH-001](./docs/architecture/adr/ADR-VCH-001-platform-as-voucher-keeper.md)）
+
+### ✅ V2.0（W18-W31）— 派工 + 帳務
+
+- 師傅 Web App（案件池、接單、ETA、完工報告、帳戶中心）
+- 智慧派工（自動匹配 + 手動指派）
+- 報價引擎（標準矩陣 + 特殊加價）
+- 帳務系統（7 帳本、墊款追蹤、月結、退款分層）
+- Admin V2.0（案件全生命週期、客訴、技師管理、ChangeRequest workflow）
+- 月結匯出（電子發票 / ERP CSV）→ V2.1
+
+### ❌ 明確不做（避免 scope creep）
+
+多語言（繁中為主）、消費者 App、線上金流、技師 GPS 追蹤、庫存管理、語音對話、AI 影像辨識、AI final quote、跨租戶資料可見。詳見 [PRD §範圍](./docs/prd/smart-lock-saas.md#-範圍做什麼--不做什麼)。
+
+---
+
+## 🏗 技術架構
 
 ```
-/devteam 我要做訂閱制讀書筆記系統，痛點是試用 7 天後流失率太高
+[LINE 用戶]──▶ LINE Messaging API ──▶ FastAPI Backend ──▶ Gemini 2.5 Flash
+                                           │                    (via LiteLLM)
+                                           ▼
+[技師 Web App (V2)]──▶ Next.js Frontend ──▶ PostgreSQL + pgvector
+                                           │
+[管理員 Admin Panel]──▶                    ├─▶ Data Governance Service (獨立)
+                                           │      └─ OPA Rego policy artifact
+                                           ▼
+                                       GCP Cloud Run
 ```
 
-接下來會發生：
+| 層 | 技術 | ADR |
+|:---|:---|:---|
+| Backend | FastAPI (Python 3.10+) | [ADR-0001](./docs/architecture/adr/ADR-0001-backend-framework.md) |
+| Database | PostgreSQL + pgvector | [ADR-0002](./docs/architecture/adr/ADR-0002-database-selection.md) |
+| LLM | Gemini 2.5 Flash V1 / 3 Pro V2+ | [ADR-0006](./docs/architecture/adr/ADR-0006-llm-model-selection.md) |
+| LLM 框架 | LangGraph + LiteLLM | [ADR-0003](./docs/architecture/adr/ADR-0003-llm-integration-framework.md) |
+| Frontend | Next.js (V2) | [ADR-0005](./docs/architecture/adr/ADR-0005-frontend-framework-v2.md) |
+| Channel | LINE Messaging API | [ADR-0004](./docs/architecture/adr/ADR-0004-line-bot-architecture.md) |
+| Cloud | GCP Cloud Run | [PRD OQ-003](./docs/prd/smart-lock-saas.md) |
+| 合規 | OPA Rego + DGS service | [ADR-0061](./docs/architecture/adr/ADR-0061-data-governance-service-boundary.md) |
 
-1. Router 建立 session（state.json / documents/index.json / adr-ledger.json / session narrative）
-2. 進入 **P0_DISCOVERY** → dispatch `devteam-pm` 寫 PRD draft 到 `docs/prd/`
-3. 達 **Gate 1 PRD Freeze** 條件 → 自動 dispatch `ba + sa + ux` 三 personas 並行 critique → orchestrator 合併為 review report
-4. 業主裁決 → frozen → 進入 **P1_ANALYSIS**（`devteam-analyst` 與 `devteam-ux` 並行）
-5. ...依此類推到 P5_RELEASE
-6. 最後 `/devteam-handoff <feature>` → 產出 `specs/<feature>/handoff.md` 交給外部 coding agent
-
-任何時刻：
-
-- `/devteam-status` 看 phase / freeze gate / 文件成熟度 / pending decisions / stale 清單
-- `/devteam-<role> "改 X"` 手動插入變更（已 frozen 文件會自動寫 DR 並列 cascade preview）
-- `/devteam-review <doc>` 對任意文件做 multi-role critique（不需 gate ready）
+完整：[`docs/architecture/ARCH-0001-architecture-overview.md`](./docs/architecture/ARCH-0001-architecture-overview.md)（C4 L1/L2）+ [`docs/architecture/c4-l3-smart-lock-saas.md`](./docs/architecture/c4-l3-smart-lock-saas.md)（C4 L3）+ [`docs/architecture/nfr-matrix-smart-lock-saas.md`](./docs/architecture/nfr-matrix-smart-lock-saas.md)（NFR 9 維度）
 
 ---
 
-## 12 個指令
+## 📖 文件導覽 by 角色
 
-| 指令 | 用途 |
-| :--- | :--- |
-| `/devteam` | 主入口，依 Phase DAG 路由 |
-| `/devteam-pm` | P0 / PRD |
-| `/devteam-analyst` | P1 / System Spec + Rules |
-| `/devteam-ux` | P1 / User Flow + State Coverage |
-| `/devteam-arch` | P2 / ADR + C4 + NFR |
-| `/devteam-design` | P3 / OpenAPI + ERD + Migration |
-| `/devteam-qa` | P4 / Test Plan + Exit Criteria |
-| `/devteam-ops` | P5 / Runbook + SLO + Release Readiness |
-| `/devteam-status` | Session 狀態速覽 |
-| `/devteam-freeze <Gate>` | 觸發 freeze gate multi-role review |
-| `/devteam-review <doc>` | 任意文件 critique |
-| `/devteam-handoff <feature>` | 產 handoff.md 給 coding agent |
+### 🎯 我是業主 / PM
+1. [`docs/prd/smart-lock-saas.md`](./docs/prd/smart-lock-saas.md) — PRD v2.2（一頁讀完 + KPI + 範圍 + 風險）
+2. [`docs/governance/stakeholders.md`](./docs/governance/stakeholders.md) — 18 角色 stakeholder map
+3. [`archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md`](./archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md) — F1~F7 失敗劇本 / 護城河
 
----
+### 🛠 我是新加入的工程師
+1. [`docs/prd/smart-lock-saas.md`](./docs/prd/smart-lock-saas.md) — 先讀產品定位
+2. [`docs/architecture/ARCH-0001-architecture-overview.md`](./docs/architecture/ARCH-0001-architecture-overview.md) — 看架構
+3. [`docs/architecture/adr/INDEX.md`](./docs/architecture/adr/INDEX.md) — 66 條決策索引
+4. [`specs/smart-lock-saas/handoff.md`](./specs/smart-lock-saas/handoff.md) — 開工入口
 
-## Phase DAG
+### 👤 我是 SA / BA
+1. [`docs/analysis/system-spec-smart-lock-saas.md`](./docs/analysis/system-spec-smart-lock-saas.md) — 14 物件 / 7 狀態機 / 64 BR / 18 UC / 21 events
+2. [`docs/analysis/fr/`](./docs/analysis/fr/) — 25 條 FR 規格
+3. [`docs/analysis/br/`](./docs/analysis/br/) — Business Rules（含 BR-AUDIT-007）
+4. [`docs/ux/user-flow-smart-lock-saas.md`](./docs/ux/user-flow-smart-lock-saas.md) — 4 main flows + 12 edge cases
 
-```
-P0_DISCOVERY ──▶ Gate1_PRD ──▶ P1_ANALYSIS (analyst + ux 並行)
-              ──▶ Gate2_UXFlow + Gate3_SystemSpec ──▶ P2_ARCHITECTURE
-              ──▶ Gate4_NFR_ADR ──▶ P3_DESIGN ──▶ Gate5a_API + Gate5b_DBSchema
-              ──▶ P4_DELIVERY ──▶ Gate6_TestReady
-              ──▶ P5_RELEASE ──▶ Gate7_Release ──▶ Handoff
-```
+### 🏛 我是 Architect / SD
+1. [`docs/architecture/c4-l3-smart-lock-saas.md`](./docs/architecture/c4-l3-smart-lock-saas.md) — Component + bounded context
+2. [`docs/architecture/nfr-matrix-smart-lock-saas.md`](./docs/architecture/nfr-matrix-smart-lock-saas.md) — 9 NFR 維度 + failure mode
+3. [`docs/architecture/adr/`](./docs/architecture/adr/) — 66 條 ADR
+4. [`docs/architecture/api/openapi.yaml`](./docs/architecture/api/openapi.yaml) — OpenAPI v1.0 frozen
 
-任何 phase 都可 re-entry（業主用 `/devteam-<role>` 改已 frozen 的文件），但**變更必寫 ADR/DR**，cascade 預設為 `manual_confirm` 避免 review 風暴。
+### 🗄 我是 DBA
+1. [`docs/architecture/data/erd.md`](./docs/architecture/data/erd.md) — ERD（含 partition / RLS / outbox / migration）
+2. [`docs/architecture/adr/ADR-0051-evidence-retention-policy.md`](./docs/architecture/adr/ADR-0051-evidence-retention-policy.md) — PII retention
+3. [`docs/architecture/adr/ADR-VCH-002-voucher-retention-7y.md`](./docs/architecture/adr/ADR-VCH-002-voucher-retention-7y.md) — Voucher 7y retention + cold tier
 
----
+### 🧪 我是 QA / Test Lead
+1. [`docs/qa/test-plan-smart-lock-saas.md`](./docs/qa/test-plan-smart-lock-saas.md) — 9 test levels + KPI scenarios + 8 BDD + 200 Forbidden Eval
+2. [`docs/analysis/system-spec-smart-lock-saas.md`](./docs/analysis/system-spec-smart-lock-saas.md) §3 BR catalog
 
-## 12 個 Critique Persona + Orchestrator
+### 🚀 我是 DevOps / SRE
+1. [`docs/ops/runbook-smart-lock-saas.md`](./docs/ops/runbook-smart-lock-saas.md) — 11 incident playbooks + Kill switch + Pipeline
+2. [`docs/ops/release-readiness.md`](./docs/ops/release-readiness.md) — V1 launch checklist
+3. [`docs/architecture/nfr-matrix-smart-lock-saas.md`](./docs/architecture/nfr-matrix-smart-lock-saas.md) §SLI/SLO
 
-每個 freeze gate 前並行 dispatch 對應 personas，每個只盯自己「最該盯的一件事」：
+### ⚖️ 我是法務 / DPO / 合規
+1. [`docs/governance/legal-memo-retrospective-review.md`](./docs/governance/legal-memo-retrospective-review.md) — 合約 §4.4(d) 履約方式詮釋備忘
+2. [`docs/policy/br-pii-001.rego`](./docs/policy/br-pii-001.rego) — OPA Rego PII policy artifact（CODEOWNERS @legal @dpo）
+3. ADR-0042（RBAC）+ ADR-0050（Evidence visibility）+ ADR-0051（Retention）+ ADR-VCH-001（Voucher Keeper）+ ADR-PII-002（資料極小化）
 
-| Persona | 最該盯的一件事 |
-| :------ | :-------------- |
-| PM | 問題 / KPI / scope 對齊商業目標 |
-| PO | Backlog priority / accountable owner |
-| BA | Stakeholder 覆蓋 / business rules 完整 / 合規 |
-| SA | Use case / acceptance G/W/T / edge case |
-| UX | Task success / state coverage / a11y |
-| UI | Component state / token / responsive |
-| Architect | NFR / boundary / failure modes / operability |
-| SD | API 平行實作性 / error model |
-| DBA | Migration / PII / index 策略 |
-| QA | 可測性 / exit criteria 數值化 |
-| DevOps | Pipeline gate / rollback 可執行 |
-| SRE | SLO/SLI / alert 可動作 / incident path |
-
-`devteam-orchestrator` 收 N 份 critique → 去重 → 分類為 Consensus Blocker / Per-Persona / Suggestions / Conflicts → 寫 review report 給業主裁決。失敗時降級為列原始 critique。
-
-Intensity dial：`light` (1 persona) / `standard` (2 + orchestrator) / `strict` (3 + 衝突點顯化) / `dry-run`。
+### 🤖 我是 AI Specialist
+1. [ADR-0028 AI Employee Charter](./docs/architecture/adr/ADR-0028-ai-employee-charter.md) — Forbidden 清單
+2. [ADR-0047 200 題 Eval](./docs/architecture/adr/ADR-0047-ai-forbidden-list-as-charter.md) — block-deploy gate
+3. [ADR-0055 SKILL ↔ LLM 解耦](./docs/architecture/adr/ADR-0055-skill-llm-decoupling-contract.md)
+4. [ADR-0057 RAG](./docs/architecture/adr/ADR-0057-rag-document-retrieval-not-prompt.md) — 規則走 RAG 不寫 prompt
 
 ---
 
-## Repo 結構
+## 🗂 Repo 結構
 
 ```
-architecture_autopilot/
-├── README.md                       ← 本檔
-├── .claude/
-│   ├── CLAUDE.md                   ← 專案層 instructions
-│   ├── USAGE.md                    ← 使用指南
-│   ├── settings.json
-│   ├── skills/                     ← 9 個 driver skill + INDEX.md
-│   ├── commands/                   ← 12 個 slash commands
-│   ├── agents/                     ← 13 個 critique agents (12 personas + orchestrator)
-│   └── context/devteam/            ← session state（執行時建立）
-│       ├── state.json
-│       ├── documents/index.json + <doc>.meta.json
-│       ├── adr-ledger.json
-│       ├── session-<id>.md
-│       ├── reviews/
-│       └── evidence/
-├── devteam_knowledge_base/
+chatlock_dev_docs/
+├── README.md                         ← 本檔
+│
+├── docs/                             ← 🎯 開發團隊單一事實（SoT）
+│   ├── prd/                          ←   PM 層
+│   │   ├── smart-lock-saas.md        ←     PRD v2.2 主檔
+│   │   ├── SOW-0001-2026-q1.md
+│   │   ├── BIZ-0001-...md
+│   │   └── DISC-0001-...md
+│   ├── ux/                           ←   UX 層
+│   ├── analysis/                     ←   SA / BA 層
+│   │   ├── system-spec-smart-lock-saas.md
+│   │   ├── fr/                       ←     25 條 FR
+│   │   └── br/                       ←     Business Rules
+│   ├── architecture/                 ←   架構層
+│   │   ├── ARCH-0001-...md           ←     C4 L1/L2
+│   │   ├── c4-l3-smart-lock-saas.md  ←     C4 L3
+│   │   ├── nfr-matrix-smart-lock-saas.md  ← NFR 9 維度
+│   │   ├── DDD-0001-domain-model.md
+│   │   ├── adr/                      ←     66 條 ADR + INDEX.md
+│   │   ├── module-boundary/          ←     4 條 module boundary
+│   │   ├── api/openapi.yaml          ←     OpenAPI v1.0 frozen
+│   │   ├── data/erd.md               ←     ERD
+│   │   └── nfr/                      ←     baseline NFR
+│   ├── qa/                           ←   QA / 測試
+│   ├── ops/                          ←   DevOps / SRE
+│   ├── policy/br-pii-001.rego        ←   OPA Rego 政策 artifact
+│   └── governance/                   ←   合規 / 法務
+│
+├── specs/smart-lock-saas/            ← 🚚 給 coding agent 的 handoff
+│   └── handoff.md
+│
+├── archive/                          ← 📚 純歷史 reference
+│   ├── strategy/                     ←   F1~F7 痛點 + deep research
+│   ├── meetings/2026-05-22/          ←   業主拍板會議 + decision dashboard
+│   ├── prd-baseline/                 ←   PRD-0001 v1.1 (superseded)
+│   └── raw-spec/                     ←   2 份 Excel 原始規格
+│
+├── devteam_knowledge_base/           ← 🧠 文件產生框架（DevTeam harness）
+│   ├── voice-profiles.md
 │   ├── 01_role_responsibilities.md
 │   ├── 02_lifecycle_phases.md
-│   ├── 03_document_templates.md
-│   ├── 04_freeze_gates.md
-│   ├── 05_meeting_protocols.md
-│   ├── 06_quality_attributes_catalog.md
-│   └── templates/                  ← 14 份規範文件範本
-├── docs/                           ← driver skills 產出的真實規範文件（依 feature）
-│   ├── prd/
-│   ├── ux/
-│   ├── analysis/
-│   ├── architecture/c4-*.md + adr/ + dr/
-│   ├── api/openapi-*.yaml
-│   ├── data/erd-*.md + migrations/
-│   ├── qa/test-plan-*.md
-│   ├── ops/runbook-*.md + slo.md + postmortem/
-│   └── release/readiness-*.md
-├── specs/<feature>/handoff.md      ← 對外 coding agent 契約
-├── archive/strategy/deep-research-report.md  ← 設計依據文件
-├── CLAUDE_TEMPLATE.md              ← 通用初始化範本
-├── MCP_SETUP_GUIDE.md
-└── .mcp.json.*.example
+│   ├── ...
+│   └── templates/                    ←   13 份規範文件範本
+│
+├── .claude/                          ← Claude Code agent / skill 設定
+│   ├── CLAUDE.md
+│   ├── agents/                       ←   12 persona + orchestrator + ...
+│   ├── skills/                       ←   7 driver skill (pm/analyst/ux/arch/design/qa/ops)
+│   └── context/devteam/              ←   session state（MoM / forum / reviews，gitignored）
+│
+└── vscode-extension/                 ← VSCode 擴充（產品週邊工具）
 ```
 
 ---
 
-## 規範產出 → 外部 Coding Agent
+## 🚚 開發團隊起手式
 
-所有 7 個 freeze gate passed 後，執行：
+如果你是 **coding agent / 內部開發團隊**，從這個入口開工：
 
-```
-/devteam-handoff subscription-v1
-```
+👉 **[`specs/smart-lock-saas/handoff.md`](./specs/smart-lock-saas/handoff.md)**
 
-會產出 `specs/subscription-v1/handoff.md`，包含：
+裡面有：
+- 7 條合約紅線（最高優先 constraint，不可違反）
+- 21 份 frozen artifact 索引（PRD / ADR / OpenAPI / ERD / Test Plan / Runbook 全在 `docs/`）
+- 建議建構順序 W1-W17（Foundation → Core V1 → Compliance → DGS → Admin Panel → UAT → Rollout）
+- 12 條關鍵 Business Rule（dev 必看）
+- Sprint DoD（70% coverage / Forbidden Eval ≥ 95% / negative case 覆蓋）
+- 9 條 Hard Boundary（do NOT do）
 
-- Frozen artifacts（path + version + SHA + frozen_at）
-- Acceptance criteria
-- API contract ref
-- DB migration ref
-- Test plan ref + exit criteria
-- Runbook ref + rollback plan
-- ADR index (only relevant)
-- Telemetry hooks
-- Open questions for coder
-- 不變式（coding agent 必須遵守的約束）
-
-把這個檔案連同 `docs/` 整包丟給 Claude Code / Cursor / Aider，coding agent 從一個入口開工，不需要也不應該再讀 11 份分散文件推理依賴。若 coding agent 發現歧義 → 回呼 `/devteam-<role>` 觸發新 ADR/DR。
+> ⚠️ **單一事實**：開發團隊只看 `docs/`。`archive/` 是純歷史 reference，不是 active spec。
 
 ---
 
-## 設計哲學
+## 🏛 業主決策歷程
 
-1. **角色為軸** — Skill 是「能力容器」（PM 能寫 PRD），phase 是「角色組合的 view」
-2. **ADR-style 決策鏈** — 所有重要決策寫 ADR / DR，變更用 superseded 鏈而非覆寫；ADR 跨團隊不可逆，DR 產品 / 流程局部
-3. **Freeze 不是鎖死** — 是讓並行不失控的 baseline + change policy
-4. **Cascade 預設 manual_confirm** — 避免 PRD 一改就 18 次 sub-agent dispatch
-5. **Multi-role review intensity dial** — 高耦合 gate（PRD / NFR / API / Schema / Release）才 strict，其餘 standard，迭代版本可 light
-6. **State 三層拆分** — `state.json` 輕量 + `documents/index.json` + 每 doc `.meta.json` + `adr-ledger.json`，避免單一 JSON 膨脹
+從 2026-05-21 痛點盤點到 2026-05-24 PRD v2.2 frozen 的完整決策鏈：
 
-完整哲學見 `.claude/CLAUDE.md`、`.claude/USAGE.md`、`devteam_knowledge_base/` 6 份 KB。
-
----
-
-## 名稱由來
-
-`architecture_autopilot` — 不是「AI 取代架構師」，而是「把架構師的勞役工作（產文件、追決策鏈、確保 freeze evidence）打 autopilot，讓人專注在真正稀缺的判斷上」。
-
-口訣：**快不等於對，長不等於懂，能寫不等於能設計**。
-
----
-
-## 📁 專案文件導航（智慧鎖平台 2026-Q1）
-
-> 2026-05-22 重新歸檔。新結構以「**生命週期階段**」分層：策略 → 來源 → 會議 → 決策 → 規範。
-
-> [!IMPORTANT]
-> **2026-05-25 大重構**：開發團隊**單一事實 = [`docs/`](./docs/)**。舊 0/2/3/4 目錄已整併進 [`archive/`](./archive/)（歷史 reference）或 `docs/` 對應 subdir（仍 active 的內容）。
-
-| 區塊 | 資料夾 | 用途 | 關鍵入口 |
+| 階段 | 時間 | 產出 | 連結 |
 |:---|:---|:---|:---|
-| 🎯 **Single Source of Truth** | [`docs/`](./docs/) | 開發團隊的唯一規範（PRD v2.2 / 66 ADR / OpenAPI / ERD / Test Plan / Runbook / Policy）| [`docs/prd/smart-lock-saas.md`](./docs/prd/smart-lock-saas.md)（PRD 主檔）<br>[`docs/architecture/ARCH-0001-architecture-overview.md`](./docs/architecture/ARCH-0001-architecture-overview.md)（架構主檔）<br>[`docs/architecture/adr/INDEX.md`](./docs/architecture/adr/INDEX.md)（ADR 索引）|
-| 🚚 **給 coding agent 的 handoff** | [`specs/`](./specs/) | 7 freeze gate 通過後給開發團隊接手的入口 | [`specs/smart-lock-saas/handoff.md`](./specs/smart-lock-saas/handoff.md) |
-| 📚 **歷史 reference（純存底）** | [`archive/`](./archive/) | superseded PRD-0001 / 業主拍板會議 / 痛點 strategy / Excel 原始規格 | [`archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md`](./archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md)（F1~F7 失敗劇本）<br>[`archive/meetings/2026-05-22/decision-dashboard.html`](./archive/meetings/2026-05-22/decision-dashboard.html)（互動式 ADR 圈選）<br>[`archive/prd-baseline/PRD-0001-2026-q1-v1-launch.md`](./archive/prd-baseline/PRD-0001-2026-q1-v1-launch.md)（baseline，superseded by docs/prd/smart-lock-saas.md v2.2）|
-| 🧠 **DevTeam harness 框架** | [`devteam_knowledge_base/`](./devteam_knowledge_base/) · [`.claude/`](./.claude/) | 12 persona + 7 driver skill + 範本 + voice profile | [`devteam_knowledge_base/voice-profiles.md`](./devteam_knowledge_base/voice-profiles.md) |
+| Pre-mortem 戰略 | 5/21 | F1~F7 失敗劇本 + §A-§G CEO 視角 | [`archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md`](./archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md) |
+| 業主拍板會議 | 5/22 | 29 條 ADR (ADR-0031~0059) accepted | [`archive/meetings/2026-05-22/`](./archive/meetings/2026-05-22/) |
+| 互動式 ADR 圈選 | 5/22 | 24/24 ADR + 8 矛盾全裁決 | [`archive/meetings/2026-05-22/decision-dashboard.html`](./archive/meetings/2026-05-22/decision-dashboard.html)（瀏覽器開）|
+| PRD draft v2 | 5/22 | 依 devteam harness 重產 | [`docs/prd/smart-lock-saas.md`](./docs/prd/smart-lock-saas.md) v2 |
+| Lane A multi-role critique | 5/22 | 4 CB + 5 conflicts → 升 Lane B | `.claude/context/devteam/reviews/`（gitignored） |
+| 3 場 Forum-Lite 衝突收斂 | 5/22 | Option C++ (Contract Template) / A++ (K2) / C++ (DGS) | `.claude/context/devteam/forum/`（gitignored）|
+| Owner Verdict | 5/22 | 5 conflicts 全裁決 + PRD v2.1 frozen | PRD §Decision Log |
+| 11 條 OQ 業主答覆 | 5/24 | Option A 降級履約 + Voucher Keeper 路線 | [Roundtable MoM #1 & #2](https://github.com/Zenobia000/chatlock_dev_docs)（gitignored 在 .claude/context/）|
+| PRD v2.2 frozen + cascade | 5/24 | 7 個新 ADR (ADR-PII-002 / VCH-001/002 / PIVOT-001 + 0060/0061 update + BR-AUDIT-007) | [`docs/`](./docs/) |
+| 文件大重構 | 5/25 | docs/ = SoT / archive/ = 歷史 | 本 commit |
 
-### 推薦閱讀路徑
+---
 
-| 我是誰 | 從哪入手 |
+## 🤖 這個 repo 怎麼來的
+
+> 全 100+ 份規範文件由 **DevTeam Harness** 產出 — 一套讓 AI agent 扮演 12 角色軟體團隊的框架。
+>
+> 業主提出痛點 → Router 依 Phase DAG 路由 → 12 角色並行產出 PRD / ADR / OpenAPI / ERD / Test Plan / Runbook → Multi-role critique → Forum-Lite 收斂衝突 → Owner Verdict → Handoff。
+
+技術細節見 [`devteam_knowledge_base/`](./devteam_knowledge_base/)（KB）+ [`.claude/skills/`](./.claude/skills/)（7 driver skill）+ [`.claude/agents/`](./.claude/agents/)（12 persona agent + orchestrator）。
+
+Voice profile（每個 persona 的語言指紋）：[`devteam_knowledge_base/voice-profiles.md`](./devteam_knowledge_base/voice-profiles.md)。
+
+設計依據：[`archive/strategy/deep-research-report.md`](./archive/strategy/deep-research-report.md)（11 階段 × 12 角色 × 三條並行主線 × 分層 freeze 的真實軟體團隊運作模式）。
+
+> Harness 本身的 OSS 版本：[`Zenobia000/Architecture_Autopilot`](https://github.com/Zenobia000/Architecture_Autopilot)
+
+---
+
+## 📜 授權與版權
+
+| 項目 | 授權 |
 |:---|:---|
-| **新加入的工程師** | [`docs/prd/smart-lock-saas.md`](./docs/prd/smart-lock-saas.md) → [`docs/architecture/ARCH-0001`](./docs/architecture/ARCH-0001-architecture-overview.md) → [`docs/architecture/adr/INDEX.md`](./docs/architecture/adr/INDEX.md) → [`specs/smart-lock-saas/handoff.md`](./specs/smart-lock-saas/handoff.md) |
-| **PM / BA** | [`docs/prd/smart-lock-saas.md`](./docs/prd/smart-lock-saas.md) → [`docs/analysis/system-spec-smart-lock-saas.md`](./docs/analysis/system-spec-smart-lock-saas.md) → [`archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md`](./archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md) |
-| **法務 / 合規** | [`docs/prd/smart-lock-saas.md`](./docs/prd/smart-lock-saas.md) §合約 4.4 → [`docs/governance/legal-memo-retrospective-review.md`](./docs/governance/legal-memo-retrospective-review.md) → ADR-0042（RBAC）+ ADR-0050（Evidence）+ ADR-0051（Retention）+ ADR-VCH-001（Voucher Keeper）|
-| **DPO / 個資官** | [`docs/policy/br-pii-001.rego`](./docs/policy/br-pii-001.rego) → ADR-0061 DGS → ADR-PII-002 資料極小化 |
-| **QA / Test Lead** | [`docs/qa/test-plan-smart-lock-saas.md`](./docs/qa/test-plan-smart-lock-saas.md) → [`docs/analysis/system-spec-smart-lock-saas.md`](./docs/analysis/system-spec-smart-lock-saas.md) BR-X catalog |
-| **DevOps / SRE** | [`docs/ops/runbook-smart-lock-saas.md`](./docs/ops/runbook-smart-lock-saas.md) → [`docs/ops/release-readiness.md`](./docs/ops/release-readiness.md) → [`docs/architecture/nfr-matrix-smart-lock-saas.md`](./docs/architecture/nfr-matrix-smart-lock-saas.md) |
-| **AI Specialist** | ADR-0028 charter + ADR-0047 Forbidden + ADR-0055 SKILL↔LLM 解耦 + ADR-0057 RAG（皆在 [`docs/architecture/adr/`](./docs/architecture/adr/)）|
-| **業主回顧決策** | [`archive/meetings/2026-05-22/decision-dashboard.html`](./archive/meetings/2026-05-22/decision-dashboard.html)（瀏覽器開）+ [`.claude/context/devteam/`](./.claude/context/devteam/) MoM / forum final reports |
+| 規範文件（`docs/` / `archive/` / `specs/`） | © Smart Lock SaaS Platform，業主保留所有權 |
+| DevTeam Harness 框架（`devteam_knowledge_base/` + `.claude/skills/` + `.claude/agents/`） | MIT License（與 Architecture_Autopilot 同源）|
+| 第三方 reference（合約條文 / 法規條文）| 引用原條文版權所有人 |
+
+---
+
+## 🔗 重要連結
+
+- **PRD 主檔**：[`docs/prd/smart-lock-saas.md`](./docs/prd/smart-lock-saas.md)
+- **架構主檔**：[`docs/architecture/ARCH-0001-architecture-overview.md`](./docs/architecture/ARCH-0001-architecture-overview.md)
+- **ADR 索引（66 條）**：[`docs/architecture/adr/INDEX.md`](./docs/architecture/adr/INDEX.md)
+- **OpenAPI v1.0**：[`docs/architecture/api/openapi.yaml`](./docs/architecture/api/openapi.yaml)
+- **Coding Agent Handoff**：[`specs/smart-lock-saas/handoff.md`](./specs/smart-lock-saas/handoff.md)
+- **DevTeam 框架 OSS**：https://github.com/Zenobia000/Architecture_Autopilot
+
+---
+
+**Built with DevTeam Harness · v2.2 frozen 2026-05-24 · Single Source of Truth in [`docs/`](./docs/)**
