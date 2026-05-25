@@ -47,55 +47,120 @@
 > [sa] 每個 entity 的合法狀態轉移；precondition 條件式列在 transition 上。
 
 ### 2.1 Conversation
+
+```mermaid
+stateDiagram-v2
+    [*] --> active
+    active --> resolving : 收到客戶訊息
+    resolving --> escalated : AI 失敗 / 急件
+    resolving --> closed : 客戶按「已解決」
+    resolving --> auto_closed : 48h 無回應
+    escalated --> closed : 客服處理完
+    auto_closed --> resolving : 7 天內客戶重發訊息
+    closed --> [*]
 ```
-active → resolving → escalated → closed
-                                ↓
-                          auto_closed（48h no response）
-                          （7d reopen window → resolving）
-```
+
 - Precondition for `auto_closed`：state=resolving AND no_customer_message_since ≥ 48h
 - Postcondition：set `auto_closed_at`；7 天內客戶訊息 → 自動 reopen 回 resolving
 
 ### 2.2 ProblemCard
+
+```mermaid
+stateDiagram-v2
+    [*] --> incomplete
+    incomplete --> draft : AI 收齊欄位
+    draft --> confirmed : completeness ≥ 0.85 + device_id
+    confirmed --> resolved : 三層解決成功
+    resolved --> [*]
 ```
-incomplete → draft → confirmed → resolved
-```
+
 - `confirmed` precondition：`completeness ≥ 0.85`（ADR-0033）AND `device_id` non-null
 
 ### 2.3 Quote
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft
+    draft --> internal_approved : 內部審核
+    internal_approved --> customer_sent : 發送客戶
+    customer_sent --> customer_confirmed : 客戶確認
+    customer_sent --> expired : 過期未確認
+    expired --> draft : re-version 重發
+    customer_confirmed --> [*]
 ```
-draft → internal_approved → customer_sent → customer_confirmed
-                                          ↘
-                                          expired（re-version）
-```
+
 - `customer_sent` precondition：`range_only = true`（AI 路徑）OR human approval（final quote 路徑）
 
 ### 2.4 WorkOrder
+
+```mermaid
+stateDiagram-v2
+    [*] --> created : AI draft + CS 1-click
+    created --> assigned : 智慧派工
+    assigned --> accepted : 師傅接單（10/5 min SLA）
+    accepted --> in_progress : 師傅到場
+    in_progress --> completed : 結案 (address ≠ null)
+    in_progress --> cancelled : 客戶取消
+    created --> cancelled
+    assigned --> cancelled
+    completed --> [*]
+    cancelled --> [*]
 ```
-created（AI draft + CS 1-click）→ assigned → accepted → in_progress → completed
-```
+
 - `created` precondition：PC state=confirmed
 - `completed` precondition：**address IS NOT NULL**（合約 9.3 + ADR-0032 結案前 422 hard gate）
 
 ### 2.5 Onsite
+
+```mermaid
+stateDiagram-v2
+    [*] --> arrived
+    arrived --> working : 開始施工
+    arrived --> customer_not_onsite : 客戶不在
+    working --> scope_change : 需加價 / 改項
+    working --> completed : 順利完工
+    scope_change --> working : 三件套齊 (簽名 + 照片 + audit)
+    completed --> [*]
+    customer_not_onsite --> [*]
 ```
-arrived → working → scope_change → completed
-                     ↓
-              customer_not_onsite
-```
+
 - `scope_change` precondition：客戶簽名 + Evidence 照片 + audit log 三件套都備齊（ADR-0049）
 - 金額分層 precondition：≤500 師傅自確 / 501-2000 客服 / >2000 主管+三方
 
 ### 2.6 Payment / Refund
+
+```mermaid
+stateDiagram-v2
+    [*] --> deposit_required
+    deposit_required --> paid : 客戶付款
+    paid --> pending : 對帳中
+    pending --> [*] : 確認入帳
+    pending --> failed : 對帳失敗
+    failed --> refund_requested : 退款申請
+    paid --> refund_requested : 客戶退款
+    refund_requested --> [*] : 依責任分層 5×3
 ```
-deposit_required → paid → pending → failed → refund_requested
-```
+
 - `refund_requested` 進入後依責任歸屬 5×3=15 分層裁決（ADR-0040）
 
 ### 2.7 Evidence Lifecycle（v2.1 expanded）
-```
-fresh → active → pending_purge（T0: 銷毀加密金鑰 + 軟刪）→ purged（T+30 天: 硬刪）
-              ↘ legal_hold（永久且不可逆，需 ADR change 解除）
+
+```mermaid
+stateDiagram-v2
+    [*] --> fresh
+    fresh --> active : 案件進行中
+    active --> pending_purge : retention 到期 (T0)
+    pending_purge --> purged : T+30 天硬刪
+    active --> legal_hold : 法務凍結
+    pending_purge --> legal_hold : 法務臨時凍結
+    legal_hold --> active : ADR change 解除（罕見）
+    purged --> [*]
+    note right of pending_purge
+        T0: 銷毀加密金鑰 + soft delete
+    end note
+    note right of legal_hold
+        永久且不可逆，須 ADR change
+    end note
 ```
 
 ---
