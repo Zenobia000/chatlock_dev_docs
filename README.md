@@ -7,6 +7,22 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docs](https://img.shields.io/badge/docs-single--source--of--truth-blue)](./docs/)
 [![ADR](https://img.shields.io/badge/ADR-66%20accepted-green)](./docs/architecture/adr/)
+[![Navigator](https://img.shields.io/badge/🧭-Interactive%20Navigator-1e3a8a)](https://zenobia000.github.io/chatlock_dev_docs/docs/)
+
+---
+
+## 🧭 互動式文件導覽（建議所有讀者先進）
+
+> 👉 **[https://zenobia000.github.io/chatlock_dev_docs/docs/](https://zenobia000.github.io/chatlock_dev_docs/docs/)** 👈
+>
+> 不論你是業主、PM、工程師、DBA、QA、DevOps、法務、DPO、AI Specialist — 點上方連結進入**互動式導覽中心**：
+> - 🎯 6 個關鍵 KPI + 7 條合約紅線一頁看完
+> - 📖 **10 個角色 tabs** — 點你的角色，看推薦閱讀路徑（編號步驟 + 連結）
+> - 🗓 V1.0 / V2.0 範圍對照 + 業主決策歷程 timeline
+> - 🗂 18 份核心文件 grid（含 FROZEN / BASELINE / WIP 狀態標）
+> - 所有 `.md` 連結點下去 → GitHub Web 自動 render markdown（漂亮、TOC、syntax highlight）
+
+也可以直接看下面的 README 文字版（內容相同）。
 
 ---
 

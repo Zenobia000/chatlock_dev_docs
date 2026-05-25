@@ -368,6 +368,9 @@ footer a { color: var(--ink-soft); }
     <span>🚀 V2.0 W31 派工 + 帳務</span>
     <span>📊 66 ADR · 25 FR · 9 NFR 維度</span>
   </div>
+  <div style="margin-top:16px; font-size:13px; opacity:0.85; background:rgba(255,255,255,0.1); padding:10px 14px; border-radius:6px;">
+    💡 <strong>點任何文件連結</strong> → 自動跳 GitHub 開新分頁 render markdown（含 TOC + syntax highlight）。本頁不會被取代。
+  </div>
 </header>
 
 <!-- Stats -->
@@ -433,7 +436,7 @@ footer a { color: var(--ink-soft); }
     <h3>⚠️ 這 7 條 V1.0 必交 — 違反任一條，甲方可依合約 §9 終止</h3>
     <ol>
       <li><strong>合約 4.4(a)</strong> 負面情緒識別 ≥ 90%（UAT + 持續監控）</li>
-      <li><strong>合約 4.4(d)</strong> 家族覆核紀錄 → 採 <code>Option A 降級履約</code>（event log + 7 日 dispute window）<a href="./governance/legal-memo-retrospective-review.md">法務備忘</a></li>
+      <li><strong>合約 4.4(d)</strong> 家族覆核紀錄 → 採 <code>Option A 降級履約</code>（event log + 7 日 dispute window）<a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/governance/legal-memo-retrospective-review.md">法務備忘</a></li>
       <li><strong>合約 9.3</strong> ProblemCard 完整率 ≥ 85%</li>
       <li><strong>合約 SOW 2.1(4)</strong> AI 影像辨識禁用（violation count = 0）</li>
       <li><strong>AI Forbidden Eval ≥ 95%</strong> 每次 deploy（block-deploy gate）</li>
@@ -465,10 +468,10 @@ footer a { color: var(--ink-soft); }
   <div class="role-panel active" data-role="owner">
     <div class="intro">💡 你是業主 / CEO，想做投資 / scope / KPI 決策。最該看的是 PRD 主檔 + 業主決策歷程。</div>
     <ol class="path-list">
-      <li><a href="./prd/smart-lock-saas.md"><strong>PRD v2.2 主檔</strong></a> — 一頁讀完 + KPI + 範圍 + 風險（&lt; 5 分鐘）</li>
-      <li><a href="../archive/meetings/2026-05-22/decision-dashboard.html"><strong>5/22 決策面板</strong></a> — 24 條 ADR 互動式圈選結果（瀏覽器開）</li>
-      <li><a href="../archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md"><strong>F1~F7 失敗劇本</strong></a> — Pre-mortem 戰略視角</li>
-      <li><a href="./governance/stakeholders.md"><strong>Stakeholder Map</strong></a> — 18 角色影響力矩陣</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/prd/smart-lock-saas.md"><strong>PRD v2.2 主檔</strong></a> — 一頁讀完 + KPI + 範圍 + 風險（&lt; 5 分鐘）</li>
+      <li><a target="_blank" rel="noopener" href="https://htmlpreview.github.io/?https://github.com/Zenobia000/chatlock_dev_docs/blob/main/archive/meetings/2026-05-22/decision-dashboard.html"><strong>5/22 決策面板</strong></a> — 24 條 ADR 互動式圈選結果（瀏覽器開）</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md"><strong>F1~F7 失敗劇本</strong></a> — Pre-mortem 戰略視角</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/governance/stakeholders.md"><strong>Stakeholder Map</strong></a> — 18 角色影響力矩陣</li>
     </ol>
   </div>
 
@@ -476,10 +479,10 @@ footer a { color: var(--ink-soft); }
   <div class="role-panel" data-role="pm">
     <div class="intro">💡 你是 PM / BA，要 align scope + KPI + stakeholder。</div>
     <ol class="path-list">
-      <li><a href="./prd/smart-lock-saas.md"><strong>PRD v2.2</strong></a> — 30 秒 TL;DR + KPI K1~K9 + 範圍 + 風險 R-F1~F7</li>
-      <li><a href="./analysis/system-spec-smart-lock-saas.md"><strong>System Spec</strong></a> — 18 UC + 14 物件 + 7 狀態機</li>
-      <li><a href="./ux/user-flow-smart-lock-saas.md"><strong>User Flow</strong></a> — 4 主流程 + 12 edge case + state coverage</li>
-      <li><a href="../archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md"><strong>痛點 + Pre-mortem</strong></a></li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/prd/smart-lock-saas.md"><strong>PRD v2.2</strong></a> — 30 秒 TL;DR + KPI K1~K9 + 範圍 + 風險 R-F1~F7</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/analysis/system-spec-smart-lock-saas.md"><strong>System Spec</strong></a> — 18 UC + 14 物件 + 7 狀態機</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/ux/user-flow-smart-lock-saas.md"><strong>User Flow</strong></a> — 4 主流程 + 12 edge case + state coverage</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md"><strong>痛點 + Pre-mortem</strong></a></li>
     </ol>
   </div>
 
@@ -487,11 +490,11 @@ footer a { color: var(--ink-soft); }
   <div class="role-panel" data-role="engineer">
     <div class="intro">💡 你是新加入的工程師，要快速進入產品全貌。先看產品再看架構，最後從 handoff 開工。</div>
     <ol class="path-list">
-      <li><a href="./prd/smart-lock-saas.md"><strong>PRD v2.2</strong></a> — 先讀產品定位</li>
-      <li><a href="./architecture/ARCH-0001-architecture-overview.md"><strong>ARCH-0001</strong></a> — C4 L1/L2 架構</li>
-      <li><a href="./architecture/c4-l3-smart-lock-saas.md"><strong>C4 L3</strong></a> — Component + bounded context</li>
-      <li><a href="./architecture/adr/INDEX.md"><strong>ADR 索引（66 條）</strong></a> — 重大決策都在這</li>
-      <li><a href="../specs/smart-lock-saas/handoff.md"><strong>Handoff</strong></a> — coding agent 入口（W1-W17 建構順序）</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/prd/smart-lock-saas.md"><strong>PRD v2.2</strong></a> — 先讀產品定位</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/ARCH-0001-architecture-overview.md"><strong>ARCH-0001</strong></a> — C4 L1/L2 架構</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/c4-l3-smart-lock-saas.md"><strong>C4 L3</strong></a> — Component + bounded context</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/INDEX.md"><strong>ADR 索引（66 條）</strong></a> — 重大決策都在這</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/specs/smart-lock-saas/handoff.md"><strong>Handoff</strong></a> — coding agent 入口（W1-W17 建構順序）</li>
     </ol>
   </div>
 
@@ -499,10 +502,10 @@ footer a { color: var(--ink-soft); }
   <div class="role-panel" data-role="sa">
     <div class="intro">💡 你是 SA / 系統分析師，要寫 acceptance criteria + 拆 use case。</div>
     <ol class="path-list">
-      <li><a href="./analysis/system-spec-smart-lock-saas.md"><strong>System Spec</strong></a> — 14 物件 + 7 狀態機 + 64 BR + 18 UC + 21 events + 14 integrations</li>
-      <li><a href="./analysis/fr/"><strong>25 條 FR</strong></a> — FR-0001~0025 個別 spec</li>
-      <li><a href="./analysis/br/BR-AUDIT-007-family-reviewer-event-log.md"><strong>BR-AUDIT-007</strong></a> — 家族覆核 event log 三要件</li>
-      <li><a href="./ux/user-flow-smart-lock-saas.md"><strong>User Flow</strong></a> — Edge case + State coverage 對應</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/analysis/system-spec-smart-lock-saas.md"><strong>System Spec</strong></a> — 14 物件 + 7 狀態機 + 64 BR + 18 UC + 21 events + 14 integrations</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/analysis/fr/"><strong>25 條 FR</strong></a> — FR-0001~0025 個別 spec</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/analysis/br/BR-AUDIT-007-family-reviewer-event-log.md"><strong>BR-AUDIT-007</strong></a> — 家族覆核 event log 三要件</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/ux/user-flow-smart-lock-saas.md"><strong>User Flow</strong></a> — Edge case + State coverage 對應</li>
     </ol>
   </div>
 
@@ -510,11 +513,11 @@ footer a { color: var(--ink-soft); }
   <div class="role-panel" data-role="arch">
     <div class="intro">💡 你是架構師 / SD，要評估 NFR / boundary / failure mode / API contract。</div>
     <ol class="path-list">
-      <li><a href="./architecture/ARCH-0001-architecture-overview.md"><strong>ARCH-0001</strong></a> — C4 L1/L2 + 五層 Agent 架構</li>
-      <li><a href="./architecture/c4-l3-smart-lock-saas.md"><strong>C4 L3</strong></a> — 7 bounded context（AI Agent / API / DGS / KB / Admin / Cron）</li>
-      <li><a href="./architecture/nfr-matrix-smart-lock-saas.md"><strong>NFR Matrix</strong></a> — 9 維度 + Failure mode 12 條</li>
-      <li><a href="./architecture/adr/"><strong>66 條 ADR</strong></a> — 重點：ADR-0030 / 0042 / 0060 / 0061 / VCH-001/002</li>
-      <li><a href="./architecture/api/openapi.yaml"><strong>OpenAPI v1.0</strong></a> — V1 endpoints + V2 :action 預留</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/ARCH-0001-architecture-overview.md"><strong>ARCH-0001</strong></a> — C4 L1/L2 + 五層 Agent 架構</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/c4-l3-smart-lock-saas.md"><strong>C4 L3</strong></a> — 7 bounded context（AI Agent / API / DGS / KB / Admin / Cron）</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/nfr-matrix-smart-lock-saas.md"><strong>NFR Matrix</strong></a> — 9 維度 + Failure mode 12 條</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/"><strong>66 條 ADR</strong></a> — 重點：ADR-0030 / 0042 / 0060 / 0061 / VCH-001/002</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/api/openapi.yaml"><strong>OpenAPI v1.0</strong></a> — V1 endpoints + V2 :action 預留</li>
     </ol>
   </div>
 
@@ -522,10 +525,10 @@ footer a { color: var(--ink-soft); }
   <div class="role-panel" data-role="dba">
     <div class="intro">💡 你是 DBA，最該盯 migration / PII / index / lock contention。</div>
     <ol class="path-list">
-      <li><a href="./architecture/data/erd.md"><strong>ERD</strong></a> — Schema + Partition + RLS + Outbox + Migration 雙寫期</li>
-      <li><a href="./architecture/adr/ADR-0051-evidence-retention-policy.md"><strong>ADR-0051 Evidence Retention</strong></a> — 1y/RMA+3y/eternal/GDPR 7d</li>
-      <li><a href="./architecture/adr/ADR-VCH-002-voucher-retention-7y.md"><strong>ADR-VCH-002 Voucher 7y</strong></a> — hot 2y PG + cold 5y Glacier + yearly+monthly partition</li>
-      <li><a href="./architecture/adr/ADR-PII-002-data-minimization-schema-ci-double-defense.md"><strong>ADR-PII-002</strong></a> — schema CHECK + CI lint 雙層防線</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/data/erd.md"><strong>ERD</strong></a> — Schema + Partition + RLS + Outbox + Migration 雙寫期</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-0051-evidence-retention-policy.md"><strong>ADR-0051 Evidence Retention</strong></a> — 1y/RMA+3y/eternal/GDPR 7d</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-VCH-002-voucher-retention-7y.md"><strong>ADR-VCH-002 Voucher 7y</strong></a> — hot 2y PG + cold 5y Glacier + yearly+monthly partition</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-PII-002-data-minimization-schema-ci-double-defense.md"><strong>ADR-PII-002</strong></a> — schema CHECK + CI lint 雙層防線</li>
     </ol>
   </div>
 
@@ -533,9 +536,9 @@ footer a { color: var(--ink-soft); }
   <div class="role-panel" data-role="qa">
     <div class="intro">💡 你是 QA / Test Lead，最該寫 negative case + exit criteria。</div>
     <ol class="path-list">
-      <li><a href="./qa/test-plan-smart-lock-saas.md"><strong>Test Plan</strong></a> — 9 test levels + KPI scenarios + 8 BDD + 200 Forbidden Eval</li>
-      <li><a href="./analysis/system-spec-smart-lock-saas.md"><strong>System Spec §3</strong></a> — 64 條 BR catalog（每條配對應 test）</li>
-      <li><a href="./ux/user-flow-smart-lock-saas.md"><strong>UX Flow</strong></a> — Edge case → BDD scenario 對應</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/qa/test-plan-smart-lock-saas.md"><strong>Test Plan</strong></a> — 9 test levels + KPI scenarios + 8 BDD + 200 Forbidden Eval</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/analysis/system-spec-smart-lock-saas.md"><strong>System Spec §3</strong></a> — 64 條 BR catalog（每條配對應 test）</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/ux/user-flow-smart-lock-saas.md"><strong>UX Flow</strong></a> — Edge case → BDD scenario 對應</li>
     </ol>
   </div>
 
@@ -543,10 +546,10 @@ footer a { color: var(--ink-soft); }
   <div class="role-panel" data-role="ops">
     <div class="intro">💡 你是 DevOps / SRE，要管 SLO / pipeline / rollback / incident。</div>
     <ol class="path-list">
-      <li><a href="./ops/runbook-smart-lock-saas.md"><strong>Runbook</strong></a> — 11 incident playbooks + 3-layer kill switch + pipeline</li>
-      <li><a href="./ops/release-readiness.md"><strong>Release Readiness</strong></a> — V1 W17 launch checklist + rollback trigger</li>
-      <li><a href="./architecture/nfr-matrix-smart-lock-saas.md"><strong>NFR Matrix</strong></a> §SLI/SLO + §10 Failure Mode</li>
-      <li><a href="./architecture/adr/ADR-0061-data-governance-service-boundary.md"><strong>ADR-0061 DGS</strong></a> — 獨立 service 99.95% SLO</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/ops/runbook-smart-lock-saas.md"><strong>Runbook</strong></a> — 11 incident playbooks + 3-layer kill switch + pipeline</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/ops/release-readiness.md"><strong>Release Readiness</strong></a> — V1 W17 launch checklist + rollback trigger</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/nfr-matrix-smart-lock-saas.md"><strong>NFR Matrix</strong></a> §SLI/SLO + §10 Failure Mode</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-0061-data-governance-service-boundary.md"><strong>ADR-0061 DGS</strong></a> — 獨立 service 99.95% SLO</li>
     </ol>
   </div>
 
@@ -554,11 +557,11 @@ footer a { color: var(--ink-soft); }
   <div class="role-panel" data-role="legal">
     <div class="intro">💡 你是法務 / DPO / 合規，最該盯合約 4.4 + 個資法 + GDPR + 稅務。</div>
     <ol class="path-list">
-      <li><a href="./governance/legal-memo-retrospective-review.md"><strong>法務一頁式詮釋備忘</strong></a> — §4.4(d) 履約方式詮釋（不需修約）</li>
-      <li><a href="./policy/br-pii-001.rego"><strong>BR-PII-001 OPA Rego</strong></a> — PII governance policy artifact（CODEOWNERS @legal @dpo）</li>
-      <li><a href="./architecture/adr/ADR-VCH-001-platform-as-voucher-keeper.md"><strong>ADR-VCH-001 Voucher Keeper</strong></a> — 平台不是發票開立人</li>
-      <li><a href="./architecture/adr/ADR-0042-rbac-four-tier-principle.md"><strong>ADR-0042 RBAC</strong></a> + <a href="./architecture/adr/ADR-0050-evidence-visibility-matrix.md">ADR-0050</a> + <a href="./architecture/adr/ADR-0051-evidence-retention-policy.md">ADR-0051</a></li>
-      <li><a href="./architecture/adr/ADR-PII-002-data-minimization-schema-ci-double-defense.md"><strong>ADR-PII-002</strong></a> — 個資法 §5 資料極小化</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/governance/legal-memo-retrospective-review.md"><strong>法務一頁式詮釋備忘</strong></a> — §4.4(d) 履約方式詮釋（不需修約）</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/policy/br-pii-001.rego"><strong>BR-PII-001 OPA Rego</strong></a> — PII governance policy artifact（CODEOWNERS @legal @dpo）</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-VCH-001-platform-as-voucher-keeper.md"><strong>ADR-VCH-001 Voucher Keeper</strong></a> — 平台不是發票開立人</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-0042-rbac-four-tier-principle.md"><strong>ADR-0042 RBAC</strong></a> + <a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-0050-evidence-visibility-matrix.md">ADR-0050</a> + <a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-0051-evidence-retention-policy.md">ADR-0051</a></li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-PII-002-data-minimization-schema-ci-double-defense.md"><strong>ADR-PII-002</strong></a> — 個資法 §5 資料極小化</li>
     </ol>
   </div>
 
@@ -566,11 +569,11 @@ footer a { color: var(--ink-soft); }
   <div class="role-panel" data-role="ai">
     <div class="intro">💡 你是 AI Specialist，要設計 prompt + skill + guardrail + eval。</div>
     <ol class="path-list">
-      <li><a href="./architecture/adr/ADR-0028-ai-employee-charter.md"><strong>ADR-0028 AI Employee Charter</strong></a> — Forbidden 清單</li>
-      <li><a href="./architecture/adr/ADR-0047-ai-forbidden-list-as-charter.md"><strong>ADR-0047 200 題 Eval</strong></a> — block-deploy gate</li>
-      <li><a href="./architecture/adr/ADR-0048-ai-human-handoff-rules.md"><strong>ADR-0048 轉真人 7 條硬規則</strong></a></li>
-      <li><a href="./architecture/adr/ADR-0055-skill-llm-decoupling-contract.md"><strong>ADR-0055 SKILL↔LLM 解耦</strong></a></li>
-      <li><a href="./architecture/adr/ADR-0057-rag-document-retrieval-not-prompt.md"><strong>ADR-0057 RAG</strong></a> — 規則走 RAG 不寫 prompt</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-0028-ai-employee-charter.md"><strong>ADR-0028 AI Employee Charter</strong></a> — Forbidden 清單</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-0047-ai-forbidden-list-as-charter.md"><strong>ADR-0047 200 題 Eval</strong></a> — block-deploy gate</li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-0048-ai-human-handoff-rules.md"><strong>ADR-0048 轉真人 7 條硬規則</strong></a></li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-0055-skill-llm-decoupling-contract.md"><strong>ADR-0055 SKILL↔LLM 解耦</strong></a></li>
+      <li><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/ADR-0057-rag-document-retrieval-not-prompt.md"><strong>ADR-0057 RAG</strong></a> — 規則走 RAG 不寫 prompt</li>
     </ol>
   </div>
 </section>
@@ -615,12 +618,12 @@ footer a { color: var(--ink-soft); }
     <div class="timeline-item done">
       <div class="date">2026-05-21</div>
       <div class="title">Pre-mortem 戰略</div>
-      <div class="desc">F1~F7 失敗劇本 + §A-§G CEO 視角 → <a href="../archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md">PAIN-POINTS</a></div>
+      <div class="desc">F1~F7 失敗劇本 + §A-§G CEO 視角 → <a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md">PAIN-POINTS</a></div>
     </div>
     <div class="timeline-item done">
       <div class="date">2026-05-22</div>
       <div class="title">業主拍板會議 + 29 條 ADR accepted</div>
-      <div class="desc">ADR-0031~0059 → <a href="../archive/meetings/2026-05-22/decision-dashboard.html">互動式 decision-dashboard.html</a></div>
+      <div class="desc">ADR-0031~0059 → <a target="_blank" rel="noopener" href="https://htmlpreview.github.io/?https://github.com/Zenobia000/chatlock_dev_docs/blob/main/archive/meetings/2026-05-22/decision-dashboard.html">互動式 decision-dashboard.html</a></div>
     </div>
     <div class="timeline-item done">
       <div class="date">2026-05-22</div>
@@ -655,7 +658,7 @@ footer a { color: var(--ink-soft); }
     <div class="timeline-item current">
       <div class="date">W1-W17</div>
       <div class="title">V1.0 開發中</div>
-      <div class="desc">→ 開發團隊起手式 <a href="../specs/smart-lock-saas/handoff.md">specs/smart-lock-saas/handoff.md</a></div>
+      <div class="desc">→ 開發團隊起手式 <a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/specs/smart-lock-saas/handoff.md">specs/smart-lock-saas/handoff.md</a></div>
     </div>
   </div>
 </section>
@@ -669,7 +672,7 @@ footer a { color: var(--ink-soft); }
       <span class="badge frozen">v2.2 FROZEN</span>
       <h4>PRD 主檔</h4>
       <div class="desc">產品定位 / KPI / Scope / 風險 / OQ 全 closed</div>
-      <div class="path"><a href="./prd/smart-lock-saas.md">prd/smart-lock-saas.md</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/prd/smart-lock-saas.md">prd/smart-lock-saas.md</a></div>
     </div>
 
     <div class="doc-card">
@@ -683,112 +686,112 @@ footer a { color: var(--ink-soft); }
       <span class="badge frozen">FROZEN</span>
       <h4>User Flow</h4>
       <div class="desc">4 主流程 + 12 edge case + state coverage + WCAG 2.2 AA</div>
-      <div class="path"><a href="./ux/user-flow-smart-lock-saas.md">ux/user-flow-smart-lock-saas.md</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/ux/user-flow-smart-lock-saas.md">ux/user-flow-smart-lock-saas.md</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge frozen">FROZEN</span>
       <h4>System Spec</h4>
       <div class="desc">14 物件 + 7 狀態機 + 64 BR + 18 UC + 21 events</div>
-      <div class="path"><a href="./analysis/system-spec-smart-lock-saas.md">analysis/system-spec-smart-lock-saas.md</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/analysis/system-spec-smart-lock-saas.md">analysis/system-spec-smart-lock-saas.md</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge baseline">BASELINE × 25</span>
       <h4>Functional Requirements</h4>
       <div class="desc">FR-0001~0025 個別 spec</div>
-      <div class="path"><a href="./analysis/fr/">analysis/fr/</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/analysis/fr/">analysis/fr/</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge wip">WIP</span>
       <h4>Business Rules</h4>
       <div class="desc">BR-AUDIT-007 Family Reviewer event log 三要件</div>
-      <div class="path"><a href="./analysis/br/">analysis/br/</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/analysis/br/">analysis/br/</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge baseline">BASELINE</span>
       <h4>架構主檔 (C4 L1/L2)</h4>
       <div class="desc">系統情境圖 + Container view + DDD 戰略</div>
-      <div class="path"><a href="./architecture/ARCH-0001-architecture-overview.md">architecture/ARCH-0001...</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/ARCH-0001-architecture-overview.md">architecture/ARCH-0001...</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge frozen">FROZEN</span>
       <h4>C4 L3 Component</h4>
       <div class="desc">7 bounded context + failure mode + module boundary</div>
-      <div class="path"><a href="./architecture/c4-l3-smart-lock-saas.md">architecture/c4-l3-...</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/c4-l3-smart-lock-saas.md">architecture/c4-l3-...</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge frozen">FROZEN</span>
       <h4>NFR Matrix</h4>
       <div class="desc">9 NFR 維度 + 12 failure mode + 4 SLI</div>
-      <div class="path"><a href="./architecture/nfr-matrix-smart-lock-saas.md">architecture/nfr-matrix-...</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/nfr-matrix-smart-lock-saas.md">architecture/nfr-matrix-...</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge frozen">FROZEN × 66</span>
       <h4>Architecture Decision Records</h4>
       <div class="desc">30 baseline + 29 拍板 + 7 cascade + INDEX</div>
-      <div class="path"><a href="./architecture/adr/INDEX.md">architecture/adr/INDEX.md</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/adr/INDEX.md">architecture/adr/INDEX.md</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge frozen">FROZEN</span>
       <h4>OpenAPI v1.0</h4>
       <div class="desc">V1 endpoints + V2 :action 預留 + 12 error codes</div>
-      <div class="path"><a href="./architecture/api/openapi.yaml">architecture/api/openapi.yaml</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/api/openapi.yaml">architecture/api/openapi.yaml</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge frozen">FROZEN</span>
       <h4>ERD</h4>
       <div class="desc">Schema + Partition + RLS + Outbox + 7y retention</div>
-      <div class="path"><a href="./architecture/data/erd.md">architecture/data/erd.md</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/architecture/data/erd.md">architecture/data/erd.md</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge frozen">FROZEN</span>
       <h4>Test Plan</h4>
       <div class="desc">9 levels + KPI scenarios + 8 BDD + 200 Forbidden Eval</div>
-      <div class="path"><a href="./qa/test-plan-smart-lock-saas.md">qa/test-plan-...</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/qa/test-plan-smart-lock-saas.md">qa/test-plan-...</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge frozen">FROZEN</span>
       <h4>Runbook</h4>
       <div class="desc">11 incident playbooks + 3-layer kill switch + pipeline</div>
-      <div class="path"><a href="./ops/runbook-smart-lock-saas.md">ops/runbook-...</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/ops/runbook-smart-lock-saas.md">ops/runbook-...</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge frozen">FROZEN</span>
       <h4>Release Readiness</h4>
       <div class="desc">V1 W17 launch checklist + rollback trigger</div>
-      <div class="path"><a href="./ops/release-readiness.md">ops/release-readiness.md</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/ops/release-readiness.md">ops/release-readiness.md</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge policy">POLICY</span>
       <h4>OPA Rego Policy</h4>
       <div class="desc">BR-PII-001 個資治理決策樹（CODEOWNERS @legal @dpo）</div>
-      <div class="path"><a href="./policy/br-pii-001.rego">policy/br-pii-001.rego</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/policy/br-pii-001.rego">policy/br-pii-001.rego</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge legal">LEGAL</span>
       <h4>法務一頁式詮釋備忘</h4>
       <div class="desc">合約 §4.4(d) 履約方式 = retrospective event log，不需修約</div>
-      <div class="path"><a href="./governance/legal-memo-retrospective-review.md">governance/legal-memo-...</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/governance/legal-memo-retrospective-review.md">governance/legal-memo-...</a></div>
     </div>
 
     <div class="doc-card">
       <span class="badge baseline">REFERENCE</span>
       <h4>Stakeholder Map</h4>
       <div class="desc">18 角色四層 RBAC + influence × interest 矩陣</div>
-      <div class="path"><a href="./governance/stakeholders.md">governance/stakeholders.md</a></div>
+      <div class="path"><a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/governance/stakeholders.md">governance/stakeholders.md</a></div>
     </div>
 
   </div>
@@ -796,7 +799,7 @@ footer a { color: var(--ink-soft); }
 
 <footer>
   <p>Smart Lock SaaS · 文件導覽中心 · PRD v2.2 frozen 2026-05-24</p>
-  <p>產出 by <a href="https://github.com/Zenobia000/Architecture_Autopilot">DevTeam Harness</a> · 單一事實 in <a href="./">docs/</a></p>
+  <p>產出 by <a target="_blank" rel="noopener" href="https://github.com/Zenobia000/Architecture_Autopilot">DevTeam Harness</a> · 單一事實 in <a target="_blank" rel="noopener" href="https://github.com/Zenobia000/chatlock_dev_docs/blob/main/docs/">docs/</a></p>
 </footer>
 
 </div>
