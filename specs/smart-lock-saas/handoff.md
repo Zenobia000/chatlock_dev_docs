@@ -40,16 +40,16 @@
 | P1 | System spec | `docs/analysis/system-spec-smart-lock-saas.md` | 14 物件 + 7 狀態機 + 64 BR + 18 UC + 21 events + 14 integrations |
 | P2 | NFR matrix | `docs/architecture/nfr-matrix-smart-lock-saas.md` | 9 NFR 維度 + Failure modes + 4 SLI |
 | P2 | C4 L3 | `docs/architecture/c4-l3-smart-lock-saas.md` | Bounded context + Component + module boundary |
-| P2 | 62 ADRs | `docs/architecture/adr/` + `3-adr/` + `4-prd-fr-arch/04-architecture/adr/` | 含 new ADR-0060, ADR-0061 |
+| P2 | 66 ADRs (consolidated 2026-05-25) | `docs/architecture/adr/` | 含 baseline 30 條（ADR-0001~0030）+ 拍板 29 條（ADR-0031~0059）+ 新 7 條（ADR-0060/61 + PII-002 + VCH-001/002 + PIVOT-001 + BR-AUDIT-007）|
 | P2 | OPA Rego artifact | `docs/policy/br-pii-001.rego` | Versioned policy；@legal @dpo CODEOWNERS |
 | P3 | OpenAPI v1.0 | `docs/architecture/api/openapi.yaml` | V1 endpoints + V2 :action 命名 convention 預留 |
 | P3 | ERD | `docs/architecture/data/erd.md` | Schema + partition + RLS + outbox + migration |
 | P4 | Test plan | `docs/qa/test-plan-smart-lock-saas.md` | 9 test levels + KPI scenarios + 8 BDD + 200 Forbidden Eval |
 | P5 | Runbook | `docs/ops/runbook-smart-lock-saas.md` | 10 incident playbooks + Kill switch + Pipeline |
 | P5 | Release readiness | `docs/ops/release-readiness.md` | V1 launch checklist + rollback triggers |
-| Baseline | PRD-0001 v1.1 | `4-prd-fr-arch/01-prd/PRD-0001-2026-q1-v1-launch.md` | 40 user stories baseline |
-| Baseline | 25 FR-XXXX | `4-prd-fr-arch/02-fr/` | Existing functional specs |
-| Baseline | ARCH-0001 C4 L1/L2 | `4-prd-fr-arch/04-architecture/ARCH-0001-architecture-overview.md` | Container view |
+| Baseline | PRD-0001 v1.1 | `archive/prd-baseline/PRD-0001-2026-q1-v1-launch.md` | 40 user stories baseline |
+| Baseline | 25 FR-XXXX | `docs/analysis/fr/` | Existing functional specs |
+| Baseline | ARCH-0001 C4 L1/L2 | `docs/architecture/ARCH-0001-architecture-overview.md` | Container view |
 
 ---
 
@@ -221,9 +221,9 @@
 
 - DevTeam state：`.claude/context/devteam/state.json`
 - Session narrative：`.claude/context/devteam/session-2026-05-22-reset.md`
-- Strategy context：`0-strategy/PAIN-POINTS-SUMMARY-2026-05-21.md` + `deep-research-report.md`
-- Meeting decisions：`2-meetings/2026-05-22/`
-- 60 baseline ADRs：`3-adr/INDEX.md` + `4-prd-fr-arch/04-architecture/adr/`
+- Strategy context：`archive/strategy/PAIN-POINTS-SUMMARY-2026-05-21.md` + `deep-research-report.md`
+- Meeting decisions：`archive/meetings/2026-05-22/`
+- 60 baseline ADRs：`docs/architecture/adr/INDEX.md` + `docs/architecture/adr/`
 
 ---
 
