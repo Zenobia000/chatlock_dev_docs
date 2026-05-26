@@ -100,3 +100,9 @@ change_request:
 - ADR-0042 RBAC 4 層
 - ADR-0043 Contract Template（合約變更走 ChangeRequest）
 - ADR-0038 SOP 審核（AI SOP 走 ChangeRequest 子流程）
+
+---
+
+## Supersedes / Updates
+
+- **Superseded in part by ADR-0065 (lookup table migration, 2026-05-26)**：`change_request.type` 欄位 schema 由 enum 改為 FK to `change_request_type_dim` lookup table（4-phase dual-write migration）。其他部分（state machine / approval workflow / audit trail）仍 active。詳見 ADR-0065 §3 migration plan + §5 supersedes pointer。

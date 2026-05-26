@@ -112,3 +112,26 @@ Accepted (2026-05-22)
 - ADR-0040 退款核准分層（cancellation fee 屬於 refund 邊界）
 - ADR-0041 車馬費歸屬
 - ADR-0046 ChangeRequest（金額變更走此流程）
+- ADR-0066 Quote ↔ WorkOrder Lifecycle Hard Binding（S1 階段對齊：標準路徑 `WO.created` 前 quote 必須 customer_confirmed）
+
+---
+
+## v2 Update Note (2026-05-26) — Reason Code 補充
+
+連動 Forum Q-01 收斂（業主 Q1=A 硬綁定 + Q3=A 急件 carve-out，ADR-0066）：
+
+**新增 reason code**：`customer_quote_rejected_after_dispatch`
+
+| 適用場景 | 說明 |
+|:---|:---|
+| **適用** | onsite scope change v+1 加價路徑客戶拒絕（呼應 ADR-0049 customer_disagreed_partial onsite state）|
+| **不適用** | 標準路徑派工後客戶拒絕原 quote（Q1=A 硬綁定下此 case 不存在，quote 已 customer_confirmed 才能建 WO）|
+
+**S5 partial 公式延伸**：onsite v+1 加價被拒時，原 quote v1 已 confirmed → 完工項目按 v1 quote 收費；v+1 加項目走 `customer_disagreed_partial` 由 ADR-0049 三件套吸收 + 客服 escalate queue。
+
+**Audit log 必填欄位**：
+
+- `reason_code`: `customer_quote_rejected_after_dispatch`
+- `quote_version`: v+1 拒絕版本
+- `original_quote_id`: v1 已 confirmed 版本
+- `onsite_evidence_ids`: ADR-0049 三件套 evidence_id 陣列

@@ -1,9 +1,10 @@
 # User Flow — 智慧鎖 SaaS 平台
 
-> **狀態**：v1 draft（Gate 2 ready）
-> **更新**：2026-05-23
+> **狀態**：v1 draft（Gate 2 ready）— Forum 2026-05-26-Q01 cascade 更新（Flow S2 quote-pricing-engine）
+> **更新**：2026-05-26
 > **負責人**：UX
-> **關聯**：[PRD v2.1](../prd/smart-lock-saas.md) · ADR-0028 / 0031 / 0032 / 0034 / 0036 / 0037 / 0042 / 0045 / 0048 / 0049 / 0050
+> **關聯**：[PRD v2.1](../prd/smart-lock-saas.md) · ADR-0028 / 0031 / 0032 / 0034 / 0036 / 0037 / 0042 / 0045 / 0048 / 0049 / 0050 / **0062 (Pricing Engine V2 bounded context)** / **0063 (AI Quote-related Utterance Boundary)** / **0064 (Pricing Rule Snapshot immutable + independent hash chain)** / **0065 (ChangeRequest.type lookup table migration)** / **0066 (Quote-WO Lifecycle 硬綁定 + Emergency carve-out)**
+> **業主裁決**：Q1=A 硬綁定 / Q2=A 重構句型 / Q3=A 急件跳 quote / Q4=A Lookup table
 
 ---
 
@@ -43,6 +44,12 @@
                                                     需派工？→ 客戶觸發開工單
                                                               ↓
                                                     確認結案
+
+[客服]                              審 PC → 內部報價（急件跳過）→ 主管 approve → send LIFF
+                                                                            ↓
+[客戶]                                                    LIFF 看明細 → 勾 checkbox → 確認
+                                                                            ↓
+                                                                    quote.customer_confirmed → WO.created
 
 [師傅]                              收到推播 → 看案件 → 接單 → ETA → 到場 → 完工 → 月結
 
@@ -129,42 +136,131 @@ flowchart TD
 
 ---
 
-## 🛠 Flow S2：AI → 客服 → 派工 → 師傅到場（V2 主流程）
+## 🛠 Flow S2：AI → 客服 → 報價 → 客戶確認 → 派工 → 師傅到場（V2 主流程）
 
-> **使用者想做的事**：師傅版 = 「我要接案、開車過去、修完、領錢」。客戶版 = 「我要看師傅到了沒、要付多少」。
+> **使用者想做的事**：師傅版 = 「我要接案、開車過去、修完、領錢」。客戶版 = 「我要先看到報價金額再答應、再看師傅到了沒」。
+>
+> **Forum Q01 cascade 重點**：業主原話「客服報價 → 客人確認 → 才立工單」採 Q1=A 硬綁定字面詮釋 — `quote.customer_confirmed` 為 `WO.created` 前置（非 `WO.completed` 前置）。急件 4 類 (Q3=A) carve-out 跳過 quote。AI 不複誦金額 (Q2=A)，僅 announce existence。
 
 ```mermaid
 flowchart TD
-    AIDraft[AI 草擬工單] --> CS1Click[客服 1-click 確認]
-    CS1Click --> Created[工單 created]
-    Created --> CheckAddr{地址完整？}
+    AIDraft[AI 草擬問題卡完整] --> CSReview[客服 review PC]
+    CSReview --> Emergency{emergency_class<br/>4 類？}
+    Emergency -->|是 locked_out/trapped_inside<br/>/safety_risk/angry_customer_high_risk| EmergencyWO[跳過 Quote 直接<br/>WO.created]
+    Emergency -->|否| InternalQuote[客服內部報價<br/>Pricing Engine 算]
+    InternalQuote --> Approve[客服主管 approve<br/>quote.internal_approved]
+    Approve --> SendCustomer[客服 send LIFF<br/>quote.customer_sent]
+    SendCustomer --> LIFF[客戶 LIFF 看明細]
+    LIFF --> CustomerDecide{客戶確認？}
+    CustomerDecide -->|確認 + checkbox| Confirmed[quote.customer_confirmed]
+    CustomerDecide -->|拒絕| Rejected[quote.rejected → 客服重議]
+    CustomerDecide -->|48h 未回| Expired[quote.expired]
+    Rejected --> InternalQuote
+    Expired --> InternalQuote
+    Confirmed --> WOCreated[WO.created]
+    EmergencyWO --> WOCreated
+    WOCreated --> CheckAddr{地址完整？}
     CheckAddr -->|是| Dispatch
-    CheckAddr -->|否| AddrFlow[地址 3 段補：對話 → 後台 → 派工不擋]
+    CheckAddr -->|否| AddrFlow[地址 3 段補]
     AddrFlow --> Dispatch
-    Dispatch[智慧匹配 品牌 × 區域 × 技能 × 評分] --> Top5[Top-5 推播給師傅]
-    Top5 --> Accept{師傅 10 分鐘 / 急件 5 分鐘內接？}
+    Dispatch[智慧匹配] --> Top5[Top-5 推播給師傅]
+    Top5 --> Accept{師傅 10/5min 內接？}
     Accept -->|是| ETA[師傅輸入 ETA]
-    Accept -->|否，30 分鐘沒人接| Expand[擴大範圍 / 通知客服]
+    Accept -->|否，30 分鐘沒人接| Expand[擴大範圍/通知客服]
     ETA --> NotifyCust[LINE 通知消費者]
     NotifyCust --> Onsite[師傅到場]
-    Onsite --> CheckScope{要不要 scope change？}
-    CheckScope -->|是| ScopeFlow[三件套：簽名 + 照片 + audit；金額分層]
+    Onsite --> CheckScope{要 scope change？}
+    CheckScope -->|≤500 不觸發 quote| Repair
+    CheckScope -->|501-2000 觸發 quote v+1| Quotev2[暫停施工 → quote v+1<br/>客戶 LIFF 確認 → 續工]
+    CheckScope -->|>2000 強制 quote v+1 + 主管覆核| Quotev2
     CheckScope -->|否| Repair
-    ScopeFlow --> Repair[維修]
+    Quotev2 --> Repair[維修]
     Repair --> Sign[客戶簽名]
-    Sign --> Report[完工報告：前後照片 + 材料 + 工時 + 發票]
-    Report --> CloseGate{結案時地址有了嗎？}
-    CloseGate -->|沒有 → 422| AddrBlock[擋下 + 強制回填]
-    CloseGate -->|有| Completed([工單 completed])
+    Sign --> Report[完工報告]
+    Report --> CloseGate{結案前置都齊？<br/>address + quote.confirmed<br/>OR 急件 retrospective audit}
+    CloseGate -->|缺 address → 422| AddrBlock[強制回填 address]
+    CloseGate -->|急件未 audit → alert| RetroAudit[客服 4h 內補<br/>retrospective_audit_only quote]
+    CloseGate -->|齊| Completed([工單 completed])
     AddrBlock --> Report
+    RetroAudit --> Completed
 ```
 
+**Flow S2 逐步說明**（Forum Q01 cascade rewrite）：
+
+1. **AI 收齊 PC 後客服 review**（**不再** 「AI 1-click 直接立工單」）— 問題卡完整度 ≥ 0.85 後，客服進場 review，不允許 AI 單向繞過客服建單
+2. **急件 4 類 carve-out**（Q3=A）— `emergency_class IN (locked_out, trapped_inside, safety_risk, angry_customer_high_risk)` 任一命中 → **跳過 Quote 直接 `WO.created`**，事後客服 4h 內補 `retrospective_audit_only` quote（不影響案件流轉，只補 audit 鏈）；急件 audit 未補完，`WO.completed` 結案前置會 alert，客服必須回頭補齊
+3. **一般單**：Pricing Engine（`api/pricing/` sub-module）依 contract_template 算金額（客服可手動 override + audit 入 override SLI）→ **客服主管 approve** (`quote.internal_approved`) → 客服 send LIFF (`quote.customer_sent`)
+4. **客戶 LIFF 看明細 + checkbox + 確認**（D5-B'）— LINE Flex Message 推一張卡點開 LIFF，progressive disclosure 條款（摘要 3 點 + 完整條款展開）；**AI 不複誦金額**（Q2=A）— LINE 訊息只說「客服已準備好您的報價，請點選下方按鈕查看詳細金額與條款。系統報價編號 Q-XXXXX」，數字一律存 LIFF
+5. **客戶拒絕** → `quote.rejected`，回客服重議（新 quote 帶 `supersedes_quote_id` self-FK 串歷史）；**48h 未回** → `quote.expired`，客服可重議
+6. **`quote.customer_confirmed` → `WO.created`**（Q1=A 硬綁定）— `WorkOrderCreate.quote_id` required，後端 425 `QUOTE_NOT_CUSTOMER_SENT` / 409 `QUOTE_STATE_INVALID` 雙閘
+7. **派工後流程**不變：地址 3 段補（對話 → 後台 → 派工不擋，結案硬擋）→ 智慧匹配 Top-5 → 師傅接單（一般 10 分鐘 / 急件 5 分鐘）→ ETA → LINE 通知消費者 → 師傅到場
+8. **Onsite scope_change tier**：
+   - **≤500 元**：不觸發 quote v+1，師傅自確走 ADR-0049 三件套（簽名 + 照片 + audit）
+   - **501-2000 元**：**暫停施工** → 觸發 quote v+1 → 客戶 LIFF 確認 → 續工
+   - **>2000 元**：**強制** quote v+1 + 主管覆核（三方在線）→ 客戶 LIFF 確認 → 續工
+9. **結案 hard gate**：`address + quote.customer_confirmed`（或 emergency carve-out 路徑下 `retrospective_audit_only` quote 已補），任一缺 → 422 + 強制回填
+
 **Edge case**：
-- **地址 3 段補**：對話追問 → 後台補 → 仍無時派工**不擋** + 師傅可 skip + **結案時硬擋**（這條業主特別交代）
-- **Scope change 三件套**：客戶簽名 + 證據照片 + audit log 三個缺一不可。金額 ≤500 師傅自確 / 501-2000 客服 LINE 確認 / >2000 主管+三方在線
-- **取消費 5 階段**：報價未確認 0 / 派工未出發 0 / 出發後 車馬費 / 到場後 車馬+檢測 / 已施工 按比例。全部系統自判 + 客服可全階段覆寫
+- **地址 3 段補**：對話追問 → 後台補 → 仍無時派工**不擋** + 師傅可 skip + **結案時硬擋**（業主特別交代）
+- **Scope change ADR-0049 三件套**：客戶簽名 + 證據照片 + audit log 三個缺一不可（≤500 元用，501+ 升級走 quote v+1 LIFF 確認）
+- **取消費 5 階段**：報價未確認 0 / 派工未出發 0 / 出發後 車馬費 / 到場後 車馬+檢測 / 已施工 按比例（**新增 reason code**：`customer_rejected_post_dispatch_completed` 僅在 Q1=B 軟綁定時觸發；Q1=A 硬綁定下不會發生派工後客戶拒絕，因為 confirmed 已在派工前）
 - **材料歸屬**：platform / brand / locksmith 三選一，月結自動分流
 - **零件序號**：主鎖 + >1000 高價零件強制填，低價選填
+- **Quote 48h 過期計時器 ↔ conversation auto_closed 48h**：採單一 source of truth — conversation auto_closed 時 quote 同步 `expired_by_conversation_close` reason
+- **Onsite quote v+1 LIFF 失敗**：客戶手機 LIFF 優先 → QR code 跨師傅平板 → 紙本簽 audit log（BR-Onsite-004）
+- **Quote re-version**：舊版 quote button auto-disable + redirect to v2（避免客戶按到失效版本）
+
+---
+
+### Flow S2 — LIFF 二段確認 state coverage（D5-B' 補完）
+
+> 5 step × 5 state 全填，給 UI 設計 + QA test plan 用。
+
+| Step | Happy | Empty | Loading | Error | Offline |
+|:-----|:------|:------|:--------|:------|:--------|
+| **LINE Flex 送達** | ✓ 客戶 LINE 收到一張 Flex card「客服已準備好您的報價」+ 按鈕 | 客戶 blocked bot → SMS fallback + 客服 call | 客服 push 中（後台 spinner） | Flex render 失敗（舊版 LINE）→ 退純文字 + LIFF link | LINE 訊息收到無網 → 顯示 cached 通知，連線後重新打開 |
+| **點查看開 LIFF** | ✓ LIFF 5s 內開啟 + 顯示明細頁 | 第一次用 LIFF 走 onboarding（一頁 a11y / 條款導讀） | LIFF 載入 p95 ≤ 2s / >5s 顯示 progress bar + 「正在載入您的報價...」 | 授權失敗（LIFF auth）→ fallback Flex one-tap 簡化版（不展開明細，純 yes/no） | 顯示 cached 過去成功打開過的 quote 摘要 + retry |
+| **看明細 + 條款** | ✓ 明細 line item / 小計 / 條款摘要 + 完整條款 progressive disclosure | 0 元 line item 隱藏 + 標「平台出」（避免客戶誤認免費項目）；contract_template 沒費用條款時 fallback 預設條款 | spinner（PRICING engine 推算可能 250ms 內） | `quote.expired` → 顯示「報價已失效，請聯繫客服重新報價」+ 客服 1-tap 觸發按鈕 | offline 不允許 confirm（顯示 banner「需連線才能確認報價」）|
+| **勾 checkbox + 確認** | ✓ checkbox 勾選 → 確認按鈕變綠 → 點擊 → 200 + 跳「已確認」頁 | checkbox unchecked 時 confirm button **disabled**（避免「概括同意」爭議，符合 Legal sign-off） | spinner + button disabled（避免重複送出） | 502 retry + Idempotency-Key 重送（同一 token 不會建兩張 confirm）；409 `QUOTE_STATE_INVALID` 顯示「報價已被重新議價，請查看新版」 | offline banner，confirm button 鎖死 |
+| **拒絕路徑** | ✓ LIFF 顯示「客服將與您聯繫」 + LINE 回訊「我們收到您的回應，客服將儘速與您聯繫」 | — | spinner | re-version 顯示 v2 取代 v1（v1 button auto-disable + redirect to v2） | offline 暫存拒絕意圖 + 上線重送（Idempotency-Key 防重複）|
+
+---
+
+### Flow S2 — LIFF a11y WCAG 2.2 AA checklist（D5-B' 補完）
+
+> 13 條 criterion + reduced-motion，給 UI 實作 + QA AT 測試用。
+
+| WCAG SC | 項目 | 規格 |
+|:--------|:-----|:-----|
+| **1.4.3** | 文字對比（最低）| normal text ≥ 4.5:1；**金額 large text 升 7:1**（高齡客戶 + 法律金額雙重保險）|
+| **1.4.10** | Reflow | 320px 寬不橫向滾動（明細 table 改 stack layout）|
+| **1.4.12** | 文字間距 | line-height ≥ 1.5；paragraph spacing ≥ 2x；letter-spacing ≥ 0.12em |
+| **2.4.4** | Link purpose（in context）| 條款連結文字明示「報價條款（含車馬費 / 保固 / 爭議處理）」，不可只寫「點此」|
+| **2.4.6** | Headings / Labels | LIFF 結構式 h1-h3 + form label 關聯（checkbox 有對應 label）|
+| **2.4.7** | Focus indicator visible | 看得到的 focus ring（≥ 2px 寬，≥ 3:1 contrast，非僅 color change）|
+| **2.5.5** | Target size (enhanced)| 「確認」「取消」「拒絕」≥ 44×44 CSS px |
+| **2.5.8** | Target size (minimum)| 所有可互動元件 ≥ 24×24 CSS px（**新 WCAG 2.2 SC**，條款展開 icon 也算）|
+| **3.2.4** | Consistent identification | 按鈕 / icon meaning 全 app 一致（確認 = 綠 / 拒絕 = 紅 / 取消 = 灰）|
+| **3.3.1** | Error identification | checkbox 沒勾按確認 → 錯誤訊息走 `aria-describedby` + `aria-live="polite"`（不打斷 screen reader 主流程）|
+| **3.3.3** | Error suggestion | 錯誤訊息給具體修正建議（「請先勾選同意條款後再確認」非單純「錯誤」）|
+| **4.1.2** | Name / Role / Value | 金額 `aria-label` 含幣別 + 整字「NTD 兩千八百元整」（不可只給數字字串，AT 會讀錯）|
+| **(extra)** | prefers-reduced-motion | transition / animation respect `@media (prefers-reduced-motion: reduce)`；長 fade-in 改 instant |
+
+**Acceptance（給 QA）**：「QA 用 NVDA（Windows）/ VoiceOver（iOS）跑一輪 LIFF 確認流程，AT user task success rate ≥ 90%」（任務 = 開 LIFF → 看明細 → 勾 checkbox → 確認，不需視覺輔助）
+
+---
+
+### Flow S2 — Open Questions（cascade 後續）
+
+> 給下游 driver skill / Legal / DPO sign-off 收尾用。UX 不單方面決定。
+
+| OQ ID | 議題 | 暫定處置 | Owner |
+|:------|:-----|:---------|:------|
+| **OQ-UX-S2-01** | BR-Conv-001 conversation `auto_closed` 48h 與 `quote.expired` 48h 兩個計時器並存 | 採「conversation auto_closed 時 quote 同步 `expired_by_conversation_close` reason」單一 source of truth；不雙計時器 | analyst（寫入 BR-Quote-003 補強）|
+| **OQ-UX-S2-02** | Onsite scope_change quote v+1 LIFF 失敗的 fallback 鏈 | 客戶手機 LIFF 優先 → QR code 跨師傅平板 → 紙本簽 + audit log（BR-Onsite-004 落地）；師傅平板不主推 LIFF 避免簽名爭議 | analyst（BR-Onsite-004）+ design（OpenAPI 補 fallback 路徑）|
+| **OQ-UX-S2-03** | LIFF checkbox 條款內文版本 + progressive disclosure 設計 | Legal sign-off（cascade 前置）— 摘要 3 點（車馬費 / 保固 / 爭議處理）+ 完整條款可展開；條款版本號帶 `contract_template_id` snapshot | Legal + UI |
+| **OQ-UX-S2-04** | 0 元 line item「平台出」標示文案 | 候選：「免費（平台補貼）」/「平台出」/「不收費」— 業主 + 客服主管簽核 | PM + 客服主管 |
+| **OQ-UX-S2-05** | Emergency carve-out 客戶體驗安撫文案 | locked_out / trapped_inside 急件當下不被金額卡住；師傅到場前不顯示金額；事後 4h 內 LIFF 補 retrospective audit quote，文案需安撫「您剛才的服務已完成，現在請確認費用明細」 | UX 草擬 + 客服主管確認 |
 
 ---
 
@@ -261,6 +357,11 @@ flowchart TD
 - 急件 4 類 → **Intent 後立即偵測**，5 分鐘內強制轉真人 bypass 三層；列入 K8 200 題 Eval
 - **Clarify gate 必過**：AI 回應後一定要客戶確認「問題釐清」才能標 resolved（feedback 是平行品質訊號，不可作為結案依據）
 - **工單建立路徑分離**：AI 路徑由客戶觸發 → 工單 Tool；客服路徑由客服觸發 → 同一個工單 Tool；兩條都需 CS 1-click
+- **Quote-WO 硬綁定**（Q1=A）：`WO.created` 必有 `quote.customer_confirmed`（或 `emergency_class IS NOT NULL` carve-out）；API 425/409 雙閘
+- **AI 不複誦金額**（Q2=A）：LINE 訊息僅 announce existence + Q-XXXXX 編號，數字一律存 LIFF（charter ADR-0028/0035/0054 零破壞）
+- **急件 carve-out**（Q3=A）：4 類急件跳過 quote 直接 `WO.created`；客服 4h 內補 `retrospective_audit_only` quote；audit 未補完 `WO.completed` 結案前置 alert
+- **LIFF a11y**：NVDA / VoiceOver AT user task success rate ≥ 90%；WCAG 2.2 AA 13 條 criterion 全過
+- **LIFF NFR**：confirm p95 ≤ 2s；abandon rate 24h 監控；load failure rate alert；quote_confirm_to_wo_created_lag p95 監控
 - 結案時地址必填，硬擋
 - 雙審 SOP 100% 覆核率；24 小時內審完；缺席演練過 1 次
 
@@ -273,6 +374,7 @@ flowchart TD
 - 既有 V1 user journey：[`../../archive/prd-baseline/PRD-0001-2026-q1-v1-launch.md#appendix--user-journey-map-merged-from-former-e1x--user-journey-mapmd`](../../archive/prd-baseline/PRD-0001-2026-q1-v1-launch.md)
 - Forum F-02 K2 acceptance table → K2 量測依據
 - Forum F-04 BR-PII-001 → GDPR forget flow 依據
+- **Forum 2026-05-26-Q01 final report**：[`../../.claude/context/devteam/forum/2026-05-26-2241-Q01-quote-pricing-engine/final-report.md`](../../.claude/context/devteam/forum/2026-05-26-2241-Q01-quote-pricing-engine/final-report.md) → Flow S2 cascade 依據（Q1/Q2/Q3/Q4 業主裁決）
 
 ---
 

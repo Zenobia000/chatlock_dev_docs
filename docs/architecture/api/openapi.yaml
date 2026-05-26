@@ -1,32 +1,59 @@
 openapi: 3.1.0
 info:
   title: Smart Lock SaaS Platform API
-  version: 1.0.0-v1
+  version: 2.3.0
   description: |
-    V1.0 API contract — frozen at 2026-05-22 per Gate 5a.
+    v2.3.0 (2026-05-26): Quote / Pricing API cascade per Forum-Lite Q01 (2026-05-26-Q01).
+    - New /pricing/calculate + /quotes/* (8 endpoints) per ADR-0062 ~ 0066
+    - WorkOrderCreate.quote_id (with emergency carve-out per ADR-0066)
+    - 8 new error codes
+    - References: ADR-0062 (Pricing Engine BC) / ADR-0063 (AI Utterance Boundary) /
+      ADR-0064 (LIFF Token & Idempotency) / ADR-0065 (Quote Re-version Self-FK) /
+      ADR-0066 (Emergency Retrospective Audit)
+
+    V1.0 API contract — originally frozen at 2026-05-22 per Gate 5a.
     Source: Forum F-01 Option C++ / ADR-0060 / ADR-0061.
 
     Contract design principles (sd):
     - **Contract first**: every endpoint has happy + error path enumerated
     - **Idempotency**: POST mutations require `Idempotency-Key` header (24h dedup for LINE webhook; per-request for others)
     - **Error model exhaustive**: each endpoint enumerates 400/403/404/409/422/425/423 where applicable. No generic 500-as-business-error
-    - **Status codes precise**: 409 = state conflict, 422 = schema validation, 423 = resource locked (legal_hold), 425 = too early (precondition not met)
+    - **Status codes precise**: 409 = state conflict, 410 = gone (expired/voided), 422 = schema validation, 423 = resource locked (legal_hold), 425 = too early (precondition not met)
     - **Telemetry hooks**: every endpoint emits OTel spans with `tenant_id`, `actor_role`, `idempotency_key` tags
     - **Cursor pagination** on all list endpoints (no offset/page; avoids deep-skip cost)
     - **tenant_id propagation** enforced at handler entry (ADR-0030); cross-tenant write returns 403 CROSS_TENANT_WRITE
     - **Additive-only V2 evolution**: V2 workflow uses sub-resource actions (`/contract-templates/{id}:submit`) — V1 client never breaks
     - **Forbidden actions**: AI agent cannot call `convert_to_work_order` directly; CS 1-click required (ADR-0031); enforced at API layer via `created_by_role` check
+    - **AI Utterance Boundary** (ADR-0063): AI cannot self-compose final-quote NTD-figure text; final-quote LIFF send must use server-generated `flex_message_template_id`; warranty/project case AI is forbidden to send
+
+    Quote lifecycle telemetry (v2.3.0):
+      Every /quote/* and /pricing/* endpoint MUST accept W3C `traceparent` header; audit_trail
+      rows MUST carry `trace_id`; LIFF flex message metadata MUST embed `quote_id + trace_id` so
+      that D3-B' guardrail Eval 200-question harness has an observable anchor for assertion.
 
     Error code catalogue (cross-endpoint):
+      - 401 LIFF_TOKEN_EXPIRED (ADR-0064)
       - 403 CROSS_TENANT_WRITE (ADR-0030)
       - 403 AI_FORBIDDEN_ACTION (ADR-0031 / 0047)
+      - 403 AI_FORBIDDEN_QUOTE_CREATE (ADR-0063)
+      - 403 AI_FORBIDDEN_FINAL_QUOTE (ADR-0063)
+      - 403 AI_FORBIDDEN_WARRANTY_PROJECT (ADR-0063)
       - 403 DGS_LEGAL_HOLD_ACTIVE (ADR-0061)
+      - 403 INSUFFICIENT_AUTHORITY (RBAC; ADR-0063)
       - 409 CONTRACT_VERSION_CONFLICT (ADR-0060)
+      - 409 QUOTE_STATE_INVALID (ADR-0062)
+      - 409 QUOTE_VERSION_STALE (ADR-0065)
+      - 409 URGENT_WINDOW_EXPIRED (ADR-0066)
+      - 410 QUOTE_EXPIRED (ADR-0064; 48h TTL)
+      - 410 AUDIT_WINDOW_EXPIRED (ADR-0066; 4h)
       - 422 PC_UNIQUE_VIOLATION (ADR-0036)
       - 422 SCOPE_OVERLAP (ADR-0060)
       - 422 ADDRESS_REQUIRED_FOR_CLOSE (ADR-0032)
+      - 422 PRICING_ENGINE_DOWN_NO_OVERRIDE (ADR-0062)
       - 423 LEGAL_HOLD_BLOCKS_FORGET (GDPR Art.17 + customer notice; ADR-0061)
       - 425 SOP_DUAL_REVIEW_NOT_DONE (FR-NEW-5)
+      - 425 QUOTE_NOT_CUSTOMER_SENT (ADR-0062)
+      - 425 QUOTE_REQUIRED_NON_EMERGENCY (ADR-0066)
   contact:
     name: devteam-design (sd)
     url: https://github.com/lock-smith-project/dev-docs
@@ -44,6 +71,7 @@ tags:
   - name: WorkOrder
   - name: Onsite
   - name: Quote
+  - name: Pricing  # v2.3 added per ADR-0062 Pricing Engine BC
   - name: Settlement
   - name: ContractTemplate (ADR-0060 V1)
   - name: DGS (ADR-0061 V1)
@@ -127,6 +155,15 @@ paths:
     post:
       tags: [WorkOrder]
       summary: Create WorkOrder (AI draft + CS 1-click confirm per ADR-0031)
+      description: |
+        v2.3.0 (ADR-0066) — `quote_id` precondition:
+          - `quote_id IS NOT NULL` → server enforces `quote.state == customer_confirmed`
+          - `quote_id IS NULL` → server enforces `pc.emergency_class IS NOT NULL`
+            (急件 4 類 carve-out; retrospective audit required within 4h via
+            POST /quotes/{id}/retrospective-audit)
+          - Violation:
+            * non-emergency missing quote → 425 QUOTE_REQUIRED_NON_EMERGENCY
+            * quote.state != customer_confirmed → 409 QUOTE_STATE_INVALID
       parameters:
         - { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
       requestBody:
@@ -136,6 +173,12 @@ paths:
       responses:
         '201': { description: created (address optional at this stage per ADR-0032) }
         '403': { description: AI tried to call directly (forbidden per ADR-0031) }
+        '409':
+          description: QUOTE_STATE_INVALID — quote_id provided but quote.state != customer_confirmed
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '425':
+          description: QUOTE_REQUIRED_NON_EMERGENCY — non-emergency PC must have a customer_confirmed quote_id (ADR-0066)
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
   /work-orders/{id}/close:
     parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
     post:
@@ -167,6 +210,345 @@ paths:
         '201': { description: created with audit }
         '422': { description: missing one of signature/photo/audit }
         '403': { description: amount tier violation (per ADR-0049) }
+
+  ## --- Pricing Engine (ADR-0062 — internal-only) ---
+  /pricing/calculate:
+    post:
+      tags: [Pricing]
+      summary: 計算報價金額（internal-only，給 quote draft 用）
+      operationId: pricingCalculate
+      description: |
+        ADR-0062 Pricing Engine BC.
+        Idempotent + safe-to-retry by deterministic hash
+        `sha256(pc_id + contract_template_id + distance_tier + material_class + rule_version)`.
+        Server uses the hash as 5min TTL cache key.
+        Response headers carry `X-Rule-Version` + `X-Calc-Hash`.
+        Internal-only — only server-side may call; LIFF reads the `quote.amount_breakdown`
+        snapshot rather than re-calling this endpoint.
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string }, description: 'optional; server falls back to deterministic hash cache' }
+        - { name: traceparent, in: header, required: false, schema: { type: string }, description: 'W3C trace context — required for quote lifecycle telemetry (v2.3 OTel hook)' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pc_id, tenant_id]
+              properties:
+                pc_id: { type: string }
+                tenant_id: { type: string }
+                contract_template_id: { type: string, nullable: true }
+                distance_tier:
+                  type: string
+                  enum: [same_zone, cross_zone, remote]
+                material_class: { type: string }
+      responses:
+        '200':
+          description: 計算成功
+          headers:
+            X-Rule-Version:
+              schema: { type: string }
+              description: pricing_rule version used
+            X-Calc-Hash:
+              schema: { type: string }
+              description: deterministic input hash (cache key)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [base_amount, travel_fee, material_cost, total, snapshot_hash, engine_self_check_passed]
+                properties:
+                  base_amount: { type: number }
+                  travel_fee: { type: number }
+                  material_cost: { type: number }
+                  emergency_factor: { type: number, nullable: true }
+                  total: { type: number }
+                  breakdown:
+                    type: array
+                    items: { type: object }
+                  snapshot_hash:
+                    type: string
+                    description: 'sha256 of the frozen pricing_rule_snapshot used for this calc'
+                  engine_self_check_passed:
+                    type: boolean
+                    description: 'engine internal invariant check (ADR-0062); required true before quote can be sent (gate per ARCH-C3)'
+        '403':
+          description: caller not allowed (internal-only)
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '422':
+          description: PRICING_ENGINE_DOWN_NO_OVERRIDE — engine self-check failed and no manual override path here
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  ## --- Quote lifecycle (ADR-0062 ~ 0066) ---
+  /quotes:
+    post:
+      tags: [Quote]
+      summary: 建立 quote draft（呼叫 pricing engine + freeze rule snapshot）
+      operationId: createQuote
+      description: |
+        ADR-0062 Pricing Engine BC + ADR-0063 AI Utterance Boundary.
+        Server-side: internally invokes /pricing/calculate, then freezes the result into
+        `quote.amount_breakdown` + `quote.snapshot_hash`.
+        AI CANNOT call this endpoint directly; enforced at API layer via `created_by_role`
+        (must be `customer_service`). Calls with `created_by_role=ai_agent` → 403
+        AI_FORBIDDEN_QUOTE_CREATE.
+        Manual `manual_amount_override` is allowed only for customer_service and must
+        be accompanied by `override_reason`; both are appended to audit_trail.
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+        - { name: traceparent, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pc_id, tenant_id, created_by_role]
+              properties:
+                pc_id: { type: string }
+                tenant_id: { type: string }
+                created_by_role:
+                  type: string
+                  enum: [customer_service]
+                  description: 'AI forbidden (ADR-0063)'
+                manual_amount_override:
+                  type: number
+                  nullable: true
+                  description: '客服可 override，需 audit_trail 記錄'
+                override_reason:
+                  type: string
+                  nullable: true
+                  description: required when manual_amount_override is set
+                supersedes_quote_id:
+                  type: string
+                  nullable: true
+                  description: 're-version self-FK to the previous quote (ADR-0065)'
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Quote' }
+        '403':
+          description: AI_FORBIDDEN_QUOTE_CREATE — created_by_role must be customer_service
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '422':
+          description: PC_NOT_CONFIRMED or PRICING_ENGINE_DOWN_NO_OVERRIDE
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  /quotes/{id}:approve:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [Quote]
+      summary: 客服主管 approve quote（state → internal_approved）
+      operationId: approveQuote
+      description: |
+        Requires customer_service_supervisor role.
+        Transitions quote.state from `draft` to `internal_approved`.
+        Pre-gate for /quotes/{id}:send-to-customer (per ARCH-C3:
+        `state=internal_approved AND engine_self_check_passed=true`).
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+        - { name: traceparent, in: header, required: false, schema: { type: string } }
+      responses:
+        '200': { description: approved }
+        '403':
+          description: INSUFFICIENT_AUTHORITY — caller is not customer_service_supervisor
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '409':
+          description: QUOTE_STATE_INVALID — quote is not in `draft` state
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  /quotes/{id}:send-to-customer:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [Quote]
+      summary: 對客戶送出 quote (state → customer_sent)
+      operationId: sendQuoteToCustomer
+      description: |
+        ADR-0063 AI Utterance Boundary enforcement. Server-side rules:
+          - `sender_role=ai_agent` → 403 AI_FORBIDDEN_FINAL_QUOTE
+          - 保固期 / 建案 case AND sender_role != customer_service →
+            403 AI_FORBIDDEN_WARRANTY_PROJECT (BR-Quote-003)
+          - Quote must satisfy `state=internal_approved AND engine_self_check_passed=true`
+            (ARCH-C3 dual gate); otherwise 425 QUOTE_NOT_CUSTOMER_SENT.
+        Response carries a `flex_message_template_id` (server-generated) — AI / clients
+        MUST NOT self-compose the NTD figure or message body; the template renders the
+        amount from the frozen quote snapshot.
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+        - { name: traceparent, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel, sender_role]
+              properties:
+                channel:
+                  type: string
+                  enum: [liff, flex_one_tap]
+                sender_role:
+                  type: string
+                  enum: [customer_service, customer_service_supervisor]
+                  description: 'ai_agent forbidden (ADR-0063)'
+      responses:
+        '200':
+          description: sent
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [flex_message_template_id, quote_id]
+                properties:
+                  quote_id: { type: string }
+                  flex_message_template_id:
+                    type: string
+                    description: 'server-generated; AI cannot self-compose (ADR-0063)'
+                  trace_id:
+                    type: string
+                    description: 'embedded in flex metadata for guardrail Eval anchor'
+        '403':
+          description: AI_FORBIDDEN_FINAL_QUOTE or AI_FORBIDDEN_WARRANTY_PROJECT
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '425':
+          description: QUOTE_NOT_CUSTOMER_SENT — pre-gate (internal_approved + engine_self_check_passed) failed
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  /quotes/{id}/customer-confirm:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Quote]
+      summary: 客戶於 LIFF 確認 quote (state → customer_confirmed)
+      operationId: customerConfirmQuote
+      description: |
+        ADR-0064 LIFF Token & Idempotency.
+        `confirm_token` TTL = 48h (quote lifetime); expired token → 401 LIFF_TOKEN_EXPIRED.
+        Idempotency-Key is REQUIRED so accidental double-tap on LIFF or flex one-tap
+        retries do not double-confirm.
+        Version conflict (the customer is confirming an older version) → 409
+        QUOTE_VERSION_STALE; quote already expired (TTL passed) → 410 QUOTE_EXPIRED.
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+        - { name: traceparent, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuoteCustomerConfirm' }
+      responses:
+        '200':
+          description: confirmed
+          content: { application/json: { schema: { $ref: '#/components/schemas/Quote' } } }
+        '401':
+          description: LIFF_TOKEN_EXPIRED
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '409':
+          description: QUOTE_VERSION_STALE — accepted_version != current quote.version
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '410':
+          description: QUOTE_EXPIRED — quote 48h TTL passed
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '422':
+          description: QUOTE_STATE_INVALID — quote is not in customer_sent state
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  /quotes/{id}/reject:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [Quote]
+      summary: 客戶拒絕 quote (state → rejected)
+      operationId: rejectQuote
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+        - { name: traceparent, in: header, required: false, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason_code:
+                  type: string
+                  enum: [customer_rejected, customer_unreachable, quote_expired]
+                comment: { type: string, nullable: true }
+      responses:
+        '200': { description: rejected }
+        '409':
+          description: QUOTE_STATE_INVALID
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  /quotes/{id}:supersede:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [Quote]
+      summary: re-version quote (建立新 version, state=draft, self-FK supersedes_quote_id)
+      operationId: supersedeQuote
+      description: |
+        ADR-0065 Quote Re-version Self-FK.
+        Creates a NEW quote row (new `id`, `version = previous.version + 1`,
+        `supersedes_quote_id = previous.id`). The previous quote stays addressable;
+        version chain is reconstructable via the self-FK.
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+        - { name: traceparent, in: header, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: superseded
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [new_quote_id, version]
+                properties:
+                  new_quote_id: { type: string }
+                  version: { type: integer }
+                  supersedes_quote_id: { type: string }
+        '409':
+          description: QUOTE_STATE_INVALID — quote already superseded or in terminal state
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  /quotes/{id}/retrospective-audit:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [Quote]
+      summary: 急件事後補 quote audit (ADR-0066)
+      operationId: retrospectiveQuoteAudit
+      description: |
+        ADR-0066 Emergency Retrospective Audit.
+        For pc.emergency_class IN 4 categories: onsite 完工後 4h 內客服必須補建立 quote 並
+        完成 retrospective audit。逾時 → 410 AUDIT_WINDOW_EXPIRED + alert SRE / CS supervisor。
+        Audit success → `quote.state = retrospective_audit_only` (a terminal state used
+        purely for ledger reconciliation; does not gate WO creation since the WO was
+        already created under the emergency carve-out).
+      parameters:
+        - { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+        - { name: traceparent, in: header, required: false, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [audited_by_role]
+              properties:
+                audited_by_role:
+                  type: string
+                  enum: [customer_service, customer_service_supervisor]
+                amount_breakdown: { type: object }
+                audit_note: { type: string }
+      responses:
+        '200':
+          description: audit complete; quote.state → retrospective_audit_only
+          content: { application/json: { schema: { $ref: '#/components/schemas/Quote' } } }
+        '409':
+          description: URGENT_WINDOW_EXPIRED — outside the 4h audit window but still recoverable; see runbook
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '410':
+          description: AUDIT_WINDOW_EXPIRED — 4h audit window has passed; alert fired
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
 
   ## --- Contract Template (ADR-0060 — V1 draft-state CRUD only) ---
   /contract-templates:
@@ -449,9 +831,41 @@ components:
       type: object
       required: [code, message]
       properties:
-        code: { type: string, enum: [CROSS_TENANT_WRITE, CROSS_TENANT_READ, CONTRACT_VERSION_CONFLICT, SCOPE_OVERLAP, ADDRESS_REQUIRED_FOR_CLOSE, PC_UNIQUE_VIOLATION, AI_FORBIDDEN_ACTION, DGS_LEGAL_HOLD_ACTIVE, VOUCHER_VOIDED, VOUCHER_ALREADY_VOIDED, LEGAL_HOLD_BLOCKS_FORGET, SOP_DUAL_REVIEW_NOT_DONE] }
+        code:
+          type: string
+          enum:
+            # Pre-v2.3 codes
+            - CROSS_TENANT_WRITE
+            - CROSS_TENANT_READ
+            - CONTRACT_VERSION_CONFLICT
+            - SCOPE_OVERLAP
+            - ADDRESS_REQUIRED_FOR_CLOSE
+            - PC_UNIQUE_VIOLATION
+            - AI_FORBIDDEN_ACTION
+            - DGS_LEGAL_HOLD_ACTIVE
+            - VOUCHER_VOIDED
+            - VOUCHER_ALREADY_VOIDED
+            - LEGAL_HOLD_BLOCKS_FORGET
+            - SOP_DUAL_REVIEW_NOT_DONE
+            # v2.3.0 Quote / Pricing cascade (ADR-0062 ~ 0066)
+            - AI_FORBIDDEN_FINAL_QUOTE          # 403 (ADR-0063)
+            - AI_FORBIDDEN_WARRANTY_PROJECT     # 403 (ADR-0063)
+            - AI_FORBIDDEN_QUOTE_CREATE         # 403 (ADR-0063)
+            - QUOTE_NOT_CUSTOMER_SENT           # 425 (ADR-0062)
+            - QUOTE_REQUIRED_NON_EMERGENCY      # 425 (ADR-0066)
+            - QUOTE_STATE_INVALID               # 409 (ADR-0062)
+            - QUOTE_VERSION_STALE               # 409 (ADR-0065)
+            - QUOTE_EXPIRED                     # 410 (ADR-0064)
+            - LIFF_TOKEN_EXPIRED                # 401 (ADR-0064)
+            - AUDIT_WINDOW_EXPIRED              # 410 (ADR-0066)
+            - INSUFFICIENT_AUTHORITY            # 403 (ADR-0063)
+            - PRICING_ENGINE_DOWN_NO_OVERRIDE   # 422 (ADR-0062)
+            - URGENT_WINDOW_EXPIRED             # 409 (ADR-0066)
         message: { type: string }
         request_id: { type: string }
+        trace_id:
+          type: string
+          description: 'W3C trace_id; required on /quote/* and /pricing/* error responses (v2.3 telemetry)'
 
     LineWebhookEvents:
       type: object
@@ -493,9 +907,23 @@ components:
     WorkOrderCreate:
       type: object
       required: [pc_id, tenant_id, created_by_role]
+      description: |
+        v2.3.0 (ADR-0066): `quote_id` is conditionally required at the server layer:
+          - required when pc.emergency_class IS NULL (non-emergency must quote-then-WO)
+          - NULL allowed when pc.emergency_class IS NOT NULL (急件 carve-out;
+            retrospective quote/audit must follow within 4h via
+            POST /quotes/{id}/retrospective-audit)
+        Server enforces this conditional rule (not declarable in pure JSON Schema
+        without `if/then`); see /work-orders POST description.
       properties:
         pc_id: { type: string }
         tenant_id: { type: string }
+        quote_id:
+          type: string
+          nullable: true
+          description: |
+            Required unless pc.emergency_class IS NOT NULL (ADR-0066 carve-out).
+            When present, server enforces quote.state == customer_confirmed.
         address: { type: string, nullable: true, description: 'address optional at creation (ADR-0032); required at close' }
         created_by_role: { type: string, enum: [customer_service], description: 'AI cannot create directly (ADR-0031)' }
 
@@ -627,3 +1055,146 @@ components:
       properties:
         items: { type: array, items: { $ref: '#/components/schemas/Voucher' } }
         next_cursor: { type: string, nullable: true }
+
+    # v2.3.0 added per ADR-0062 ~ 0066 (Forum-Lite Q01 cascade)
+    Quote:
+      type: object
+      required: [id, tenant_id, pc_id, version, state, amount_breakdown, snapshot_hash, engine_self_check_passed, created_at]
+      properties:
+        id: { type: string }
+        tenant_id: { type: string }
+        pc_id: { type: string }
+        version:
+          type: integer
+          minimum: 1
+          description: 'monotonic per quote chain; re-version via :supersede creates a NEW row with version+1 (ADR-0065)'
+        supersedes_quote_id:
+          type: string
+          nullable: true
+          description: 'self-FK to the previous version (ADR-0065)'
+        state:
+          type: string
+          enum:
+            - draft
+            - internal_approved
+            - customer_sent
+            - customer_confirmed
+            - rejected
+            - expired
+            - superseded
+            - retrospective_audit_only
+          description: |
+            State machine (ADR-0062):
+              draft → (:approve) → internal_approved → (:send-to-customer) → customer_sent
+                → (/customer-confirm) → customer_confirmed
+              draft|internal_approved|customer_sent → (/reject) → rejected
+              customer_sent → (TTL 48h) → expired
+              any non-terminal → (:supersede) → superseded (+ new draft row)
+              emergency carve-out → (/retrospective-audit) → retrospective_audit_only
+        amount_breakdown:
+          type: object
+          description: |
+            Frozen pricing snapshot at quote creation time. Mirrors the
+            /pricing/calculate response payload; LIFF reads this rather than
+            re-calling pricing.
+          properties:
+            base_amount: { type: number }
+            travel_fee: { type: number }
+            material_cost: { type: number }
+            emergency_factor: { type: number, nullable: true }
+            total: { type: number }
+            currency: { type: string, default: 'TWD' }
+            breakdown: { type: array, items: { type: object } }
+        snapshot_hash:
+          type: string
+          description: |
+            sha256 reference into pricing_rule_snapshot (ADR-0062 + dba-B-3 hybrid).
+            Replaces the earlier `pricing_rule_version_snapshot jsonb` field.
+        engine_self_check_passed:
+          type: boolean
+          description: 'pricing engine invariant gate (ARCH-C3); must be true before :send-to-customer'
+        manual_amount_override:
+          type: number
+          nullable: true
+        override_reason:
+          type: string
+          nullable: true
+        created_by_role:
+          type: string
+          enum: [customer_service]
+        ttl_expires_at:
+          type: string
+          format: date-time
+          description: '48h TTL from customer_sent (ADR-0064)'
+        confirm_token:
+          type: string
+          nullable: true
+          description: 'LIFF confirm token; opaque, server-issued; TTL = quote TTL (ADR-0064)'
+        flex_message_template_id:
+          type: string
+          nullable: true
+          description: 'server-generated; bound on :send-to-customer (ADR-0063)'
+        audit_trail:
+          type: array
+          items: { type: object }
+          description: 'each entry carries trace_id for telemetry anchor'
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    PricingRuleSnapshot:
+      type: object
+      required: [snapshot_hash, rule_version, rule_rows, effective_at, engine_type]
+      description: |
+        Content-addressable, immutable snapshot of the pricing rules used for a
+        single calc. The snapshot is referenced from `quote.snapshot_hash` (FK).
+        Multiple quotes may share the same snapshot_hash → dedup storage.
+      properties:
+        snapshot_hash:
+          type: string
+          description: 'sha256(canonical_json(rule_rows + rule_version + contract_template_id))'
+        rule_version: { type: string }
+        contract_template_id:
+          type: string
+          nullable: true
+        rule_rows:
+          type: array
+          description: 'frozen rule rows (lookup table; replaces enum per ADR-0066 Q4)'
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              value: { type: object }
+        effective_at: { type: string, format: date-time }
+        engine_type:
+          type: string
+          description: 'reserved for V2 multi-engine (arch-C1)'
+          enum: [v1_default]
+        currency:
+          type: string
+          default: 'TWD'
+          description: 'reserved per arch-C1'
+
+    QuoteCustomerConfirm:
+      type: object
+      required: [confirm_token, accepted_version, accepted_at, channel, consent_method]
+      description: |
+        Input schema for POST /quotes/{id}/customer-confirm (ADR-0064).
+        Idempotency-Key header is REQUIRED (declared on the operation).
+      properties:
+        confirm_token:
+          type: string
+          description: 'opaque server-issued token; TTL = quote 48h'
+        accepted_version:
+          type: integer
+          minimum: 1
+          description: 'must match current quote.version; mismatch → 409 QUOTE_VERSION_STALE'
+        accepted_at:
+          type: string
+          format: date-time
+        channel:
+          type: string
+          enum: [liff, flex_one_tap]
+        consent_method:
+          type: string
+          enum: [liff_full, flex_simple_fallback]
+          description: 'liff_full = full LIFF page consent; flex_simple_fallback = one-tap flex button fallback'
