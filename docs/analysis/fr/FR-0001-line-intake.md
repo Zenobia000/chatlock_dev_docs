@@ -39,6 +39,7 @@ LINE 客服報修受理（圖片 + 文字 + 對話）
 - LINE webhook 重送（X-Line-Signature 相同）→ 冪等處理，不重複建 Conversation
 - 圖片 = 10MB 邊界值仍接受；10.1MB 拒絕回 413
 - 對話 4 輪後仍 intent_confidence < 0.7 → 升 L3 (per dispatch-engine §1)
+- **急件 4 類偵測時機**（cascade from S1 flow 2026-05-26）：Intent 階段（**收到首筆訊息 + Intent 認意圖後立即判定**）就要識別「鎖外 / 內困 / 安全 / 怒客」四類，bypass 三層直接 5min 內轉真人；不可延後到 Triage 階段
 
 ### §3.3 異常處理
 
@@ -62,3 +63,4 @@ LINE 客服報修受理（圖片 + 文字 + 對話）
 | Date | Change |
 | :--- | :--- |
 | 2026-05-10 | 從 north-star-requirements REQ-001→FR-0001 split |
+| 2026-05-26 | **S1 cascade**：急件偵測時機移至 Intent 階段（bypass Triage），對應 UC-002 update + ProblemCard.urgency_detected_at 欄位 |

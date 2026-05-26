@@ -27,9 +27,9 @@
 | Site | entity | `id` / `site_group_id`（建案）/ `address(crypto)` / `geo_district` / `tenant_id` |
 | Device | entity | `serial` / `brand` / `model` / `purchase_date` / `warranty_start_date` / `warranty_mode`（5 模式）/ `tenant_id` |
 | Conversation | entity | `id` / `channel_type` / `summary` / `state` / `started_at` / `auto_closed_at` / `tenant_id` |
-| ProblemCard | entity | `id` / `conversation_id` / `device_id` / `brand` / `model` / `symptom[]` / `urgency`（急件 4 類）/ `completeness_score` / `media_refs[]` / `state` / `tenant_id` |
+| ProblemCard | entity | `id` / `conversation_id` / `device_id` / `brand` / `model` / `symptom[]` / `urgency`（急件 4 類）/ `urgency_detected_at`（Intent 階段時間戳）/ `completeness_score` / `media_refs[]` / `state` / `clarification_confirmed_at`（AI 主動確認問題釐清時點，resolved 前置條件）/ `clarification_attempts`（連續未釐清次數）/ `tenant_id` |
 | Quote | entity | `id` / `pc_id` / `version` / `effective_date` / `approval_chain` / `range_only`（AI 不可 final）/ `tenant_id` |
-| WorkOrder | entity | `id` / `pc_id` / `state` / `state_history[]` / `address`（結案前 422 gate）/ `tenant_id` / `idempotency_key` / `created_by`（AI 草擬 + 客服確認）|
+| WorkOrder | entity | `id` / `pc_id` / `state` / `state_history[]` / `address`（結案前 422 gate）/ `tenant_id` / `idempotency_key` / `create_trigger` enum {ai_path_customer_triggered, cs_path_csagent_triggered}（誰呼叫工單 Tool）/ `created_by`（CS 1-click 確認者）|
 | Onsite | entity | `id` / `wo_id` / `arrival_proof` / `material_used[]` / `customer_signature` / `scope_change_events[]` |
 | Evidence | entity | `sha256`（PK）/ `tenant_id` / `wo_id` / `retention_class` / `legal_hold` / `purged_at` / `dek_id`（envelope 加密）|
 | Settlement | entity（7 帳本）| `ledger_type` / `period` / `audit_trail[]` / `partner_id` |
@@ -70,11 +70,18 @@ stateDiagram-v2
     [*] --> incomplete
     incomplete --> draft : AI 收齊欄位
     draft --> confirmed : completeness ≥ 0.85 + device_id
-    confirmed --> resolved : 三層解決成功
+    confirmed --> ai_responded : 三層解決命中（案例庫 / RAG）
+    ai_responded --> confirmed : Clarify gate 未釐清，retry
+    ai_responded --> resolved : Clarify gate 已釐清
+    confirmed --> resolved : 客服真人解決
     resolved --> [*]
 ```
 
 - `confirmed` precondition：`completeness ≥ 0.85`（ADR-0033）AND `device_id` non-null
+- `ai_responded` precondition：三層解決命中（案例庫 hit ≥0.85 OR RAG 整合回覆已發送）
+- **`resolved` precondition（AI 路徑）**：`clarification_confirmed_at IS NOT NULL`（AI 主動詢問「問題釐清了嗎？」客戶答「已釐清」）— **「有幫助 / 沒幫助」feedback 是平行品質訊號（K8 Eval / SOP trigger），不可作為 resolved 的 trigger**
+- **`resolved` precondition（CS 路徑）**：客服在 CSHandle 階段判斷問題已解決
+- 連續 `clarification_attempts ≥ 3` 未釐清 → 升級轉真人（escalated 路徑）
 
 ### 2.3 Quote
 
@@ -95,7 +102,9 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    [*] --> created : AI draft + CS 1-click
+    [*] --> draft : 工單系統 Tool 被呼叫
+    draft --> created : CS 1-click 審核通過
+    draft --> cancelled : CS 駁回
     created --> assigned : 智慧派工
     assigned --> accepted : 師傅接單（10/5 min SLA）
     accepted --> in_progress : 師傅到場
@@ -107,7 +116,9 @@ stateDiagram-v2
     cancelled --> [*]
 ```
 
-- `created` precondition：PC state=confirmed
+- 工單系統作為共用 Tool，由 **AI 路徑（客戶觸發開單）** 或 **CS 路徑（客服直接觸發）** 呼叫；AI 不可繞過客戶自行建單（BR-AI-越權邊界，同 final quote 攔截原則）
+- `draft` precondition：AI 路徑 → PC state=resolved AND 客戶在 SuggestWO 節點選擇開工單；CS 路徑 → CSHandle 中客服判斷需派工。`create_trigger` 欄位記錄 {ai_path_customer_triggered, cs_path_csagent_triggered}
+- `created` precondition：CS 1-click 審核通過（兩條路徑都需，AI 路徑也不可跳過 CS 審核）
 - `completed` precondition：**address IS NOT NULL**（合約 9.3 + ADR-0032 結案前 422 hard gate）
 
 ### 2.5 Onsite
@@ -245,12 +256,15 @@ stateDiagram-v2
 
 | UC | Title | Primary Actor | Pre-condition | Main Path | Post-condition |
 |:---|:---|:---|:---|:---|:---|
-| UC-001 | LINE 報修自助 | 消費者 | LINE bind | S1 主流程 | PC resolved + audit |
-| UC-002 | 急件強制轉真人 | 消費者 / 客服 | urgent 4 類觸發 | 5min 內 transfer | TransferEvent log |
+| UC-001 | LINE 報修自助 | 消費者 | LINE bind | S1 主流程（含 Intent → 急件偵測 → 三層 → AI 回應 → Clarify gate） | PC resolved + audit |
+| UC-002 | 急件強制轉真人 | 消費者 / 客服 | **Intent 階段判定 urgent 4 類**（含怒客 sentiment） | **Bypass 三層**，5min 內 transfer | TransferEvent log + PC.urgency_detected_at |
 | UC-003 | AI 收集 PC | 系統 | conv active | 多輪對話 + photo guide | PC.completeness ≥ 0.85 |
 | UC-004 | AI 報價 range | 系統 / 消費者 | PC confirmed | AI 給 range + 引導真人 | Quote.range_only=true |
-| UC-005 | 三層解決 | 系統 / 消費者 | PC confirmed | 案例庫 → RAG → 真人 | 解決或 escalate |
-| UC-006 | 客戶確認結案 | 消費者 | resolved | 按已解決 OR 48h auto_close | Conv.state=closed |
+| UC-005 | 三層解決 + Clarify gate | 系統 / 消費者 | PC confirmed | 案例庫 → RAG → AI 主動詢問「問題釐清了嗎？」 | PC.clarification_confirmed_at 寫入 |
+| UC-005a | AI 品質 feedback（平行訊號） | 消費者 | AI 已回應 | 按「有幫助 / 沒幫助」 | ai_quality.feedback 事件，**不影響 PC 流轉** |
+| UC-006 | 客戶確認結案 | 消費者 | PC resolved（已過 Clarify gate） | 按已解決 OR 48h auto_close | Conv.state=closed |
+| UC-006a | 客戶觸發開工單（AI 路徑） | 消費者 | PC resolved AND AI 建議派工 | 客戶在 SuggestWO 點「要派工」→ 工單 Tool draft → CS 1-click | WorkOrder.create_trigger=ai_path_customer_triggered |
+| UC-006b | 客服觸發開工單（CS 路徑） | 客服 | CSHandle 中判斷需派工 | 客服直接呼叫工單 Tool → 自動 CS 1-click | WorkOrder.create_trigger=cs_path_csagent_triggered |
 | UC-007 | reopen | 消費者 | closed 7d 內 | 訊息進入 | conv.reopened + K2 分子 -1 |
 | UC-008 | Admin 知識庫管理 | 管理員 | RBAC 治理層 | 上傳手冊 / SOP 草稿 review | Knowledge entry |
 | UC-009 | SOP 雙審 | 客服主管 / Domain Expert | SOP draft + risk=high | 雙簽 + Family Reviewer | published in 60s |
@@ -281,7 +295,11 @@ stateDiagram-v2
 | `problem_card.create_requested` | 1y | AI 草擬 | PC pipeline |
 | `problem_card.created` | 1y | system | UI + audit |
 | `problem_card.confirmed` | 1y | customer | dispatch trigger |
-| `problem_card.resolved` | 1y | customer | SOP trigger |
+| `problem_card.ai_responded` | 1y | AI | Clarify gate trigger |
+| `problem_card.clarification_confirmed` | 1y | customer（AI 路徑）/ CS（CS 路徑） | resolved trigger（**取代舊「有幫助」trigger**） |
+| `problem_card.clarification_failed` | 1y | customer | retry / escalate |
+| `problem_card.resolved` | 1y | customer / CS | SOP trigger |
+| `work_order.create_requested` | RMA+3y | customer（AI 路徑）OR CS（CS 路徑），含 `create_trigger` enum | CS 1-click queue |
 | `work_order.created` | RMA+3y | CS（1-click 確認後）| dispatch engine |
 | `work_order.assigned` | RMA+3y | system | technician notification |
 | `work_order.accepted` | RMA+3y | technician | customer notify |

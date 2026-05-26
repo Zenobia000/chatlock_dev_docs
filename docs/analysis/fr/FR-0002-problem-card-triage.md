@@ -47,6 +47,12 @@ ProblemCard 自動生成完整度 ≥ 0.85（合約 9.3 條），缺欄位觸發
 
 > **拍板 2026-05-22 (ADR-0059)**：當電子鎖 IoT event（`tamper` / `error_code` / `battery`）觸發時可預填 ProblemCard，但必須客戶確認後才轉 PC（HITL 邊界）。
 
+> **S1 cascade 2026-05-26**：
+> - **急件偵測時機修正**：urgency 4 類於 **Intent 階段** 立即判定，bypass 三層解決直接轉真人；不延後到 Triage 後（對應 FR-0001 §3.2 cascade 與 system spec UC-002 update）
+> - **「有幫助 / 沒幫助」與 problem_card.resolved 解耦**：feedback 為平行品質訊號（K8 Eval / SOP trigger），**不**作為 PC state 流轉依據；resolved 唯一 trigger 為 Clarify gate（AI 主動詢問「問題釐清了嗎？」客戶答「已釐清」）
+> - **新增欄位**：`clarification_confirmed_at`、`clarification_attempts`（連 3 次未釐清升級轉真人）
+> - **`ai_responded` 中介狀態**：confirmed → ai_responded → resolved（受 Clarify gate gating），對應 system-spec §2.2 state machine v2
+
 ### §3.3 異常處理
 
 - 空對話訊息列表 → 422 invalid_input
@@ -70,3 +76,4 @@ ProblemCard 自動生成完整度 ≥ 0.85（合約 9.3 條），缺欄位觸發
 | :--- | :--- |
 | 2026-05-10 | 從 north-star-requirements REQ-002→FR-0002 split |
 | 2026-05-22 | 加入 ADR-0033 (completeness gate)、ADR-0034 (urgent 4 類)、ADR-0036 (同對話多 PC)、ADR-0059 (IoT 預填) 引用 |
+| 2026-05-26 | **S1 cascade**：(a) 急件偵測時機移至 Intent；(b) Clarify gate 取代「有幫助」作為 resolved trigger；(c) 新增 `ai_responded` 中介狀態 + `clarification_confirmed_at` / `clarification_attempts` 欄位 |

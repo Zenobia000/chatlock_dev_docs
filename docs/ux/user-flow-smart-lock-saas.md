@@ -34,9 +34,15 @@
 ## 🗺 Journey Map（高層）
 
 ```
-[消費者]  發現問題 → LINE 報修 → 跟 AI 對話 → 確認問題卡 → 解決或派工 → 確認結案
-                                            ↓
-                                    急件 → 5 分鐘強制轉真人
+[消費者]  發現問題 → LINE 報修 → AI 認意圖
+                                       ↓
+                            急件 4 類？─是→ 5 分鐘內強制轉真人（bypass 三層）
+                                       ↓ 否
+                            多輪對話 → 三層解決 → AI 回應 → 問題釐清確認 → resolved
+                                                              ↓
+                                                    需派工？→ 客戶觸發開工單
+                                                              ↓
+                                                    確認結案
 
 [師傅]                              收到推播 → 看案件 → 接單 → ETA → 到場 → 完工 → 月結
 
@@ -54,46 +60,69 @@
 ```mermaid
 flowchart TD
     Start([使用者打 LINE 訊息]) --> Intent[AI 認意圖：報修 / 諮詢 / 投訴 / 其他]
-    Intent --> MultiTurn[多輪對話，慢慢收齊資訊]
-    MultiTurn --> Sentiment{偵測到怒氣 / 不滿嗎？}
-    Sentiment -->|是| EscalateNeg[3 秒內安撫 + 通知客服主管]
-    Sentiment -->|否| PCComplete{資料齊不齊？}
-    PCComplete -->|≥0.85 算齊| Triage[三層解決]
-    PCComplete -->|<0.85 不齊| PhotoGuide[主動引導拍照]
+    Intent --> Emergency{急件 4 類？<br/>鎖外 / 內困 / 安全風險 / 怒客}
+    Emergency -->|是，bypass 三層| ForceHuman[5 分鐘內強制轉真人]
+    Emergency -->|否| MultiTurn[多輪對話，慢慢收齊資訊]
+    MultiTurn --> PCComplete{資料齊？≥0.85}
+    PCComplete -->|否| PhotoGuide[主動引導拍照]
     PhotoGuide --> MultiTurn
-    Triage -->|案例庫命中 ≥0.85| ResolveCase[回覆步驟]
-    Triage -->|手冊 RAG| ResolveRAG[整合手冊回覆]
-    Triage -->|還是不行| Human[轉真人]
-    Triage -->|急件 4 類| ForceHuman[5 分鐘強制轉真人]
-    ResolveCase --> Feedback[使用者按：有幫助 / 沒幫助]
-    ResolveRAG --> Feedback
-    Feedback -->|有幫助| Resolved[標 resolved + 觸發 SOP 草稿]
-    Feedback -->|沒幫助| Triage
-    Resolved --> CustAck{使用者確認結案？}
-    CustAck -->|按「已解決」| Closed([結案])
+    PCComplete -->|是| Triage[三層解決]
+    Triage -->|案例庫命中 ≥0.85| AIResp[AI 給回應]
+    Triage -->|手冊 RAG| AIResp
+    Triage -->|都失敗 / 連 3 次收不齊| Human[轉真人]
+
+    AIResp --> Clarify{AI 主動確認：<br/>問題釐清了嗎？}
+    AIResp -. 平行訊號 .-> Feedback[/有幫助 / 沒幫助<br/>K8 Eval + SOP 草稿訊號<br/>不影響案件流轉/]
+
+    Clarify -->|未釐清| Triage
+    Clarify -->|已釐清| Resolved[problem_card = resolved]
+    Resolved --> NeedDispatch{AI 判斷需派師傅嗎？}
+    NeedDispatch -->|否，純諮詢可解決| CustAck
+    NeedDispatch -->|是，建議客戶| CustChoose{客戶選擇開工單？}
+    CustChoose -->|不需要| CustAck
+    CustChoose -->|要派工| WOTool[(客戶觸發<br/>工單系統 Tool)]
+
+    ForceHuman --> CSHandle[客服真人接手]
+    Human --> CSHandle
+    CSHandle --> CSResolve{客服判斷}
+    CSResolve -->|純客服解決| CSResolved[problem_card = resolved]
+    CSResolved --> CustAck
+    CSResolve -->|需派工| WOTool
+
+    WOTool --> CS1Click[客服 1-click 審核 + created]
+    CS1Click --> S2([→ S2 派工流程])
+
+    CustAck{使用者確認結案？} -->|按「已解決」| Closed([結案])
     CustAck -->|48 小時沒回| AutoClose([auto_closed])
     CustAck -->|7 天內重發訊息| Triage
     AutoClose -->|7 天內重發訊息| Triage
-    Human --> WO[AI 草擬工單 → 客服 1-click → S2]
 ```
 
 **逐步說明**：
 
-1. **使用者打 LINE 訊息** — 系統 5 秒內回覆。要是超過 5 秒，要顯示「正在處理中」避免使用者覺得卡死
+1. **使用者打 LINE 訊息** — 系統 5 秒內回覆。超過 5 秒顯示「正在處理中」避免卡死感
 2. **AI 認意圖** — 分四類（報修 / 諮詢 / 投訴 / 其他）。認不出來時不報錯，給引導訊息
-3. **多輪對話收齊資訊** — 一輪一輪問品牌、型號、症狀。允許使用者改口
-4. **偵測情緒** — 識別到怒氣關鍵詞（不能接受、要投訴、太離譜）就 3 秒內優先回應，同步通知客服主管
-5. **資料齊不齊** — 不齊就主動引導拍照（拍鎖舌、把手、錯誤代碼）；齊了走三層解決
-6. **三層解決** — 先查案例庫（< 3 秒）→ 再查手冊（< 8 秒）→ 都不行轉真人
-7. **急件直接轉真人** — 被鎖在門外 / 門內受困 / 安全風險 / 怒客四類，不走三層、直接 5 分鐘內轉真人
-8. **結案** — 使用者按「已解決」或 48 小時沒回應自動結案；7 天內重發訊息會 reopen
+3. **急件偵測（Intent 後立即判定）** — 被鎖在門外 / 門內受困 / 安全風險 / 怒客四類任一命中，**bypass 三層解決**直接 5 分鐘內轉真人。怒客判定走 sentiment + 關鍵字雙保險（不能接受、要投訴、太離譜）
+4. **多輪對話收齊資訊** — 一輪一輪問品牌、型號、症狀，允許使用者改口
+5. **資料齊不齊** — 不齊就主動引導拍照（鎖舌、把手、錯誤代碼）；齊了（≥0.85）走三層解決
+6. **三層解決** — 先查案例庫（< 3 秒）→ 再查手冊 RAG（< 8 秒）→ 都不行或連 3 次資料收不齊就轉真人
+7. **AI 回應 → 問題釐清確認**（**新增決策節點**）— AI 給回應後，由 AI 主動詢問「這樣的處理方式有沒有解決你遇到的問題？」客戶答「已釐清」才標 `problem_card.state = resolved`；答「沒釐清」就回 Triage 重試。**這個 gate 是案件流轉依據**
+8. **「有幫助 / 沒幫助」是平行品質訊號** — 用於 K8 Eval / SOP 草稿觸發 / AI 改進統計，**不影響案件流轉**。即使按「沒幫助」，問題仍可被釐清；即使按「有幫助」，仍需另外確認問題是否真的釐清
+9. **Resolved 後判斷是否需派工** — AI 判斷有「實地處理」需要時，**只能建議客戶**，由**客戶觸發呼叫工單系統 Tool**；若客戶不需派工或純諮詢，直接走 CustAck 確認結案
+10. **工單系統作為共用 Tool** — 不論 AI 路徑（客戶觸發）或客服真人路徑（客服觸發），最終都呼叫同一個工單建立 Tool，CS 1-click 審核後進入 S2。AI 不可繞過客戶自行建單，客服不需走客戶確認
+11. **結案** — 使用者按「已解決」或 48 小時沒回應 auto_closed；7 天內重發訊息 reopen 回 Triage
 
 **Edge case 一覽**：
 
 | 情況 | 怎麼處理 |
 |:---|:---|
-| 急件 4 類觸發 | 強制 5 分鐘轉真人，跳過三層 |
-| 資料一直收不齊（連 3 次） | 自動轉真人 |
+| 急件 4 類觸發（含怒客） | Intent 後立即 bypass 三層，5 分鐘內轉真人 |
+| AI 回應後客戶按「有幫助」但仍說沒釐清 | 不結案，回 Triage；feedback 進 K8 Eval 不影響案件流轉 |
+| AI 回應後客戶按「沒幫助」但已自己想通 | Clarify gate 答「已釐清」即標 resolved；feedback 仍進 K8 Eval |
+| AI 建議派工但客戶拒絕 | 不建工單，走 CustAck 結案；保留紀錄供 K2 / 後續客服判斷 |
+| AI 想繞過客戶自行建工單 | 系統攔截（同 final quote 攔截機制），由 BR-AI-越權邊界拘束 |
+| 客服真人接手後判斷需派工 | 客服直接呼叫工單 Tool，不需走客戶確認 |
+| 資料連 3 次收不齊 | 自動轉真人接手（CSHandle） |
 | AI 想說 final quote / 折扣 / 免費保固 | 系統攔截 + 改口給範圍價 |
 | 同一對話多個問題 | 同 active issue 只開一張卡，新症狀 / 新設備可另開 |
 | 客戶重開 7 天前的案件 | 進 K2 統計分子 -1 |
@@ -202,6 +231,8 @@ flowchart TD
 | 多輪對話 | ✓ | Quick Reply 引導 | typing 中 | webhook 重試 | 暫存後重發 | TTS / 大字 |
 | 問題卡確認 | Flex Message ✓ | 不會空 | 1 秒內 render | fallback 文字 | cached 顯示 | a11y label |
 | 三層解決 | ✓ | 沒命中 → RAG | 「搜尋中...」< 3 秒 | DLQ + 轉真人 | banner | screen reader |
+| 問題釐清確認 | AI 主動問 | n/a（一定觸發） | 等客戶回應 | 30s 未回再問 1 次 | 重發機制 | Quick Reply 大按鈕 |
+| 工單建立確認（AI 路徑）| 客戶觸發 | n/a | 1 秒內 callback | 失敗 retry + 客服 fallback | LINE banner | Flex Message |
 | 工單接單（V2）| ✓ | 案件池空 | Web Push refresh | 30 秒 retry | 推播延遲提示 | WCAG 2.2 AA |
 | 現場拍照 | ✓ | 必填提醒 | 壓縮 < 5MB | retry | 暫存到本地 | 大按鈕 |
 | Admin Panel | ✓ | 空狀態圖 | skeleton screen | 401/403/422 友善 | offline banner | WCAG 2.2 AA |
@@ -227,7 +258,9 @@ flowchart TD
 
 - LINE 訊息進 → 5 秒內回（p95）
 - 問題卡 ≥ 0.85 才自動派工
-- 急件 4 類 → 5 分鐘強制轉真人，列入 K8 200 題 Eval
+- 急件 4 類 → **Intent 後立即偵測**，5 分鐘內強制轉真人 bypass 三層；列入 K8 200 題 Eval
+- **Clarify gate 必過**：AI 回應後一定要客戶確認「問題釐清」才能標 resolved（feedback 是平行品質訊號，不可作為結案依據）
+- **工單建立路徑分離**：AI 路徑由客戶觸發 → 工單 Tool；客服路徑由客服觸發 → 同一個工單 Tool；兩條都需 CS 1-click
 - 結案時地址必填，硬擋
 - 雙審 SOP 100% 覆核率；24 小時內審完；缺席演練過 1 次
 

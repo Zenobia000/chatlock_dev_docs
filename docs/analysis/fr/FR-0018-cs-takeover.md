@@ -40,6 +40,8 @@ AI agent 偵測「找主管 / 投訴 / 退費」等關鍵詞 → 立即 transfer
 
 - 隱含不滿（無關鍵詞但語氣強烈）→ confidence ≥ 0.85 仍升級
 - 非營業時間升 L3 → 留言給 next-business-day admin
+- **客服接管後判斷需派工**（cascade from S1 2026-05-26）：客服走 CS 路徑直接呼叫工單系統 Tool，自動 CS 1-click（不需走客戶確認流程）；WorkOrder.create_trigger=cs_path_csagent_triggered
+- **客服接管後純客服解決**：客服判斷可口頭 / 知識庫處理完畢 → 標 PC.resolved → 進 CustAck 結案；不開工單
 
 ### §3.3 異常處理
 
@@ -63,3 +65,4 @@ AI agent 偵測「找主管 / 投訴 / 退費」等關鍵詞 → 立即 transfer
 | Date | Change |
 | :--- | :--- |
 | 2026-05-10 | 從 north-star-requirements REQ-018→FR-0018 split |
+| 2026-05-26 | **S1 cascade**：客服接管後分流為「需派工 → CS 觸發工單 Tool（auto 1-click）」與「純客服解決 → PC.resolved → CustAck」兩條 |
