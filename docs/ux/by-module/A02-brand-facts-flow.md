@@ -65,9 +65,14 @@ stateDiagram-v2
 | 客戶選「其他」 | ✓ free text 輸入 | n/a | n/a | text 含特殊字 → 清理 | 暫存 | brand_other → brand_known |
 | 寫 facts_db | ✓ 200 OK | n/a | < 100ms | DB down → DLQ | 後台重送 | facts entry=complete |
 
-## a11y notes
-- Quick Reply label 清楚（「品牌：三聯」非「三聯」）給 screen reader
-- WCAG 2.5.5：Quick Reply button ≥ 44×44 (LINE 原生符合)
+## a11y notes（後台 Admin 端 + LINE 端混合 — WCAG 2.2 AA 繼承自主檔）
+
+- **Quick Reply label 清楚**：「品牌：三聯」非「三聯」給 screen reader（4.1.2 Name/Role/Value）
+- **WCAG 2.5.5 Target size**：Quick Reply button ≥ 44×44（LINE 原生符合）；後台 admin 品牌維護按鈕 ≥ 44×44
+- **Keyboard navigation (2.1.1)**：後台 admin facts 編輯介面（PII 後台）全鍵盤可達，無 keyboard trap
+- **Focus indicator (2.4.7)**：後台 admin facts 編輯欄位 focus ring ≥ 2px / ≥ 3:1 contrast
+- **Color contrast (1.4.3)**：後台 admin 衝突警告（brand mismatch）≥ 4.5:1；不單靠紅色 — 加 icon + 文字「衝突」
+- **3.3.7 Redundant entry**：客戶已於對話中提供品牌 / 型號 → 後台 admin 不要求重輸；自動帶入
 
 ## FR 反向指
 | Step | FR | AC |

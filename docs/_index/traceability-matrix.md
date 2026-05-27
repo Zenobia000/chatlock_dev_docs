@@ -20,17 +20,17 @@ source_specs:
 
 | 指標 | 計數 | 健康 |
 |:-----|:-----|:-----|
-| Total FR | 51 | — |
-| Total BR | 110 | — |
-| Total ADR | 73 | — |
-| FR status: active | 49 | — |
+| Total FR | 53 | — |
+| Total BR | 122 | — |
+| Total ADR | 75 | — |
+| FR status: active | 51 | — |
 | FR status: superseded | 2 | ✅ tracked |
 | FR with empty `mapped_to` (orphan) | 0 | ✅ |
 | ADR migration_status: STILL_VALID | 50 | ✅ |
 | ADR migration_status: HISTORICAL | 14 | ✅ |
-| ADR migration_status: REVIEW_REQUIRED | 5 | 🟡 awaiting A2.4 critique |
+| ADR migration_status: REVIEW_REQUIRED | 3 | 🟡 awaiting A2.4 critique |
 | ADR migration_status: PARTIAL_UPDATE | 1 | 🟢 Lane A done, 6 dim cascade pending |
-| ADR not yet classified (incl. new post-2026-05-28 ADRs) | 3 | 🟡 |
+| ADR not yet classified (incl. new post-2026-05-28 ADRs) | 7 | 🟡 |
 
 ---
 
@@ -47,12 +47,12 @@ source_specs:
 | [FR-0007](docs/analysis/fr/FR-0007-material-request.md) | 材料申請與庫存扣減 | active | M10, M08 | BR-M10-NN, BR-M10-NN, BR-M10-NN, BR-M10-NN | MaterialRequested, MaterialConsumed, InventoryBelowReorderPoint, MaterialReturned | - |
 | [FR-0008](docs/analysis/fr/FR-0008-scope-change.md) | Scope Change 流程（增項 / 改價） | active | M15, M17, M16, M08 | BR-M15-01, BR-M15-NN, BR-M15-NN, BR-M08-NN, BR-M17-NN | ChangeRequestSubmitted, ChangeRequestApproved, ChangeRequestRejected, WorkOrderPaused | - |
 | [FR-0009](docs/analysis/fr/FR-0009-completion-sign.md) | 完工簽名 + 雙方確認 | active | M08, M09, M16 | BR-M08-NN, BR-M08-NN, BR-M09-NN, BR-M08-NN | WorkOrderCompleted, CustomerConfirmedCompletion, AutoConfirmedAfterTimeout | - |
-| [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) | 改約 / 延遲通知（V1.0 LINE only） | active | M06, M07, M16 | BR-M06-NN, BR-M07-NN, BR-M07-NN, BR-M16-NN | WorkOrderRescheduled, WorkOrderDelayed, TechnicianPenaltyApplied, WorkOrderRescheduleRejected | - |
+| [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) | 改約 / 延遲通知 / 取消（V1.0 LINE only） | active | M06, M07, M11, M15, M16 | BR-M06-NN, BR-M07-NN, BR-CANCEL-001, BR-CANCEL-002, BR-CANCEL-003, BR-CANCEL-004, BR-CANCEL-005, BR-CANCEL-006, BR-CANCEL-007, BR-CANCEL-008, BR-M16-NN | WorkOrderRescheduled, WorkOrderDelayed, WorkOrderCancelled, TechnicianInitiatedCancel, TechnicianPenaltyApplied, WorkOrderRescheduleRejected | - |
 | [FR-0011](docs/analysis/fr/FR-0011-consumer-payment.md) | 消費者付款（V1.0 升級！） | draft | M11, M08, M17 | BR-M11-NN, BR-M11-NN, BR-M11-NN, BR-M11-NN, BR-M11-NN | PaymentReceived, PaymentFailed, PaymentDisputed, VoucherIssued | - |
 | [FR-0012](docs/analysis/fr/FR-0012-monthly-settlement.md) | 技師月結撥款（V1.0 升級！） | draft | M11, M12, M17 | BR-M12-NN, BR-M12-NN, BR-M12-NN, BR-M12-NN, BR-M12-NN | SettlementCalculated, SettlementPayoutInitiated, SettlementPayoutFailed | - |
 | [FR-0013](docs/analysis/fr/FR-0013-dual-sign-dispute.md) | 對帳爭議雙簽 | active | M15, M17 | BR-M15-NN, BR-M15-NN, BR-M15-NN, BR-M15-NN, BR-M15-NN | DisputeOpened, DisputeApprovedBySingleParty, DisputeClosed, DisputeEscalated | - |
-| [FR-0014](docs/analysis/fr/FR-0014-refund.md) | 退款流程 | draft | M11, M15, M17 | BR-REFUND-001, BR-REFUND-002, BR-REFUND-003, BR-REFUND-004, BR-REFUND-005 | RefundRequested, RefundApproved, RefundRejected, RefundExecuted, RefundNotificationFailed | - |
-| [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) | 保固申訴受理 | active | M13, M15 | BR-WARRANTY-001, BR-WARRANTY-002, BR-WARRANTY-003, BR-WARRANTY-004 | WarrantyClaimSubmitted, WarrantyClaimApproved, WarrantyClaimDenied, WarrantyClaimDisputed | - |
+| [FR-0014](docs/analysis/fr/FR-0014-refund.md) | 退款流程（5-tier + SoD 三維） | active | M11, M15, M17 | BR-REFUND-001, BR-REFUND-002, BR-REFUND-003, BR-REFUND-004, BR-REFUND-005, BR-REFUND-006 | RefundRequested, RefundApproved, RefundRejected, RefundExecuted, RefundNotificationFailed | - |
+| [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) | 保固申訴受理（3-mode start_date + RMA 重算 + B2B 覆寫 + Phase I 整機） | active | M13, M15, M02 | BR-WARRANTY-001, BR-WARRANTY-002, BR-WARRANTY-003, BR-WARRANTY-004, BR-WARRANTY-005, BR-WARRANTY-006, BR-WARRANTY-007 | WarrantyClaimSubmitted, WarrantyClaimApproved, WarrantyClaimDenied, WarrantyClaimDisputed, WarrantyB2BOverride, WarrantyRecalculatedAfterRMA | - |
 | [FR-0016](docs/analysis/fr/FR-0016-sla-2hr-soft.md) | SLA 2hr 到場（Soft 警報） | ↶ superseded | _(empty)_ | - | - | ⚠️ yes |
 | [FR-0017](docs/analysis/fr/FR-0017-sop-draft-review.md) | SOP 草稿審核（AI 自進化） | active | A10, M20, A04 | BR-A10-NN, BR-A10-NN, BR-A10-NN, BR-A10-NN, BR-A04-NN | SopDraftSubmitted, SopDraftApproved, SopDraftRejected, FamilyReviewCompleted, SopPublished | - |
 | [FR-0018](docs/analysis/fr/FR-0018-cs-takeover.md) | 客服接管對話（三層解決機制） | active | A07, M16, M03 | BR-A07-01, BR-A07-NN, BR-A07-NN, BR-A07-NN, BR-A07-NN, BR-A07-NN, BR-A07-NN | HumanHandoffTriggered, CsAgentTookOver, WorkOrderCreatedByCs, ConversationResolved, CustomerAcknowledged | - |
@@ -89,6 +89,8 @@ source_specs:
 | [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) | Exception Approval Inbox（M15 完整深化） | placeholder | M15, M17, M16 | - | - | - |
 | [FR-0050](docs/analysis/fr/FR-0050-ai-governance-prd-trace.md) | AI Governance & PRD Traceability（A12） | placeholder | A12, M20 | - | - | - |
 | [FR-0051](docs/analysis/fr/FR-0051-sop-feedback-spiral-deep.md) | SOP Feedback Spiral 深化（A10） | placeholder | A10, M20, M13 | - | - | - |
+| [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) | Cancellation Fee 5-Tier Flow（取消費分層 + reason code + 師傅 initiated） | placeholder | M15, M17, M16, M18 | - | - | - |
+| [FR-0053](docs/analysis/fr/FR-0053-dpo-forget-gdpr-flow.md) | DPO Forget / GDPR Right-to-be-Forgotten Flow（cross-cutting） | placeholder | M17, cross-cutting | - | - | - |
 
 ---
 
@@ -212,6 +214,7 @@ source_specs:
 ### M02
 
 **FRs**:
+- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理（3-mode start_date + RMA 重算 + B2B 覆寫 + Phase I 整機）
 - [FR-0027](docs/analysis/fr/FR-0027-brand-profile-resolver.md) — Chatbot 品牌型號與用戶資料 Resolver
 - [FR-0036](docs/analysis/fr/FR-0036-sync-facts-master.md) — Sync — Facts 主檔同步（phone/address/device → ERP）
 - [FR-0041](docs/analysis/fr/FR-0041-customer-site-device-master.md) — Customer / Site / Device Master 維護
@@ -262,7 +265,7 @@ source_specs:
 - [FR-0003](docs/analysis/fr/FR-0003-auto-dispatch.md) — 自動派工演算法（規則引擎）
 - [FR-0004](docs/analysis/fr/FR-0004-manual-dispatch-audit.md) — 手動派工 + audit log
 - [FR-0005](docs/analysis/fr/FR-0005-technician-accept.md) — 技師接單與出發回報
-- [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知（V1.0 LINE only）
+- [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知 / 取消（V1.0 LINE only）
 - [FR-0039](docs/analysis/fr/FR-0039-sync-dispatch.md) — Sync — Dispatch 同步（WO created → 派工 queue）
 - [FR-0046](docs/analysis/fr/FR-0046-dispatcher-commission.md) — 派工人 Commission 月結
 
@@ -274,7 +277,7 @@ source_specs:
 **FRs**:
 - [FR-0003](docs/analysis/fr/FR-0003-auto-dispatch.md) — 自動派工演算法（規則引擎）
 - [FR-0005](docs/analysis/fr/FR-0005-technician-accept.md) — 技師接單與出發回報
-- [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知（V1.0 LINE only）
+- [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知 / 取消（V1.0 LINE only）
 - [FR-0044](docs/analysis/fr/FR-0044-technician-onboarding-suspension.md) — Technician Onboarding 與停權
 - [FR-0045](docs/analysis/fr/FR-0045-technician-ap-settlement.md) — Technician AP 月結
 - [FR-0048](docs/analysis/fr/FR-0048-rma-quality-feedback-loop.md) — RMA 品質回饋迴圈
@@ -321,9 +324,10 @@ source_specs:
 ### M11
 
 **FRs**:
+- [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知 / 取消（V1.0 LINE only）
 - [FR-0011](docs/analysis/fr/FR-0011-consumer-payment.md) — 消費者付款（V1.0 升級！）
 - [FR-0012](docs/analysis/fr/FR-0012-monthly-settlement.md) — 技師月結撥款（V1.0 升級！）
-- [FR-0014](docs/analysis/fr/FR-0014-refund.md) — 退款流程
+- [FR-0014](docs/analysis/fr/FR-0014-refund.md) — 退款流程（5-tier + SoD 三維）
 - [FR-0042](docs/analysis/fr/FR-0042-quote-internal-vs-external-view.md) — Quote 內外部視圖（客戶實收 vs 內部成本）
 
 **ADRs**:
@@ -343,7 +347,7 @@ source_specs:
 ### M13
 
 **FRs**:
-- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理
+- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理（3-mode start_date + RMA 重算 + B2B 覆寫 + Phase I 整機）
 - [FR-0048](docs/analysis/fr/FR-0048-rma-quality-feedback-loop.md) — RMA 品質回饋迴圈
 - [FR-0051](docs/analysis/fr/FR-0051-sop-feedback-spiral-deep.md) — SOP Feedback Spiral 深化（A10）
 
@@ -366,11 +370,13 @@ source_specs:
 **FRs**:
 - [FR-0004](docs/analysis/fr/FR-0004-manual-dispatch-audit.md) — 手動派工 + audit log
 - [FR-0008](docs/analysis/fr/FR-0008-scope-change.md) — Scope Change 流程（增項 / 改價）
+- [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知 / 取消（V1.0 LINE only）
 - [FR-0013](docs/analysis/fr/FR-0013-dual-sign-dispute.md) — 對帳爭議雙簽
-- [FR-0014](docs/analysis/fr/FR-0014-refund.md) — 退款流程
-- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理
+- [FR-0014](docs/analysis/fr/FR-0014-refund.md) — 退款流程（5-tier + SoD 三維）
+- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理（3-mode start_date + RMA 重算 + B2B 覆寫 + Phase I 整機）
 - [FR-0030](docs/analysis/fr/FR-0030-guardrails-output-validator.md) — Chatbot Guardrails & Output Validator
 - [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) — Exception Approval Inbox（M15 完整深化）
+- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 5-Tier Flow（取消費分層 + reason code + 師傅 initiated）
 
 **ADRs**:
 - [ADR-0034-urgent-red-code-definition](docs/architecture/adr/ADR-0034-urgent-red-code-definition.md) — ADR-0034 — urgent / Red Code 定義 (STILL_VALID_UNDER_M03_M15)
@@ -384,11 +390,12 @@ source_specs:
 - [FR-0001](docs/analysis/fr/FR-0001-line-intake.md) — LINE 客服報修受理（圖片 + 文字 + 對話）
 - [FR-0008](docs/analysis/fr/FR-0008-scope-change.md) — Scope Change 流程（增項 / 改價）
 - [FR-0009](docs/analysis/fr/FR-0009-completion-sign.md) — 完工簽名 + 雙方確認
-- [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知（V1.0 LINE only）
+- [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知 / 取消（V1.0 LINE only）
 - [FR-0018](docs/analysis/fr/FR-0018-cs-takeover.md) — 客服接管對話（三層解決機制）
 - [FR-0022](docs/analysis/fr/FR-0022-consumer-tracking.md) — 消費者端工單追蹤（LINE + Web 並存）
 - [FR-0026](docs/analysis/fr/FR-0026-chatbot-debounce-merge.md) — Chatbot 進線 Debounce 與訊息合併
 - [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) — Exception Approval Inbox（M15 完整深化）
+- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 5-Tier Flow（取消費分層 + reason code + 師傅 initiated）
 
 **ADRs**:
 - [ADR-0012-notification-channels](docs/architecture/adr/ADR-0012-notification-channels.md) — 通知 Channel 策略（Notification Channel Strategy） (STILL_VALID_UNDER_M16)
@@ -403,7 +410,7 @@ source_specs:
 - [FR-0011](docs/analysis/fr/FR-0011-consumer-payment.md) — 消費者付款（V1.0 升級！）
 - [FR-0012](docs/analysis/fr/FR-0012-monthly-settlement.md) — 技師月結撥款（V1.0 升級！）
 - [FR-0013](docs/analysis/fr/FR-0013-dual-sign-dispute.md) — 對帳爭議雙簽
-- [FR-0014](docs/analysis/fr/FR-0014-refund.md) — 退款流程
+- [FR-0014](docs/analysis/fr/FR-0014-refund.md) — 退款流程（5-tier + SoD 三維）
 - [FR-0019](docs/analysis/fr/FR-0019-rbac-dynamic.md) — 動態 RBAC 角色管理
 - [FR-0020](docs/analysis/fr/FR-0020-audit-log-export.md) — 稽核日誌完整性與匯出
 - [FR-0028](docs/analysis/fr/FR-0028-skill-gated-react-agent.md) — Chatbot Skill-Gated ReAct Agent
@@ -412,6 +419,8 @@ source_specs:
 - [FR-0043](docs/analysis/fr/FR-0043-m18-admin-config-workflow.md) — M18 Admin Config Workflow（user-maintained runtime config）
 - [FR-0044](docs/analysis/fr/FR-0044-technician-onboarding-suspension.md) — Technician Onboarding 與停權
 - [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) — Exception Approval Inbox（M15 完整深化）
+- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 5-Tier Flow（取消費分層 + reason code + 師傅 initiated）
+- [FR-0053](docs/analysis/fr/FR-0053-dpo-forget-gdpr-flow.md) — DPO Forget / GDPR Right-to-be-Forgotten Flow（cross-cutting）
 
 **ADRs**:
 - [ADR-0030-tenant-id-propagation](docs/architecture/adr/ADR-0030-tenant-id-propagation.md) — ADR-0030: Tenant ID Propagation — Agent 層補對稱隔離 (STILL_VALID_UNDER_M17_cross-cutting)
@@ -427,6 +436,7 @@ source_specs:
 **FRs**:
 - [FR-0019](docs/analysis/fr/FR-0019-rbac-dynamic.md) — 動態 RBAC 角色管理
 - [FR-0043](docs/analysis/fr/FR-0043-m18-admin-config-workflow.md) — M18 Admin Config Workflow（user-maintained runtime config）
+- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 5-Tier Flow（取消費分層 + reason code + 師傅 initiated）
 
 **ADRs**:
 - [ADR-0060-contract-template-schema-freeze-v1](docs/architecture/adr/ADR-0060-contract-template-schema-freeze-v1.md) — ADR-0060: Contract Template Schema Reserved Nullable (V1) (STILL_VALID_UNDER_M14_M18)
@@ -499,6 +509,7 @@ source_specs:
 
 **FRs**:
 - [FR-0023](docs/analysis/fr/FR-0023-error-offline-page.md) — 錯誤頁 / 離線體驗（cross-cutting）
+- [FR-0053](docs/analysis/fr/FR-0053-dpo-forget-gdpr-flow.md) — DPO Forget / GDPR Right-to-be-Forgotten Flow（cross-cutting）
 
 **ADRs**:
 - [ADR-0001-backend-framework](docs/architecture/adr/ADR-0001-backend-framework.md) — ADR-001: 選擇 FastAPI 作為後端框架 (STILL_VALID_UNDER_cross-cutting)
@@ -554,8 +565,8 @@ source_specs:
 | [ADR-0036-multi-problem-card-rule](docs/architecture/adr/ADR-0036-multi-problem-card-rule.md) | ADR-0036 — 同 conversation 多 ProblemCard 規則 | STILL_VALID_UNDER_M03 | M03 |
 | [ADR-0037-conversation-auto-close](docs/architecture/adr/ADR-0037-conversation-auto-close.md) | ADR-0037 — 對話解決後客戶確認關閉 | STILL_VALID_UNDER_A03_M03 | A03, M03 |
 | [ADR-0038-ai-feedback-review-policy](docs/architecture/adr/ADR-0038-ai-feedback-review-policy.md) | ADR-0038 — AI feedback / SOP 審核機制 | STILL_VALID_UNDER_M20_A10 | M20, A10 |
-| [ADR-0039-cancellation-fee-tiers](docs/architecture/adr/ADR-0039-cancellation-fee-tiers.md) | ADR-0039 — 取消費分段 | REVIEW_REQUIRED (Lane A critique pending — A2.4) | - |
-| [ADR-0040-refund-approval-tiers](docs/architecture/adr/ADR-0040-refund-approval-tiers.md) | ADR-0040 — 退款核准分層 | REVIEW_REQUIRED (Lane A critique pending — A2.4) | - |
+| [ADR-0039-cancellation-fee-tiers](docs/architecture/adr/ADR-0039-cancellation-fee-tiers.md) | ADR-0039 — 取消費分段 | NOT_CLASSIFIED | - |
+| [ADR-0040-refund-approval-tiers](docs/architecture/adr/ADR-0040-refund-approval-tiers.md) | ADR-0040 — 退款核准分層 | NOT_CLASSIFIED | - |
 | [ADR-0041-travel-fee-split](docs/architecture/adr/ADR-0041-travel-fee-split.md) | ADR-0041 — 車馬費歸屬 | STILL_VALID_UNDER_M11_M07 | M11, M07 |
 | [ADR-0042-rbac-four-tier-principle](docs/architecture/adr/ADR-0042-rbac-four-tier-principle.md) | ADR-0042 — 角色權限矩陣 4 層原則 | STILL_VALID_UNDER_M17 | M17 |
 | [ADR-0043-brand-project-tenant-scope](docs/architecture/adr/ADR-0043-brand-project-tenant-scope.md) | ADR-0043 — 品牌 / 建商專案邊界 | STILL_VALID_UNDER_M14_M17 | M14, M17 |
@@ -585,6 +596,8 @@ source_specs:
 | [ADR-0067-m18-runtime-config-governance](docs/architecture/adr/ADR-0067-m18-runtime-config-governance.md) | ADR-0067 — M18 Runtime Configuration Governance | NOT_CLASSIFIED | - |
 | [ADR-0068-m18-anti-corruption-layer](docs/architecture/adr/ADR-0068-m18-anti-corruption-layer.md) | ADR-0068 — M18 Cross-Module Anti-Corruption Layer (Config Read API) | NOT_CLASSIFIED | - |
 | [ADR-0100-legacy-adr-supersede-index](docs/architecture/adr/ADR-0100-legacy-adr-supersede-index.md) | ADR-0100 — Legacy ADR Supersede Index (post Final Spec 2026-05-20) | NOT_CLASSIFIED | - |
+| [ADR-0101-product-info-extension-final-spec](docs/architecture/adr/ADR-0101-product-info-extension-final-spec.md) | ADR-0101 — Agent Knowledge Base × Final Spec Integration Contract | NOT_CLASSIFIED | - |
+| [ADR-0102-cancellation-fee-tiers-v2-final-spec](docs/architecture/adr/ADR-0102-cancellation-fee-tiers-v2-final-spec.md) | ADR-0102 — 取消費分段 v2（6 階段 + reason code dictionary + 師傅 initiated 政策） | NOT_CLASSIFIED | - |
 | [ADR-PII-002-data-minimization-schema-ci-double-defense](docs/architecture/adr/ADR-PII-002-data-minimization-schema-ci-double-defense.md) | ADR-PII-002: 資料極小化雙層防線 | STILL_VALID_UNDER_M17_M02_cross-cutting | M17, M02, cross-cutting |
 | [ADR-PIVOT-001-v2-restart-trigger](docs/architecture/adr/ADR-PIVOT-001-v2-restart-trigger.md) | ADR-PIVOT-001: V2 重啟 trigger 機制 | HISTORICAL | - |
 | [ADR-VCH-001-platform-as-voucher-keeper](docs/architecture/adr/ADR-VCH-001-platform-as-voucher-keeper.md) | ADR-VCH-001: Platform = Voucher Keeper | STILL_VALID_UNDER_M11_M16 | M11, M16 |
@@ -595,15 +608,17 @@ source_specs:
 ## §5 Health Issues
 
 ### 🟡 ADR not yet classified
+- ADR-0039-cancellation-fee-tiers (docs/architecture/adr/ADR-0039-cancellation-fee-tiers.md)
+- ADR-0040-refund-approval-tiers (docs/architecture/adr/ADR-0040-refund-approval-tiers.md)
 - ADR-0067-m18-runtime-config-governance (docs/architecture/adr/ADR-0067-m18-runtime-config-governance.md)
 - ADR-0068-m18-anti-corruption-layer (docs/architecture/adr/ADR-0068-m18-anti-corruption-layer.md)
 - ADR-0100-legacy-adr-supersede-index (docs/architecture/adr/ADR-0100-legacy-adr-supersede-index.md)
+- ADR-0101-product-info-extension-final-spec (docs/architecture/adr/ADR-0101-product-info-extension-final-spec.md)
+- ADR-0102-cancellation-fee-tiers-v2-final-spec (docs/architecture/adr/ADR-0102-cancellation-fee-tiers-v2-final-spec.md)
 
 ### 🟡 ADR awaiting Lane A critique (A2.4 task)
 - ADR-0008-product-info-architecture-canonical — ADR-008: Agent 知識庫架構以 `product_info/` 為唯一正典（Architecture Lock）
 - ADR-0009-agent-admin-bridge-pattern — ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern）
-- ADR-0039-cancellation-fee-tiers — ADR-0039 — 取消費分段
-- ADR-0040-refund-approval-tiers — ADR-0040 — 退款核准分層
 - ADR-0044-warranty-start-date-modes — ADR-0044 — 保固起算多模式
 
 ---

@@ -58,10 +58,15 @@ stateDiagram-v2
 | 新增 decision | ✓ form 提交 | required 欄空白 → block | spinner | validation fail inline | local cache | pending |
 | reviewer 審核 | ✓ approve / reject | empty queue | spinner | conflict 兩人同改 → optimistic lock | banner 無法 review | pending → approved/rejected |
 
-## a11y notes
-- 後台 PRD governance UI 走 WCAG 2.2 AA
-- decision diff view 走 semantic HTML
-- approve / reject 按鈕 ≥ 44×44
+## a11y notes（後台 PRD governance UI — WCAG 2.2 AA 繼承自主檔）
+
+- **後台 PRD governance UI** 走 WCAG 2.2 AA
+- **Decision diff view** 走 semantic HTML（`<ins>` / `<del>` + ARIA roles），不單靠顏色高亮（1.4.1 Use of Color）
+- **Approve / reject 按鈕 ≥ 44×44**（2.5.5 Target size enhanced）；icon 按鈕也 ≥ 24×24（2.5.8）
+- **Keyboard navigation (2.1.1)**：decision_log 列表 / form / approve 流程全鍵盤可達；無 keyboard trap
+- **Focus indicator (2.4.7)**：列表 row focus ring 明顯；form field focus 清楚
+- **Error identification (3.3.1 / 3.3.3)**：form validation 走 `aria-describedby` + `aria-live="polite"`；具體修正建議（不單純「錯誤」）
+- **3.3.4 Error prevention**：approve / reject 動作為 governance 決策 → 雙重確認對話框 + reason 必填
 
 ## FR 反向指
 | Step | FR | AC |

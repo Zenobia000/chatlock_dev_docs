@@ -66,10 +66,14 @@ stateDiagram-v2
 | degraded alert | ✓ 黃燈 + 詳細 reason | n/a | n/a | alert 送達 fail → SMS fallback | n/a | degraded |
 | down incident | ✓ 紅燈 + auto runbook link | n/a | n/a | on-call paging fail → escalate | n/a | down |
 
-## a11y notes
-- SRE dashboard 走 WCAG 2.2 AA
-- 紅 / 黃 / 綠燈狀態**不僅靠顏色** — 加 ARIA label + 文字標示「健康 / 降級 / 故障」
-- ARIA `role="alert"` 用於 down incident
+## a11y notes（SRE dashboard — WCAG 2.2 AA 繼承自主檔）
+
+- **SRE dashboard** 走 WCAG 2.2 AA（admin Panel baseline）
+- **紅 / 黃 / 綠燈狀態不僅靠顏色** — 加 ARIA label + 文字標示「健康 / 降級 / 故障」（1.4.1 Use of Color）
+- **ARIA `role="alert"`** 用於 down incident，搭配 `aria-live="assertive"` 立即朗讀
+- **Keyboard navigation (2.1.1)**：dashboard 切換 / runbook 連結 / on-call escalation 按鈕全鍵盤可達
+- **Focus indicator (2.4.7)**：監控卡片 focus ring 明顯（≥ 2px / ≥ 3:1 contrast）
+- **Color contrast (1.4.3 / 1.4.11)**：metric chart 線條 ≥ 3:1（圖形物件對比）；text overlay ≥ 4.5:1
 
 ## FR 反向指
 | Step | FR | AC |

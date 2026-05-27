@@ -1,16 +1,39 @@
 ---
 id: ADR-0009
-title: Agent ↔ Admin 資料同步機制（Bridge Pattern）
+title: Agent ↔ Admin 資料同步機制（Bridge Pattern）+ M18 ACL 對齊 (v1.1)
 tier: 1
-status: accepted
+status: Accepted (v1.1 2026-05-28)
 date: 2026-05-09
+last_updated: 2026-05-28
 deciders: [Sunny（PM, Tech Lead 角色）]
+related:
+  - "./ADR-0067-m18-runtime-config-governance.md"  # M18 runtime config 邊界
+  - "./ADR-0068-m18-anti-corruption-layer.md"  # ACL 對齊
+update_history:
+  - date: 2026-05-28
+    update_type: MINOR_UPDATE (v1.1)
+    update_reason: "M18 admin tooling 新增 runtime config governance (ADR-0067) + Anti-Corruption Layer (ADR-0068)；對 admin journey Flow S5 + agent→admin HTTP call pattern 有新的契約需求。原 Option D (HTTP call) 主體保留；補：(1) M18 admin tooling 邊界 (config CRUD + audit) 走 ACL；(2) agent 不直接觸碰 admin config table — 透過 admin API ACL；(3) Flow S5 admin journey 對齊。"
+    decided_by: 業主
+    cascade_refs:
+      - ADR-0067
+      - ADR-0068
+      - "docs/ux/user-flow-smart-lock-saas.md §S5"
 ---
 
-> 
-> **🔄 Migration Status (2026-05-28)**: `REVIEW_REQUIRED (Lane A critique pending — A2.4)`
-> **Reviewed against**: 2026-05-20 final spec (xlsx)
-> **Reviewed on**: 2026-05-28
+> 📝 **PARTIAL ANNOTATION (v1.1) BANNER (2026-05-28)**
+>
+> Lane A critique 2026-05-28 (2/2 STILL_VALID + PARTIAL annotation, Architect + SD)。ADR-0009 Decision 主體（Option D HTTP call + 4 個 create* endpoint + dual-trigger + idempotency 雙層 + 三層 retry）**完整保留 STILL_VALID**。
+>
+> **ADR-0067 不 supersede ADR-0009 — 兩者處理不同 plane（domain event vs config policy），正交共存**。
+>
+> 補 4 個 annotation（見下方 §v1.1 Annotations Section）：
+> 1. **§2 Plane 分離聲明** — 本 ADR 只處理 agent → admin **業務事件寫入**，config plane 走 ADR-0067
+> 2. **§1.2 ASCII 圖** — 補 M18 Config Plane 第三層
+> 3. **§6 fail-soft** — agent 對 M18 Config Read API 也套 fail-soft + last-known-good snapshot
+> 4. **§8 D 業務 unique key** — 不含 `config_version`，但 row 寫入 persist `config_version_applied`
+>
+> **Module scope**: A11 (agent bridge) ↔ M18 (config plane) boundary
+> **Lane A critique merge report**: [`docs/governance/reviews/ADR-0009-lane-a-critique-2026-05-28.md`](../../governance/reviews/ADR-0009-lane-a-critique-2026-05-28.md)
 > **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
 
 
@@ -327,3 +350,167 @@ OpenAPI 補：
 - `agent/app.py:270-340` — F-010 reschedule postback 既有先例
 - `api/routers/problem_cards.py` — `convertToWorkOrder` 5/9 補的 D pattern 樣板
 - ADR-007 — LLM Registry pattern（同 repo 既有 ADR 風格參考）
+
+---
+
+## §v1.1 Update (2026-05-28)
+
+> **觸發**: M18 admin tooling 新增兩個 ADR：ADR-0067 (runtime config governance) + ADR-0068 (M18 Anti-Corruption Layer)。原 Bridge Pattern 主體（Option D HTTP call）**保留**，補三項契約。
+> **業主裁決**: 2026-05-28 接受 v1.1 update（不 SUPERSEDE — 原 5 條 P0 補強路徑仍 valid，M18 admin tooling 為新增正交維度）。
+
+### §v1.1.1 — M18 Admin Tooling 對 Bridge 的影響
+
+M18 admin tooling（runtime config governance, ADR-0067）引入 **config CRUD + staged rollout + audit + rollback** 場景。對 Bridge Pattern 有兩個邊界決定：
+
+| 場景 | 走 Bridge 規則 |
+|:----|:--------------|
+| Agent 讀 M18 config（金額門檻 / SLA / RBAC mapping etc.） | **不直接讀 config table** — 走 admin API `GET /api/v1/config/{key}` 或本地 config cache（M18 publish 時觸發 invalidation） |
+| Agent 寫 M18 config | **永禁**（per ADR-0028 charter — AI 不可改 governance config） |
+| Admin user 改 M18 config | 走 admin web → admin API → M18 service tx → emit `ConfigChanged` event → agent 訂閱 invalidate cache |
+| Agent 引用 config version | 必填 `config_version_id` in 所有 emit event（per ADR-0067 audit invariant） |
+
+### §v1.1.2 — Anti-Corruption Layer (ADR-0068) 對齊
+
+ADR-0068 引入 M18 Anti-Corruption Layer：admin 端 governance domain 與其他 module（M11/M07/M03/M02）之間透過 ACL 隔離。對本 ADR 影響：
+
+| 路徑 | ACL 處理 |
+|:----|:--------|
+| Agent → Admin API `create*` endpoints (本 ADR §6 既有 5 個) | **不經 ACL**（agent 是 admin domain 的 client，不是被隔離的外部 module） |
+| Agent → Admin API `GET /config` (新增 §v1.1.1) | **經 ACL** — admin 側透過 ACL adapter 把 governance config 轉成 agent domain DTO（不直接暴露 internal schema） |
+| Agent emit event → 其他 module 訂閱 | 走 event bus（Phase II outbox），ACL 在 subscriber 端做 schema 轉換 |
+
+### §v1.1.3 — Flow S5 Admin Journey 對齊
+
+對齊 [`docs/ux/user-flow-smart-lock-saas.md §S5 — M18 admin journey`](../../ux/user-flow-smart-lock-saas.md)：
+
+| Flow S5 Step | Bridge 對應 endpoint | Audit 要求 |
+|:-------------|:--------------------|:-----------|
+| Admin 進 config 編輯頁 | `GET /api/v1/config/list` + `GET /api/v1/config/{key}/draft` | view audit |
+| Admin 編輯 + validate | `POST /api/v1/config/{key}/draft` (schema validation per ADR-0067) | draft create audit |
+| Admin staged rollout 5% → 50% → 100% | `POST /api/v1/config/{key}/rollout` (per BR-M18 staged rollout: 5%/50%/100% 每段 30 min observation, fast-track 15 min schema pass + 0-error) | rollout audit + alert wire |
+| Admin rollback | `POST /api/v1/config/{key}/rollback` (≤ 1 min, per A1 NFR) | rollback audit |
+| Admin view audit history | `GET /api/v1/config/{key}/audit` | read-only |
+
+**業主 BR-M18 value decision (2026-05-28)**: staged rollout = 5% → 50% → 100%, 每段 30 min observation, fast-track 15 min (schema pass + 5% no-error)。Rationale: 萬級用戶 SaaS 不需 Google 規模，但 config 改錯直接影響業務，30 min 才夠 ops alarm + 客服回饋 cycle。
+
+### §v1.1.4 — 影響的下游文件（v1.1 cascade）
+
+| Doc | Impact |
+|:---|:---|
+| `docs/api/openapi-admin.yaml` | 補 5 個 config endpoint：list / get-draft / rollout / rollback / audit |
+| `docs/ux/user-flow-smart-lock-saas.md` | §S5 admin journey 5 步驟對齊 §v1.1.3 endpoint |
+| `agent/integrations/admin_api.py` | AdminAPIClient 加 `get_config(key, version=None)` method + cache invalidation listener |
+| `docs/architecture/c4-l3-smart-lock-saas.md` | C4 L3 補 M18 admin tooling 與 agent 的雙向交互（agent 訂 invalidation event） |
+| `docs/qa/test-plan-m18.md` | ≥ 6 TC (5 staged rollout step × happy/error path + rollback timing) |
+
+### §v1.1.5 — 風險回顧
+
+| Risk | Mitigation |
+|:-----|:-----------|
+| agent cache stale → config 改了沒生效 | event-based invalidation + 5 min hard refresh fallback；agent 啟動時必填 `config_version_id` 入 event metadata |
+| ACL 在 admin 側引入額外延遲 | benchmark: ACL adapter ≤ 5ms overhead；agent → admin total P99 ≤ 100ms |
+| Flow S5 staged rollout 出錯 | per ADR-0067 rollback ≤ 1 min；alarm 觸發後自動降回前一 version |
+| 業主 BR-M18 30 min observation 過長 | fast-track 15 min 路徑（schema pass + 5% no-error）；不可用於 RBAC / 金額門檻 變更 |
+
+### §v1.1.6 — Acceptance Criteria (v1.1)
+
+- [x] 業主 2026-05-28 value decision BR-M18 staged rollout 5%/50%/100% × 30 min + fast-track 15 min
+- [ ] OpenAPI 補 5 個 config endpoint
+- [ ] AdminAPIClient.get_config + invalidation listener
+- [ ] Flow S5 admin journey 5 步驟對齊 (ux driver)
+- [ ] C4 L3 補 M18 admin tooling 雙向交互
+- [ ] QA 6 TC 涵蓋 staged rollout + rollback
+- [ ] ACL adapter benchmark ≤ 5ms (ADR-0068 cross-validate)
+
+---
+
+## §v1.1 Lane A Critique 2026-05-28 — 4 Annotations Detail
+
+> Lane A critique (Architect + SD) 2/2 STILL_VALID + PARTIAL annotation。下列 4 個 annotation 為 disambiguation + future-proofing，**不改 Decision 主體**。
+
+### Annotation 1 — Plane 分離聲明 (對應原 critique [arch-S-1])
+
+**補充原文應加在 §2「問題敘述」末段**：
+
+> 本 ADR 只處理 agent → admin **業務事件寫入**（conversation / problem_card / refund / warranty / sop_draft），**不處理 config / policy 讀取**。後者見 [`ADR-0067 — M18 Runtime Configuration Governance`](./ADR-0067-m18-runtime-config-governance.md)（cross-cutting plane，所有 module 含 agent 都讀此 config plane）。
+>
+> 兩 plane 正交：
+>
+> | Plane | 處理對象 | 方向 | 觸發者 | Failure mode |
+> |:------|:--------|:-----|:------|:-------------|
+> | **本 ADR (domain event plane)** | 業務事件 / 單據 | agent → admin (cross-module event ingress) | LINE webhook event (每筆訊息) | admin API 不可用 → fail-soft retry + outbox phase 2 |
+> | **ADR-0067 (config plane)** | 配置 / policy 資料 | admin 發布，所有 module 讀 | 業主在 admin UI 改設定 (低頻 ops 動作) | mis-config 全量生效 → blast radius 全 module |
+
+### Annotation 2 — §1.2 ASCII 圖補 M18 Config Plane 第三層 (對應原 critique [arch-S-2])
+
+```
+   ┌─ Agent (LangGraph) ──┐    ┌─ Admin API ──┐    ┌─ M18 Config Plane (ADR-0067) ──┐
+   │  • LINE webhook      │    │  • 業務 CRUD  │    │  • config_versions               │
+   │  • Skill ReAct       │──▶ │  • create*    │ ◀──│  • staged rollout                │
+   │  • LangGraph ckpt    │ D  │  • RBAC audit │    │  • cache invalidate broadcast    │
+   └──────────────────────┘    └──────────────┘    └─────────┬────────────────────────┘
+               ▲                       ▲                     │
+               │                       │                     │ Config Read API
+               └───────────────────────┴─────────────────────┘ (GET /m18/config/{key}?ver=N)
+                      all read config via ADR-0067 ACL
+```
+
+說明：
+- agent 與 admin API 透過本 ADR Option D HTTP call（business write path）
+- agent 與 admin API 都透過 ADR-0067 Config Read API 讀 config（與 business write 完全不同 endpoint / 不同 tag / 不同 RBAC scope）
+- M18 改 config → 觸發 invalidation broadcast → agent / admin runtime 都 cache miss → 各自從 Config Read API 重抓
+
+### Annotation 3 — §6 fail-soft 補 config Read API last-known-good (對應原 critique [arch-S-3])
+
+**補充原文應加在 §6「fail-soft」段末**：
+
+> agent 必須對 M18 Config Read API 也套同樣 fail-soft：staged rollout 期間 config Read 失敗時用 **last-known-good snapshot**，不阻塞 webhook。
+>
+> **規則**：
+> 1. agent 啟動時拉一份 config snapshot 進記憶體（per-key + version_id）
+> 2. 每次 webhook 處理開始時 snapshot per 交易（同一筆 refund 用同一 version_id，per ADR-0067 §一致性段）
+> 3. Cache invalidation broadcast 到達後，下一筆新交易才用新 version
+> 4. Config Read API 失敗（5xx / timeout）→ 用 last-known-good snapshot；同時 log warning + emit 觀測指標
+> 5. last-known-good snapshot ≥ 24 hr 沒更新 → 升級 alert（M16 通知 ops on-call）
+>
+> 這條與 ADR-0067 §Cache/TTL 段 snapshot per 交易呼應。
+>
+> **AdminAPIClient retry policy 參數本身應該是 runtime config (對應 [arch-S-4])**：
+> §6 列出的 retry policy 參數（次數 / backoff / timeout / Idempotency-Key TTL）為 default，**生產環境應透過 M18 Config Read API 讀取**並支援 staged rollout（per ADR-0067）。避免「為什麼修個 retry 次數還要 redeploy」未來再來一次 ops 痛點。**Phase II follow-up**（TODO 暫保留為 const，等 ADR-0067 implementation 完成再 cascade）。
+
+### Annotation 4 — §8 D 業務 unique key 不含 config_version (對應原 critique [sd-S-2])
+
+**補充原文應加在 §8 D 列末**：
+
+> 業務 unique key **不含** `config_version`，但寫入 row 時必須 **persist `config_version_applied`**（per ADR-0067 §一致性段）。
+>
+> **Rationale**：idempotency 是「同一語意動作只執行一次」，與 config version 正交。若客戶在 staged rollout 期間重發 refund 申請，仍應視為同一筆 refund，不因 config bump 變成新 refund。但 refund row 必須 persist `config_version_applied` 給後續查詢 / audit 用（例：付款時必須用同一 v3 不能用 v4）。
+>
+> **業務 unique key 範例**（保留 ADR-0009 v1 原貌）：
+>
+> ```
+> Refund: (work_order_id, reason_code)               # 不含 config_version
+> Warranty: (work_order_id, claim_type)              # 不含 config_version
+> SopDraft: (case_entry_id, model_version)           # 不含 config_version
+> ```
+>
+> **Row schema 必須額外含**：`config_version_applied: int (per ADR-0067 一致性段)`
+
+### Annotation 5 (Bonus) — M20 SOP Approval Workflow placeholder (對應原 critique [sd-S-3])
+
+> SOP draft → active SOP 的 approval workflow 見 M20 governance（呼應 BR-M20-01 + 本 ADR §8 F-017 rating>=4 觸發點），不在本 ADR 內補。
+>
+> **Follow-up ADR**：`ADR-NNNN-m20-ai-ops-governance`（pending；待 M20 spec maturity）— 將 cover：
+> - `createSopDraft` 寫入後的 owner approval 流程
+> - SOP version bump 規則
+> - Active SOP rollback path
+
+### Annotation 6 (Bonus) — OpenAPI error model 補 503 ConfigUnavailable (對應原 critique [sd-S-4])
+
+> §6 列「fail-soft：失敗時 logger.error 不拋」。新 spec 下還有一種失敗：**M18 Config Read API 暫不可達 / cache 失效**（staged rollout 期間）。
+>
+> admin Write API（4 個 `create*`）內部需要讀 config（如 refund 上限）才能 validate request。
+>
+> **error model 補一條** `503 ConfigUnavailable` 給 agent 端能識別並 fallback last-known-good，不要當成 5xx 重試到死。
+>
+> Owner: `devteam-design` (F3 of Lane A critique follow-up)

@@ -2,15 +2,37 @@
 id: ADR-0008
 title: Agent 知識庫架構以 `product_info/` 為唯一正典（Architecture Lock）
 tier: 1
-status: accepted
+status: Active + partially_superseded_by ADR-0101 (§2.1-§2.4)
 date: 2026-05-09
-deciders: [Imding1211, "2026-05-13 reinstate 附註: Claude（與 Imding1211 在 hermes-cs 進度回顧時 confirm）"]
+last_updated: 2026-05-28
+partially_superseded_by: ADR-0101
+partially_superseded_scope: "§1 工具集封閉性 (僅 3 個 static/write tool 不夠涵蓋 UC-new-2 serial→warranty / UC-new-3 project→unit→model / UC-new-1 cross-brand compatibility) + §1 mega-doc 結構維度 (Brand/Model 雙層不夠，缺 Project/Site/Unit 維度) + §5 例外清單 (未涵蓋 multi-tenant data scope governance M14 / BR-M14-01 / G007)"
+scope_clarification: "本 ADR 鎖 agent runtime KB (A03/A04 bounded context)，不是 ERP M10 master data。M10 master 為 source of truth，product_info mega-doc 為 derived view。"
+module_scope: "A03 Skill-Gated ReAct Agent + A04 RAG Pipeline (interface with M02 / M10 / M14)"
+deciders: [Imding1211, "2026-05-13 reinstate 附註: Claude（與 Imding1211 在 hermes-cs 進度回顧時 confirm）", "2026-05-28 PARTIAL_SUPERSEDE annotation: devteam-arch (per ADR-0101)"]
+related:
+  - "./ADR-0101-product-info-extension-final-spec.md"  # 補 4 個契約段 (§2.1-§2.4)
+  - "./ADR-0030-tenant-id-propagation.md"
+  - "./ADR-0057-rag-document-retrieval-not-prompt.md"
+  - "./ADR-0058-external-knowledge-platform-ingestion-contract.md"
 ---
 
-> 
-> **🔄 Migration Status (2026-05-28)**: `REVIEW_REQUIRED (Lane A critique pending — A2.4)`
-> **Reviewed against**: 2026-05-20 final spec (xlsx)
-> **Reviewed on**: 2026-05-28
+> 📝 **PARTIAL_SUPERSEDE BANNER (2026-05-28)**
+>
+> 本 ADR §1 mega-doc canonical 主體 + §3 反 revert 立場 + §4.1 模組路徑禁區 + §4.4 quality_check baseline **保留 STILL_VALID under A03/A04 bounded context**。
+>
+> 以下三個段落被 [`ADR-0101 — Agent Knowledge Base × Final Spec Integration Contract`](./ADR-0101-product-info-extension-final-spec.md) §2.1-§2.4 補強 / partially superseded：
+> 1. **§1 工具集封閉性** — 「3 個 tool 已足夠」在 UC-new-2 / UC-new-3 不成立；ADR-0101 §2.2 補 dynamic lookup tool (serial→warranty / project→unit→model / cross-brand compatibility)
+> 2. **§1 mega-doc 結構維度** — 「Brand/Model 雙層」不夠涵蓋 UC-new-3 (建商戶別反查) + UC-new-1 (cross-brand compatibility)；ADR-0101 §2.3 補 multi-tenant scope + scope filter；ADR-0101 §2.4 補 custom SKU fallback
+> 3. **§5 例外清單** — 未涵蓋 multi-tenant data scope governance；ADR-0101 §2.3 補 partner portal 場景過濾規則
+>
+> **Scope clarification**: 本 ADR 鎖 **agent runtime KB (A03/A04 BC)**，**不是 ERP M10 master data**。M10 master = source of truth；product_info mega-doc = derived view。
+>
+> **ADR-0100 §1 row 8 module_scope** 從 `M10` 改為 `A03/A04 (interface with M10/M14/M02)`。
+>
+> **Status 整治**: 不撤回 main / dev 既有 SUPERSEDED 附註（per ⓪a 既有 audit trail），只在 frontmatter / banner 加 partial_supersede 註。
+>
+> **Lane A critique**: [`docs/governance/reviews/ADR-0008-lane-a-critique-2026-05-28.md`](../../governance/reviews/ADR-0008-lane-a-critique-2026-05-28.md)
 > **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
 
 

@@ -21,12 +21,13 @@
 | 維度 | 計數 |
 |:-----|:-----|
 | Total legacy ADR | 70（ADR-0001 ~ ADR-0066 + ADR-PII-002 + ADR-PIVOT-001 + ADR-VCH-001 + ADR-VCH-002；ADR-0067 為 M18 治理新批，不計入 legacy）|
-| Initial **[SUPERSEDE]** | 0（多數 ADR 與 new spec 同源，無直接覆寫；如 critique 後升級為 SUPERSEDE 再補）|
-| Initial **[REVIEW_REQUIRED]** (走 Lane A) | 6 |
+| **[SUPERSEDE]** (cascade 2026-05-28) | 1 (ADR-0039 → ADR-0102) |
+| **[PARTIAL_SUPERSEDE]** (cascade 2026-05-28) | 1 (ADR-0008 → ADR-0101 §2.1-§2.4) |
+| **[PARTIAL_UPDATE / Active]** (cascade 2026-05-28) | 4 (ADR-0009 v1.1 / ADR-0040 v2 / ADR-0044 v2 / ADR-0050 v2 body) |
 | Initial **[STILL_VALID_UNDER_M-NN]** | 50 |
 | Initial **[HISTORICAL]** | 14 |
 | **Batch frontmatter update 完成** | 2026-05-28 by `/tmp/adr_batch_update.py` |
-| **Lane A critique 完成** | 1 / 6 (ADR-0050 done, 5 pending) |
+| **Lane A critique 完成** | 6 / 6 (ADR-0008 / ADR-0009 / ADR-0039 / ADR-0040 / ADR-0044 / ADR-0050 done) |
 
 ---
 
@@ -49,8 +50,8 @@
 | ADR-0005 | frontend-framework-v2 | STILL_VALID | cross-cutting | 技術選型 |
 | ADR-0006 | llm-model-selection | STILL_VALID | M20 / A03 | A03 Skill-Gated ReAct Agent |
 | ADR-0007 | llm-registry-pattern | STILL_VALID | M20 / A03 | 同上 |
-| ADR-0008 | product-info-architecture-canonical | REVIEW_REQUIRED | M10 | new spec M10 BOM/Inventory 重組，需 review 是否仍對應 |
-| ADR-0009 | agent-admin-bridge-pattern | REVIEW_REQUIRED | M18 / A11 | M18 new spec 引入 runtime config，需 review 跟此 ADR 的 admin bridge 邊界 |
+| ADR-0008 | product-info-architecture-canonical | **Partially Superseded by ADR-0101 (§2.1-§2.4)** (2026-05-28) | M10 | Lane A critique 2/2 PARTIAL — §1 mega-doc canonical 保留；§1 工具集封閉性 + §1 mega-doc 結構維度 + §5 例外清單 已被 ADR-0101 §2.1-§2.4 (data lineage / tool extension / multi-tenant scope / custom SKU fallback) 補強 |
+| ADR-0009 | agent-admin-bridge-pattern | **Active (v1.1 2026-05-28)** | M18 / A11 | v1.1 update：M18 admin tooling 變動 (ADR-0067 + ADR-0068 ACL) + Flow S5 admin journey 對齊；原 Option D HTTP call pattern 保留 |
 | ADR-0010 | belief-augmented-react | STILL_VALID | A03 | 對應 A03 ReAct Agent |
 | ADR-0011 | i18n-strategy | STILL_VALID | cross-cutting | new spec 未動 |
 | ADR-0012 | notification-channels | STILL_VALID | M16 | 對應 M16 Comms |
@@ -97,18 +98,18 @@
 | ADR-0036 | multi-problem-card-rule | STILL_VALID | M03 | new spec D06 對齊 |
 | ADR-0037 | conversation-auto-close | STILL_VALID | A03 + M03 | new spec D07 對齊 |
 | ADR-0038 | ai-feedback-review-policy | STILL_VALID | M20 + A10 | new spec D08 對齊 |
-| ADR-0039 | cancellation-fee-tiers | REVIEW_REQUIRED | M11 + M15 | new spec P0「取消費 前期 未決」— ADR 已給分層，但 spec 留白 → 確認 ADR 是否仍 binding |
-| ADR-0040 | refund-approval-tiers | REVIEW_REQUIRED | M11 + M15 | new spec P0「退款核准 前期 未決，需依金額分層」— 同上 |
+| ADR-0039 | cancellation-fee-tiers | **Superseded by ADR-0102** (2026-05-28) | M11 + M15 | Lane A critique 2/2 SUPERSEDE — final spec + 業主 Q1/Q2/Q3 value decision 整體覆寫，新 ADR-0102 6 階段 + reason code + 師傅 initiated 政策 |
+| ADR-0040 | refund-approval-tiers | **Active (PARTIAL_UPDATE 2026-05-28)** | M11 + M15 | Lane A critique → PARTIAL_UPDATE：spec 5-tier 與 ADR 一致不 SUPERSEDE；§v2 補 partial refund 分類 (BR-REFUND-006) / SoD 三維 / L5 Sponsor RBAC 對應 |
 | ADR-0041 | travel-fee-split | STILL_VALID | M11 + M07 | new spec P0「車馬費 到場才收，需定金額與歸屬」對齊 ADR |
 | ADR-0042 | rbac-four-tier-principle | STILL_VALID | M17 | new spec P0「角色權限矩陣」對齊 |
 | ADR-0043 | brand-project-tenant-scope | STILL_VALID | M14 + M17 | new spec M14 Partner Portal 對齊 |
-| ADR-0044 | warranty-start-date-modes | REVIEW_REQUIRED | M02 + M13 | new spec P0「保固 購買日 + 序號；建商案是否點交日需補」— 部分對齊但留白 |
+| ADR-0044 | warranty-start-date-modes | **Active (PARTIAL_UPDATE 2026-05-28)** | M02 + M13 | Lane A critique 2/2 PARTIAL_UPDATE — 補 mode enum 對齊 spec G002/Q107/BR-M02-02/BR-M14-02 (BR-WARRANTY-005) + RMA reset (BR-WARRANTY-006) + B2B contract override (BR-WARRANTY-007) + Phase II part-level hook |
 | ADR-0045 | acceptance-sla-policy | STILL_VALID | M06 | new spec P0「接單 SLA 一般 10 分鐘，急件 5 分鐘」直接對齊 |
 | ADR-0046 | change-request-object | STILL_VALID | M15 + M08 | new spec BR-M15 對齊 |
 | ADR-0047 | ai-forbidden-list-as-charter | STILL_VALID | A05 + M20 | new spec P0-20「AI 不可決策清單」對齊 |
 | ADR-0048 | ai-human-handoff-rules | STILL_VALID | A07 + M16 | new spec §13 Chatbot對ERP「Human escalation」對齊 |
 | ADR-0049 | onsite-scope-change-protocol | STILL_VALID | M08 + M15 | new spec M08/M15 對齊 |
-| ADR-0050 | evidence-visibility-matrix | **PARTIAL_UPDATE** (2026-05-28 Lane A done) | M09 | 3/3 persona 共識；6 維度 cascade 待補；見 [`reviews/2026-05-28-adr-0050-critique/merge-report.md`](../../../.claude/context/devteam/reviews/2026-05-28-adr-0050-critique/merge-report.md) |
+| ADR-0050 | evidence-visibility-matrix | **Active (v2 body 2026-05-28)** | M09 | Lane A 3/3 persona 共識；v2 body 補 4 維矩陣 (role × phase × action × attr_mask) + IT support time-boxed + scope 階層 (tenant/brand/project/household) + column PII mask + retention 引用 ADR-0051 + M07/M17 audit 改寫 + BR-CANCEL-005..008 evidence 對齊 |
 | ADR-0051 | evidence-retention-policy | STILL_VALID | M09 + M17 | new spec M09 retention rule 對齊 |
 | ADR-0052 | material-ownership-field | STILL_VALID | M10 + M07 | new spec BR-M10 對齊 |
 | ADR-0053 | serial-control-policy | STILL_VALID | M10 | new spec BR-M10 對齊 |
@@ -135,17 +136,28 @@
 | ADR-VCH-001 | platform-as-voucher-keeper | STILL_VALID | M11 + M16 | new spec M11 AR 對齊 |
 | ADR-VCH-002 | voucher-retention-7y | STILL_VALID | M11 + M17 | retention 對齊 ADR-0067 audit 7y |
 
+### Group F — New ADRs (cascade post-2026-05-28 Lane A critique)
+
+| ADR | Title (short) | Classification | Module Scope | Notes |
+|:----|:--------------|:--------------|:-------------|:------|
+| ADR-0101 | product-info-extension-final-spec | **Accepted (2026-05-28)** | A03/A04 (interface with M10/M14/M02) | 補 ADR-0008 §1 工具集封閉性 + §1 mega-doc 結構維度 + §5 例外清單 4 個契約段：data lineage / tool extension / multi-tenant scope / custom SKU fallback |
+| ADR-0102 | cancellation-fee-tiers-v2-final-spec | **Accepted (2026-05-28)** | M11 + M15 | SUPERSEDES ADR-0039；6 階段 (S1/S1.5/S2/S3/S4/S5) + reason code dictionary (12+ codes) + 師傅 initiated 三段政策 (首次免責 / 同月 ≥2 次扣款 / 不可抗力豁免) + SoD + audit；S2 default NTD 300 (業主 Q1)；S1.5 免費 (業主 Q2) |
+
 ---
 
-## §2 統計 (Initial)
+## §2 統計 (Post Lane A Critique 2026-05-28)
 
 | Classification | Count | 處理方式 (Q4=C 業主決議) |
 |:---------------|:------|:------------------------|
-| **SUPERSEDE** | 0 | Architect 直 merge（無內容需新 ADR） |
-| **REVIEW_REQUIRED** | 6 | 走 Lane A critique，後續逐條判定 STILL_VALID 或降為 SUPERSEDE |
-| **STILL_VALID_UNDER_M-NN** | 50 | ✅ 2026-05-28 batch update：每條 ADR 第一個 `---` divider 後插入 `🔄 Migration Status` quoted block，含 reviewed_against / reviewed_on / module_scope |
+| **SUPERSEDE** | 1 | ADR-0039 → ADR-0102 (新 ADR 已落地) |
+| **PARTIAL_SUPERSEDE** | 1 | ADR-0008 → partially superseded by ADR-0101 §2.1-§2.4 |
+| **PARTIAL_UPDATE (v2 body)** | 3 | ADR-0040 / ADR-0044 / ADR-0050 (in-place v2 body update) |
+| **STILL_VALID + PARTIAL annotation** | 1 | ADR-0009 (v1.1 + 4 annotation) |
+| **STILL_VALID_UNDER_M-NN** | 50 | ✅ 2026-05-28 batch update：每條 ADR 第一個 `---` divider 後插入 `🔄 Migration Status` quoted block |
 | **HISTORICAL** | 14 | ✅ 2026-05-28 batch update：插入 `Migration Status: HISTORICAL` block |
-| **Total** | 70 | — |
+| **NEW (post-cascade)** | 2 | ADR-0101 (Active) + ADR-0102 (Active) |
+| **Total legacy** | 70 | — |
+| **Total post-cascade** | 72 | 70 legacy + 2 new |
 
 ### REVIEW_REQUIRED 6 條進度
 
@@ -153,12 +165,12 @@
 
 | # | ADR | 主題 | Critique Status | 結論 |
 |:--|:----|:-----|:----------------|:-----|
-| 1 | ADR-0008 | product-info-architecture-canonical — M10 BOM/Inventory 重組 | ⏳ pending | — |
-| 2 | ADR-0009 | agent-admin-bridge-pattern — M18 runtime config 邊界 | ⏳ pending | — |
-| 3 | ADR-0039 | cancellation-fee-tiers — spec 留白 | ⏳ pending | — |
-| 4 | ADR-0040 | refund-approval-tiers — spec 留白 | ⏳ pending | — |
-| 5 | ADR-0044 | warranty-start-date-modes — 建商案點交日留白 | ⏳ pending | — |
-| 6 | **ADR-0050** | evidence-visibility-matrix — M09 重組 | ✅ **2026-05-28 done** | **PARTIAL_UPDATE** (3/3 共識) |
+| 1 | ADR-0008 | product-info-architecture-canonical — M10 BOM/Inventory 重組 | ✅ **2026-05-28 done** | **PARTIAL_SUPERSEDE by ADR-0101 §2.1-§2.4** (2/2 Arch+SA) |
+| 2 | ADR-0009 | agent-admin-bridge-pattern — M18 runtime config 邊界 | ✅ **2026-05-28 done** | **Active (v1.1 update)** — M18 admin tooling 補 ADR-0067 + ADR-0068 ACL + Flow S5 對齊 |
+| 3 | ADR-0039 | cancellation-fee-tiers — spec 留白 | ✅ **2026-05-28 done** | **SUPERSEDE by ADR-0102** (2/2 SUPERSEDE) |
+| 4 | ADR-0040 | refund-approval-tiers — spec 留白 | ✅ **2026-05-28 done** | **PARTIAL_UPDATE (v2)** — partial refund + SoD + L5 Sponsor 補強 |
+| 5 | ADR-0044 | warranty-start-date-modes — 建商案點交日留白 | ✅ **2026-05-28 done** | **PARTIAL_UPDATE (v2)** — mode enum / RMA reset / B2B override / part-level hook |
+| 6 | **ADR-0050** | evidence-visibility-matrix — M09 重組 | ✅ **2026-05-28 done** | **PARTIAL_UPDATE (v2 body)** — 4 維矩陣 + IT support + scope 階層 + PII mask + audit (3/3 共識) |
 
 ### Lane A critique 預計工作量
 

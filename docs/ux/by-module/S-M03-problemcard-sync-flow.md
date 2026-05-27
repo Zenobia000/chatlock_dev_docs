@@ -59,8 +59,14 @@ stateDiagram-v2
 | ERP create | ✓ 200 | n/a | < 300ms | 5xx → DLQ + alert | n/a | confirmed / failed |
 | patch facts 後 re-eval | ✓ confirmed | n/a | < 300ms | conflict (PC 已 converted) → reject | n/a | patching → confirmed |
 
-## a11y notes
-- 純後台 service，無客戶端 UI；下游客服 review queue 走 WCAG 2.2 AA（見 S-M04）
+## a11y notes（下游客服 review queue / DLQ 後台 — WCAG 2.2 AA 繼承自主檔）
+
+- **純後台 service**，無客戶端 UI；下游客服 review queue 走 WCAG 2.2 AA（見 S-M04）；本檔 DLQ / 監看 UI 同樣 baseline
+- **Keyboard navigation (2.1.1)**：completeness score 列表 / patch facts 操作 / DLQ re-emit 全鍵盤可達；無 keyboard trap
+- **Focus indicator (2.4.7)**：completeness score row focus ring ≥ 2px / ≥ 3:1 contrast
+- **Screen reader (4.1.2)**：score 顯示用 `aria-label="completeness 0.85, status confirmed"`，非單純數字；status badge 走 semantic HTML
+- **Color contrast (1.4.3)**：score color band（< 0.65 紅 / 0.65-0.85 黃 / ≥ 0.85 綠）≥ 4.5:1；不單靠顏色 — 加文字「不足 / 部分 / 完整」
+- **3.3.7 Redundant entry**：patch facts 後 re-eval 自動帶入原 PC payload，admin 不需重輸
 
 ## FR 反向指
 | Step | FR | AC |

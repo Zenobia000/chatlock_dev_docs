@@ -67,10 +67,14 @@ stateDiagram-v2
 | 師傅接單 | ✓ accept | empty (no one accept) → expand | < 200ms | 多人同搶 → first-wins lock | banner | queued → assigned |
 | SLA breach | ✓ expand + alert | n/a | timer 跑 | n/a | n/a | queued → expired |
 
-## a11y notes
-- 師傅 Web App 走 WCAG 2.2 AA — 大按鈕（accept/reject），focus indicator 明顯，dark mode 支援
-- Web Push notification 用 system native（OS 控 a11y）
-- SLA badge 不僅靠顏色 — 加文字「剩餘 3 分鐘」
+## a11y notes（師傅 Web App + 後台 dispatcher 監看 — WCAG 2.2 AA 繼承自主檔）
+
+- **師傅 Web App** 走 WCAG 2.2 AA — 大按鈕（accept / reject）≥ 44×44，focus indicator 明顯，dark mode 支援（2.5.5 / 2.4.7）
+- **Web Push notification** 用 system native（OS 控 a11y）
+- **SLA badge 不僅靠顏色** — 加文字「剩餘 3 分鐘」（1.4.1 Use of Color）；倒數時間用 `aria-live="polite"` 朗讀
+- **Keyboard navigation (2.1.1)**：師傅 Web App accept / reject / ETA 輸入全鍵盤可達；後台 dispatcher 監看列表全鍵盤可達；無 keyboard trap
+- **Screen reader (4.1.2)**：候選師傅卡片 metadata（rating / region / skill）用 semantic HTML + ARIA roles；Top-5 list 用 `<ol>` 順序語意化
+- **3.3.4 Error prevention (financial)**：師傅 reject 操作為影響業務流程 → 顯示 reason 必填 + 雙重確認；首次免責規則對師傅顯示提示
 
 ## FR 反向指
 | Step | FR | AC |

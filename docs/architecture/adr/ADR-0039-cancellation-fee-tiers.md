@@ -1,12 +1,16 @@
 ---
 id: ADR-0039
 title: 取消費分段 — 5 階段門檻 + Configurable
-status: accepted
+status: Superseded by ADR-0102
 date: 2026-05-21
+superseded_by: ADR-0102
+superseded_on: 2026-05-28
+superseded_reason: "Final spec 2026-05-20 §08 P2-06 + P2-07 顆粒度由 5 階段擴為 6 階段；S2「已派工未出發」金額方向相反（NTD 0 → NTD 300）；新增 customer_not_onsite / technician_initiated_cancel / unpaid_no_response 等 reason code ADR 未覆蓋。Lane A critique 2026-05-28 2/2 SUPERSEDE；業主 2026-05-28 value decision Q1/Q2/Q3 拍板新階段表 + 師傅 initiated 政策。"
 source_trade_off: §F.2 取消費分段 + §F.3 AI-029 PAIN-POINTS-SUMMARY-2026-05-21.md
 deciders: [業主]
 accepted_date: 2026-05-22
 related:
+  - "./ADR-0102-cancellation-fee-tiers-v2-final-spec.md"
   - 01-workorder-erp-final-spec-20260520.xlsx#sheet-04 (P0)
   - 01-workorder-erp-final-spec-20260520.xlsx#sheet-08 (Phase II)
   - 01-workorder-erp-final-spec-20260520.xlsx#sheet-18 (AI-029)
@@ -15,17 +19,25 @@ pre_mortem: F4 (合規崩潰 — 取消費爭議引發法務糾紛)
 eternal_transient: Eternal Policy (B3) + Configurable rule (B4 ledger)
 ---
 
-> 
-> **🔄 Migration Status (2026-05-28)**: `REVIEW_REQUIRED (Lane A critique pending — A2.4)`
-> **Reviewed against**: 2026-05-20 final spec (xlsx)
-> **Reviewed on**: 2026-05-28
-> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+> ⛔ **SUPERSEDED BANNER (2026-05-28)**
+>
+> 本 ADR 已被 [`ADR-0102 — 取消費分段 v2 — 6 階段 + reason code dictionary + 師傅 initiated 政策`](./ADR-0102-cancellation-fee-tiers-v2-final-spec.md) 取代。
+>
+> **Supersede 範圍**：5 階段表 / S2 = NTD 0 / 無師傅 initiated 政策 / 無完整 reason code dictionary — 全部由 ADR-0102 重新定義。
+>
+> **保留歷史軌跡**：本 ADR 內容凍結，僅供 audit trail。任何引用請改用 ADR-0102。
+>
+> **觸發點**：Lane A critique 2026-05-28（BA + PM 2/2 SUPERSEDE）+ 業主 2026-05-28 value decision Q1/Q2/Q3。
+>
+> **Per ADR-0100 §1 classification** ([roundtable MoM](../../../.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md))
 
 
 # ADR-0039 — 取消費分段
 
 ## Status
-Accepted (2026-05-22)
+Superseded by ADR-0102 (2026-05-28)
+
+> 原 Status: Accepted (2026-05-22) — 已 superseded
 
 ## Context
 
