@@ -20,10 +20,10 @@ source_specs:
 
 | 指標 | 計數 | 健康 |
 |:-----|:-----|:-----|
-| Total FR | 40 | — |
+| Total FR | 51 | — |
 | Total BR | 1 | — |
 | Total ADR | 72 | — |
-| FR status: active | 38 | — |
+| FR status: active | 49 | — |
 | FR status: superseded | 2 | ✅ tracked |
 | FR with empty `mapped_to` (orphan) | 0 | ✅ |
 | ADR migration_status: STILL_VALID | 50 | ✅ |
@@ -78,6 +78,17 @@ source_specs:
 | [FR-0038](docs/analysis/fr/FR-0038-sync-convert-to-wo.md) | Sync — confirmed ProblemCard 轉 WorkOrder（強制 human gate） | active | S-M04, M03, M05 | BR-S-M04-01, BR-S-M04-02, BR-S-M04-NN, BR-S-M04-NN | WorkOrderConverted, ConvertGateRejected | - |
 | [FR-0039](docs/analysis/fr/FR-0039-sync-dispatch.md) | Sync — Dispatch 同步（WO created → 派工 queue） | active | S-M05, M06 | BR-S-M05-01, BR-S-M05-02, BR-S-M05-NN | DispatchQueued, DispatchSyncFailed | - |
 | [FR-0040](docs/analysis/fr/FR-0040-sync-evidence-writeback.md) | Sync — Evidence 回寫（photo / sign / completion / payment） | active | S-M06, M09, M08 | BR-S-M06-01, BR-S-M06-02, BR-S-M06-NN | EvidenceWrittenBack, EvidenceWritebackFailed | - |
+| [FR-0041](docs/analysis/fr/FR-0041-customer-site-device-master.md) | Customer / Site / Device Master 維護 | active | M02, M14 | BR-M02-01, BR-M02-02, BR-M02-03 | CustomerCreated, CustomerMerged, SiteCreated, DeviceRegistered, DeviceWarrantyUpdated | - |
+| [FR-0042](docs/analysis/fr/FR-0042-quote-internal-vs-external-view.md) | Quote 內外部視圖（客戶實收 vs 內部成本） | active | M04, M11, M17 | BR-M04-01, BR-M04-02, BR-M04-03, BR-M04-04, BR-M04-05 | QuoteCreated, QuoteApproved, QuoteRejected, QuoteExpired | - |
+| [FR-0043](docs/analysis/fr/FR-0043-m18-admin-config-workflow.md) | M18 Admin Config Workflow（user-maintained runtime config） | active | M18, M17 | BR-M18-01, BR-M18-02, BR-M18-03, BR-M18-04, BR-M18-05 | ConfigChangeProposed, ConfigChangeApproved, ConfigChangeRolledOut, ConfigChangeRolledBack, ConfigValidationFailed, ConfigVersionPublished | - |
+| [FR-0044](docs/analysis/fr/FR-0044-technician-onboarding-suspension.md) | Technician Onboarding 與停權 | placeholder | M07, M17 | - | - | - |
+| [FR-0045](docs/analysis/fr/FR-0045-technician-ap-settlement.md) | Technician AP 月結 | placeholder | M12, M07 | - | - | - |
+| [FR-0046](docs/analysis/fr/FR-0046-dispatcher-commission.md) | 派工人 Commission 月結 | placeholder | M12, M06 | - | - | - |
+| [FR-0047](docs/analysis/fr/FR-0047-brand-monthly-settlement.md) | 品牌月結 + B2B Settlement | placeholder | M12, M14 | - | - | - |
+| [FR-0048](docs/analysis/fr/FR-0048-rma-quality-feedback-loop.md) | RMA 品質回饋迴圈 | placeholder | M13, M20, M07 | - | - | - |
+| [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) | Exception Approval Inbox（M15 完整深化） | placeholder | M15, M17, M16 | - | - | - |
+| [FR-0050](docs/analysis/fr/FR-0050-ai-governance-prd-trace.md) | AI Governance & PRD Traceability（A12） | placeholder | A12, M20 | - | - | - |
+| [FR-0051](docs/analysis/fr/FR-0051-sop-feedback-spiral-deep.md) | SOP Feedback Spiral 深化（A10） | placeholder | A10, M20, M13 | - | - | - |
 
 ---
 
@@ -167,6 +178,7 @@ source_specs:
 
 **FRs**:
 - [FR-0017](docs/analysis/fr/FR-0017-sop-draft-review.md) — SOP 草稿審核（AI 自進化）
+- [FR-0051](docs/analysis/fr/FR-0051-sop-feedback-spiral-deep.md) — SOP Feedback Spiral 深化（A10）
 
 **ADRs**:
 - [ADR-0038-ai-feedback-review-policy](docs/architecture/adr/ADR-0038-ai-feedback-review-policy.md) — ADR-0038 — AI feedback / SOP 審核機制 (STILL_VALID_UNDER_M20_A10)
@@ -180,6 +192,7 @@ source_specs:
 
 **FRs**:
 - [FR-0034](docs/analysis/fr/FR-0034-ai-employee-charter.md) — AI Employee Charter / PRD 治理（Phase II）
+- [FR-0050](docs/analysis/fr/FR-0050-ai-governance-prd-trace.md) — AI Governance & PRD Traceability（A12）
 
 **ADRs**:
 - [ADR-0028-ai-employee-charter](docs/architecture/adr/ADR-0028-ai-employee-charter.md) — ADR-0028 — AI 鎖匠客服助理 Employee Charter (STILL_VALID_UNDER_M20_A12)
@@ -201,6 +214,7 @@ source_specs:
 **FRs**:
 - [FR-0027](docs/analysis/fr/FR-0027-brand-profile-resolver.md) — Chatbot 品牌型號與用戶資料 Resolver
 - [FR-0036](docs/analysis/fr/FR-0036-sync-facts-master.md) — Sync — Facts 主檔同步（phone/address/device → ERP）
+- [FR-0041](docs/analysis/fr/FR-0041-customer-site-device-master.md) — Customer / Site / Device Master 維護
 
 **ADRs**:
 - [ADR-0032-missing-address-policy](docs/architecture/adr/ADR-0032-missing-address-policy.md) — ADR-0032 — 缺地址時的處理規則 (STILL_VALID_UNDER_M01_M02)
@@ -223,6 +237,9 @@ source_specs:
 - [ADR-0037-conversation-auto-close](docs/architecture/adr/ADR-0037-conversation-auto-close.md) — ADR-0037 — 對話解決後客戶確認關閉 (STILL_VALID_UNDER_A03_M03)
 
 ### M04
+
+**FRs**:
+- [FR-0042](docs/analysis/fr/FR-0042-quote-internal-vs-external-view.md) — Quote 內外部視圖（客戶實收 vs 內部成本）
 
 **ADRs**:
 - [ADR-0035-warranty-project-quote-policy](docs/architecture/adr/ADR-0035-warranty-project-quote-policy.md) — ADR-0035 — 保固 / 建案案件 AI 報價邊界 (STILL_VALID_UNDER_M04_M13)
@@ -247,6 +264,7 @@ source_specs:
 - [FR-0005](docs/analysis/fr/FR-0005-technician-accept.md) — 技師接單與出發回報
 - [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知（V1.0 LINE only）
 - [FR-0039](docs/analysis/fr/FR-0039-sync-dispatch.md) — Sync — Dispatch 同步（WO created → 派工 queue）
+- [FR-0046](docs/analysis/fr/FR-0046-dispatcher-commission.md) — 派工人 Commission 月結
 
 **ADRs**:
 - [ADR-0045-acceptance-sla-policy](docs/architecture/adr/ADR-0045-acceptance-sla-policy.md) — ADR-0045 — 接單 SLA (STILL_VALID_UNDER_M06)
@@ -257,6 +275,9 @@ source_specs:
 - [FR-0003](docs/analysis/fr/FR-0003-auto-dispatch.md) — 自動派工演算法（規則引擎）
 - [FR-0005](docs/analysis/fr/FR-0005-technician-accept.md) — 技師接單與出發回報
 - [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知（V1.0 LINE only）
+- [FR-0044](docs/analysis/fr/FR-0044-technician-onboarding-suspension.md) — Technician Onboarding 與停權
+- [FR-0045](docs/analysis/fr/FR-0045-technician-ap-settlement.md) — Technician AP 月結
+- [FR-0048](docs/analysis/fr/FR-0048-rma-quality-feedback-loop.md) — RMA 品質回饋迴圈
 
 **ADRs**:
 - [ADR-0041-travel-fee-split](docs/architecture/adr/ADR-0041-travel-fee-split.md) — ADR-0041 — 車馬費歸屬 (STILL_VALID_UNDER_M11_M07)
@@ -303,6 +324,7 @@ source_specs:
 - [FR-0011](docs/analysis/fr/FR-0011-consumer-payment.md) — 消費者付款（V1.0 升級！）
 - [FR-0012](docs/analysis/fr/FR-0012-monthly-settlement.md) — 技師月結撥款（V1.0 升級！）
 - [FR-0014](docs/analysis/fr/FR-0014-refund.md) — 退款流程
+- [FR-0042](docs/analysis/fr/FR-0042-quote-internal-vs-external-view.md) — Quote 內外部視圖（客戶實收 vs 內部成本）
 
 **ADRs**:
 - [ADR-0041-travel-fee-split](docs/architecture/adr/ADR-0041-travel-fee-split.md) — ADR-0041 — 車馬費歸屬 (STILL_VALID_UNDER_M11_M07)
@@ -314,16 +336,25 @@ source_specs:
 
 **FRs**:
 - [FR-0012](docs/analysis/fr/FR-0012-monthly-settlement.md) — 技師月結撥款（V1.0 升級！）
+- [FR-0045](docs/analysis/fr/FR-0045-technician-ap-settlement.md) — Technician AP 月結
+- [FR-0046](docs/analysis/fr/FR-0046-dispatcher-commission.md) — 派工人 Commission 月結
+- [FR-0047](docs/analysis/fr/FR-0047-brand-monthly-settlement.md) — 品牌月結 + B2B Settlement
 
 ### M13
 
 **FRs**:
 - [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理
+- [FR-0048](docs/analysis/fr/FR-0048-rma-quality-feedback-loop.md) — RMA 品質回饋迴圈
+- [FR-0051](docs/analysis/fr/FR-0051-sop-feedback-spiral-deep.md) — SOP Feedback Spiral 深化（A10）
 
 **ADRs**:
 - [ADR-0035-warranty-project-quote-policy](docs/architecture/adr/ADR-0035-warranty-project-quote-policy.md) — ADR-0035 — 保固 / 建案案件 AI 報價邊界 (STILL_VALID_UNDER_M04_M13)
 
 ### M14
+
+**FRs**:
+- [FR-0041](docs/analysis/fr/FR-0041-customer-site-device-master.md) — Customer / Site / Device Master 維護
+- [FR-0047](docs/analysis/fr/FR-0047-brand-monthly-settlement.md) — 品牌月結 + B2B Settlement
 
 **ADRs**:
 - [ADR-0043-brand-project-tenant-scope](docs/architecture/adr/ADR-0043-brand-project-tenant-scope.md) — ADR-0043 — 品牌 / 建商專案邊界 (STILL_VALID_UNDER_M14_M17)
@@ -339,6 +370,7 @@ source_specs:
 - [FR-0014](docs/analysis/fr/FR-0014-refund.md) — 退款流程
 - [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理
 - [FR-0030](docs/analysis/fr/FR-0030-guardrails-output-validator.md) — Chatbot Guardrails & Output Validator
+- [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) — Exception Approval Inbox（M15 完整深化）
 
 **ADRs**:
 - [ADR-0034-urgent-red-code-definition](docs/architecture/adr/ADR-0034-urgent-red-code-definition.md) — ADR-0034 — urgent / Red Code 定義 (STILL_VALID_UNDER_M03_M15)
@@ -356,6 +388,7 @@ source_specs:
 - [FR-0018](docs/analysis/fr/FR-0018-cs-takeover.md) — 客服接管對話（三層解決機制）
 - [FR-0022](docs/analysis/fr/FR-0022-consumer-tracking.md) — 消費者端工單追蹤（LINE + Web 並存）
 - [FR-0026](docs/analysis/fr/FR-0026-chatbot-debounce-merge.md) — Chatbot 進線 Debounce 與訊息合併
+- [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) — Exception Approval Inbox（M15 完整深化）
 
 **ADRs**:
 - [ADR-0012-notification-channels](docs/architecture/adr/ADR-0012-notification-channels.md) — 通知 Channel 策略（Notification Channel Strategy） (STILL_VALID_UNDER_M16)
@@ -375,6 +408,10 @@ source_specs:
 - [FR-0020](docs/analysis/fr/FR-0020-audit-log-export.md) — 稽核日誌完整性與匯出
 - [FR-0028](docs/analysis/fr/FR-0028-skill-gated-react-agent.md) — Chatbot Skill-Gated ReAct Agent
 - [FR-0036](docs/analysis/fr/FR-0036-sync-facts-master.md) — Sync — Facts 主檔同步（phone/address/device → ERP）
+- [FR-0042](docs/analysis/fr/FR-0042-quote-internal-vs-external-view.md) — Quote 內外部視圖（客戶實收 vs 內部成本）
+- [FR-0043](docs/analysis/fr/FR-0043-m18-admin-config-workflow.md) — M18 Admin Config Workflow（user-maintained runtime config）
+- [FR-0044](docs/analysis/fr/FR-0044-technician-onboarding-suspension.md) — Technician Onboarding 與停權
+- [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) — Exception Approval Inbox（M15 完整深化）
 
 **ADRs**:
 - [ADR-0030-tenant-id-propagation](docs/architecture/adr/ADR-0030-tenant-id-propagation.md) — ADR-0030: Tenant ID Propagation — Agent 層補對稱隔離 (STILL_VALID_UNDER_M17_cross-cutting)
@@ -389,6 +426,7 @@ source_specs:
 
 **FRs**:
 - [FR-0019](docs/analysis/fr/FR-0019-rbac-dynamic.md) — 動態 RBAC 角色管理
+- [FR-0043](docs/analysis/fr/FR-0043-m18-admin-config-workflow.md) — M18 Admin Config Workflow（user-maintained runtime config）
 
 **ADRs**:
 - [ADR-0060-contract-template-schema-freeze-v1](docs/architecture/adr/ADR-0060-contract-template-schema-freeze-v1.md) — ADR-0060: Contract Template Schema Reserved Nullable (V1) (STILL_VALID_UNDER_M14_M18)
@@ -409,6 +447,9 @@ source_specs:
 - [FR-0029](docs/analysis/fr/FR-0029-skill-knowledge-base.md) — SKILL 知識庫 (SKILL.md + RAG)
 - [FR-0030](docs/analysis/fr/FR-0030-guardrails-output-validator.md) — Chatbot Guardrails & Output Validator
 - [FR-0034](docs/analysis/fr/FR-0034-ai-employee-charter.md) — AI Employee Charter / PRD 治理（Phase II）
+- [FR-0048](docs/analysis/fr/FR-0048-rma-quality-feedback-loop.md) — RMA 品質回饋迴圈
+- [FR-0050](docs/analysis/fr/FR-0050-ai-governance-prd-trace.md) — AI Governance & PRD Traceability（A12）
+- [FR-0051](docs/analysis/fr/FR-0051-sop-feedback-spiral-deep.md) — SOP Feedback Spiral 深化（A10）
 
 **ADRs**:
 - [ADR-0003-llm-integration-framework](docs/architecture/adr/ADR-0003-llm-integration-framework.md) — ADR-003: 選擇 LangChain 作為 LLM 整合框架 (STILL_VALID_UNDER_M20_A03_A04)
