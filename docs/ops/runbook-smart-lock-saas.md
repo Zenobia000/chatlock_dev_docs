@@ -1,9 +1,10 @@
 # Runbook — 智慧鎖 SaaS 平台
 
-> **狀態**：v1 draft（Gate 7 ready）
-> **更新**：2026-05-23
+> **狀態**：v1.1 draft（Gate 7 ready）— 2026-05-28 cascade 補 IR-012..018 對齊新 ADR-0067/0068 + FR-0052/0053 + ADR-0050 v2
+> **更新**：2026-05-28
 > **負責人**：SRE + DevOps
-> **關聯**：NFR Matrix + PRD §Release Plan + ADR-0061 DGS
+> **關聯**：NFR Matrix + PRD §Release Plan + ADR-0061 DGS + ADR-0067 M18 governance + ADR-0068 anti-corruption + ADR-0050 evidence visibility + ADR-0042 RBAC L1-L5 + FR-0052 cancellation + FR-0053 GDPR forget
+> **配套文件**：`pipeline-spec-smart-lock-saas.md` / `slo-spec-smart-lock-saas.md` / `rollback-plan-smart-lock-saas.md` / `release-readiness-smart-lock-saas.md`
 
 ---
 
@@ -177,6 +178,274 @@
   - column-order-safe serialization（row_to_json 結果 sort by key）
   - Nightly verify 加 cold-tier rehydrate sample（每月抽 1% partition）
 
+### IR-012：M18 Config rollout 失敗 / mis-config（2026-05-28 added per ADR-0067 + BR-M18-01..05）
+- **Severity**：P1（影響面取決於 config_key — 取消費 / approval limit / SLA 等為 P0）
+- **Symptoms**：
+  - Staged rollout auto-halt fire（per NFR-Ops-006）— canary 5% 階段 error rate / P99 latency / Forbidden Eval 超 baseline
+  - Downstream module log 顯示 409 `ConfigVersionMismatch`（per ADR-0068 + ADR-0009 PARTIAL_UPDATE）
+  - KPI K3 sentiment 在 M18 改動後 1h 內退化
+  - 客服 / 客戶 ticket 暴增反映「金額算錯 / SLA 不對」
+- **Diagnose**：
+  ```bash
+  # 1. 查最近 1h 內的 M18 config change（per ADR-0067 §Decision 組件 2 audit）
+  curl /m18/config/changes?since=1h | jq '.changes[] | {key, version, changed_by, diff}'
+
+  # 2. 查當前 active version vs 前一版 diff
+  curl /m18/config/{key}/diff?from=N-1&to=N
+  ```
+- **First responder**：DevOps on-call
+- **Triage tree**：
+  - schema validation 通過但業務邏輯錯（如金額多打一個 0）→ Layer 1 rollback (`rollback-plan-smart-lock-saas.md` §1)
+  - downstream cache 不一致（部分服務讀新版 + 部分讀舊版）→ 查 cache invalidation broadcast 是否完成（per ADR-0067 §Decision 組件 5）→ 必要時 force invalidate
+  - schema 本身錯（如新增 enum value 但 reader 模組未升級）→ Layer 1 rollback + 升 schema deprecation issue
+- **Mitigate**：
+  1. **Auto-halt 已 fire**：自動回 staged rollout 前一版（per NFR-Ops-005 ≤ 1 min）
+  2. **Manual rollback**：admin UI 一鍵回退（per BR-M18-04）；走 staged 10% 驗 → 50% → 100%
+  3. **Cache mismatch**：force broadcast invalidation channel 重發；TTL 30s 兜底
+  4. **Notify**：M18 admin + 影響模組 owner + PM
+- **Rollback procedure**：見 `rollback-plan-smart-lock-saas.md` §1（M18 instant ≤ 1 min）
+- **Escalation path**：DevOps → Tech Lead（如 schema-level 問題）→ PM（如業務影響 > 10% tenant）→ 法務（如合約金額條款相關）
+- **Postmortem trigger**：必跑 if (1) auto-halt fire (2) 影響金額 / 合規 / SLA 相關 config (3) cache split-brain 持續 > 5 min
+- **Prevent**：
+  - Schema validation 前置（per ADR-0067 §Decision 組件 1）+ admin UI 雙驗
+  - Staged rollout 不可跳（per BR-M18-03）；emergency override 需 IT-admin 雙簽
+  - M18 config change 與 app deploy **不可並行**（pipeline spec §3.1）
+
+### IR-013：Quote pricing snapshot hash chain mismatch（2026-05-28 added per ADR-0064）
+- **Severity**：P0（業務 audit 鏈斷裂 — 客戶爭議時無法仲裁；合規隱性風險）
+- **Symptoms**：
+  - `quote_hash_mismatch_total` counter > 0
+  - Nightly verify job 報 `pricing_rule_snapshot` immutable table 與 `quote.snapshot_hash` FK 不一致
+  - 客戶申訴「報價金額對不上」+ snapshot 查不到對應 row
+- **Diagnose**：
+  ```sql
+  -- 找出 quote.snapshot_hash 在 pricing_rule_snapshot 找不到的 row
+  SELECT q.quote_id, q.snapshot_hash, q.created_at
+  FROM quote q
+  LEFT JOIN pricing_rule_snapshot prs ON q.snapshot_hash = prs.hash
+  WHERE prs.hash IS NULL
+  ORDER BY q.created_at DESC LIMIT 20;
+  ```
+- **First responder**：DBA + on-call dev
+- **Triage tree**：
+  - missing snapshot row → 查 pricing_rule_snapshot 是否被 DELETE（不該發生，應該 immutable）→ RLS audit
+  - hash collision（理論上 sha256 不該）→ 查 serialization 是否不穩定
+  - quote.snapshot_hash 寫入錯（hash 算錯）→ 查 app code path
+- **Mitigate**：
+  1. **凍結**：暫停 new quote creation（`POST /quotes` 回 503）
+  2. **Forensic**：dump 該 quote 與 snapshot 的歷史；對比 PITR 24h 前 snapshot
+  3. **Pricing engine 補救**：如該 quote 對應的 pricing rule 仍可由 M18 config_versions 重建 → 重新計 hash + 寫 audit；如已 unrecoverable → 標 `disputed` + 客服跟客戶協商
+  4. **Notify**：PM + 法務 + 影響客戶之 ops 主管
+- **Rollback procedure**：不適用（資料完整性問題，per `rollback-plan-smart-lock-saas.md` §3.5）
+- **Postmortem trigger**：mandatory；對齊 IR-011 voucher mismatch 處理流程
+- **Prevent**：
+  - `pricing_rule_snapshot` RLS REVOKE DELETE / UPDATE
+  - content-addressable hash 計算 column-order-safe（per ADR-0064 §Decision）
+  - Nightly verify job 每月抽 1% snapshot sample 驗
+
+### IR-014：SoD violation 攔截後客服處理 SOP（2026-05-28 added per ADR-0050 v2 + ADR-0042 RBAC L1-L5）
+- **Severity**：P1（合規 + 客戶體驗）
+- **Symptoms**：
+  - `sod_violation_blocked_total` counter spike（per ADR-0050 v2 evidence visibility matrix 四維權限）
+  - 客服 ticket：「我無法 approve 這筆退款 / 取消費」
+  - Audit log 顯示 same user 同時擁有兩個衝突 role（如 dispatcher + approver on same WO）
+- **Diagnose**：
+  ```sql
+  -- 查最近 1h SoD violation events
+  SELECT user_id, target_resource, attempted_action, sod_rule_violated, blocked_at
+  FROM audit_log
+  WHERE event_type = 'sod_violation' AND blocked_at > NOW() - INTERVAL '1 hour'
+  ORDER BY blocked_at DESC LIMIT 50;
+  ```
+- **First responder**：客服主管 + DevOps
+- **Triage tree**：
+  - 合理 SoD（如 dispatcher 自己派工自己核准）→ 通知 user 走 escalation path 找 L3+ approver
+  - role 設定錯誤（per ADR-0042 L1-L5 矩陣 mis-config）→ 走 IR-018 RBAC sync lag
+  - 緊急場景（如假日只有 1 個 approver 在班）→ IT-admin override + audit highlight + 24h 內補 secondary approver
+- **Mitigate**：
+  1. **客服 SOP**：
+     - 步驟 1：告知客戶 / 內部 user：「此操作有合規限制，正轉接到適當的審核人」
+     - 步驟 2：通知對應 L3+ approver（per RBAC 矩陣）
+     - 步驟 3：approver 受理後 audit log 記錄 attempted_user + actual_approver 雙紀錄
+     - 步驟 4：超過 30 min 未找到合適 approver → 升 operations_director（per NFR-SLA-003 escalation）
+  2. **No bypass**：禁止 client-side workaround（如代登入）；任何 override 需 IT-admin 雙簽
+- **Escalation path**：客服 → operations_manager → operations_director → IT-admin（emergency override）
+- **Postmortem trigger**：weekly batch（不每 incident 出 postmortem）；如 violation rate > 1% / 週 → 走 RBAC 矩陣 review
+- **Prevent**：
+  - RBAC 矩陣定期 review（quarterly）
+  - User onboarding 時 SoD check（per ADR-0042）
+  - Approver pool 每個 role 至少 2 人（避免單點）
+
+### IR-015：Chatbot 大量 fail → handoff 真人 + 降級開關（2026-05-28 added per FR-0024 + ADR-0027 + ADR-0048）
+- **Severity**：P0（影響 LINE 主入口 → 客戶感知第一線）
+- **Symptoms**：
+  - SLO-4 (chatbot reply availability) burn 14.4x 1h
+  - Forbidden Eval drop > 5% in 1h
+  - 客服 ticket「AI 不回 / 答非所問」暴增
+  - LINE Messaging API status 正常但 AI agent 回應率掉
+- **Diagnose**：
+  ```
+  # 1. Gemini / LLM API status
+  curl https://status.cloud.google.com/incidents.json | jq '.[] | select(.affected_products[] | .title | contains("Vertex"))'
+
+  # 2. 看 AI agent fallback rate
+  prometheus: rate(ai_agent_fallback_total[5m])
+  ```
+- **First responder**：DevOps on-call + dev on-call
+- **Triage tree**：
+  - LLM API outage → IR-002 mitigate (Model Routing fallback per ADR-0027)
+  - Prompt template 改壞（per M18 config 改動）→ IR-012 M18 rollback
+  - Skill registry 異常 → Per-skill kill switch (Layer 3 per ADR-0028)
+  - 全面異常找不到單一原因 → **Global kill switch + 全量 handoff 真人**
+- **Mitigate**：
+  1. **降級開關 Layer 1**：admin UI 觸發 global kill switch → 所有 inbound LINE message → fallback canned response + 「服務暫時轉真人，請稍候」
+  2. **Handoff 真人**：per ADR-0048 ai-human-handoff-rules — 全量 inbound 自動進客服 inbox（fallback inbox）
+  3. **Capacity check**：客服主管確認 standby 人力；如人力不足 → 排隊訊息 + ETA
+  4. **Comms**：對甲方 LINE 通知「AI 暫時降級，已轉真人處理；ETA 30 min」
+- **Rollback procedure**：恢復後走 staged rollout（先 10% inbound 試 AI 路徑 → 50% → 100%）
+- **Escalation path**：dev on-call → Tech Lead → PM → 業務（如影響 > 1h）
+- **Postmortem trigger**：mandatory if (1) kill switch fire > 30 min OR (2) Forbidden violation 涉及客戶 OR (3) 客服 ticket > 50 件
+- **Prevent**：
+  - Model Routing fallback chain（per ADR-0027）測試 quarterly
+  - Per-skill kill switch drill monthly
+  - Capacity plan: 客服 standby 至少能 cover 30 min 全量 inbound
+
+### IR-016：Evidence 證據被刪 / 遺失 — audit trail recovery（2026-05-28 added per ADR-0050 v2 + ADR-0051）
+- **Severity**：P0（合規 — 證據鏈斷裂；evidence visibility matrix 四維權限失效）
+- **Symptoms**：
+  - GCS evidence bucket version count 異常（顯示有 DELETE）
+  - `evidence_orphan_check` cron job 報 evidence 在 DB 有 FK 但 storage 找不到
+  - 客戶 / 法務查 evidence 找不到 / 取得 stale 版本
+  - SLO-6 audit log delivery drop
+- **Diagnose**：
+  ```bash
+  # 1. GCS bucket 版本歷史
+  gsutil ls -a gs://<evidence-bucket>/<path> | head
+
+  # 2. DB-storage consistency check
+  SELECT e.evidence_id, e.gcs_path, e.created_at
+  FROM evidence e
+  LEFT JOIN evidence_storage_probe esp ON e.gcs_path = esp.path
+  WHERE esp.exists = false AND e.deleted_at IS NULL;
+  ```
+- **First responder**：sec + DPO + DBA
+- **Triage tree**：
+  - GCS 30-day version 仍可救 → restore from version history
+  - 超過 version retention → 走 cross-region replica restore（per §8 backup）
+  - 兩者都失敗 → audit-log only recovery（記錄當時的 evidence metadata + hash），通報甲方 + 法務 + DPO
+- **Mitigate**：
+  1. **Freeze**：暫停 evidence DELETE API（per ADR-0050 v2 attr_mask 四維）
+  2. **Restore from version history**：`gsutil cp gs://bucket/path#<version> gs://bucket/path`
+  3. **Restore from cross-region replica**：if version 過期
+  4. **Audit-only recovery**：if 物理不可恢復 → 寫 `evidence_recovery_failed` audit row + 通報
+  5. **Sec audit**：誰有 DELETE 權限？per ADR-0050 v2 應該只有 DPO + IT-admin time-boxed
+- **Escalation path**：sec → DPO → 法務（如涉及法律仲裁案件）→ 甲方
+- **Postmortem trigger**：mandatory；board-level review if (1) 涉及 legal-hold evidence OR (2) > 10 件 OR (3) RBAC bypass
+- **Prevent**：
+  - GCS bucket versioning ≥ 30d（per release-readiness §2 item 3）
+  - Cross-region replication
+  - DELETE 權限只給 DPO + IT-admin time-boxed（per ADR-0050 v2 attr_mask 矩陣）
+  - Nightly evidence_orphan_check cron
+
+### IR-017：PII / Retention 事故 — DPO 通報 + legal-hold flip（2026-05-28 added per FR-0053 + ADR-PII-002 + ADR-0061 DGS）
+- **Severity**：P0（合規 — GDPR 罰款 / 法律暴露）
+- **Symptoms**：
+  - `gdpr_forget_pending_total` > 0 with deadline approaching
+  - 客戶申訴 forget request 超過 7 天未回應（Art.12(3) 紅線）
+  - PII 出現在 non-PII storage（如 log / cache 含 phone / signature 等 L4 sensitive 資料）
+  - SLO-7 (GDPR forget) breach
+- **Diagnose**：
+  ```sql
+  -- 查 pending forget requests
+  SELECT request_id, customer_id, requested_at, deadline, legal_hold_status
+  FROM gdpr_forget_request
+  WHERE status = 'pending' AND deadline < NOW() + INTERVAL '2 days'
+  ORDER BY deadline ASC;
+
+  -- 查 PII leak in log
+  rg --type log 'phone|signature|id_card' /var/log/... | head -50
+  ```
+- **First responder**：DPO + DGS team
+- **Triage tree**：
+  - Legal-hold 阻擋（爭議 / 仲裁 / 警方）→ 在 7 天內送 customer_notice（Art.12(3) 合規）+ 預計解除時間
+  - DGS service 處理 lag → 走 IR-003 DGS down mitigation
+  - PII 出現在不該的地方 → 立即清除 + 走 ADR-PII-002 schema CI 雙層防線後續審計
+  - Forget 跨服務 propagation 失敗（chatbot / ERP / sync / vault 同步刪除）→ 手動補刪 + audit
+- **Mitigate**：
+  1. **兩階段刪除確認**（per FR-0053 + BR-PII-001）：T0 crypto-shred 金鑰 + 軟刪 + audit；T+30 物理刪
+  2. **Legal-hold flip**：如先前 hold 已解除 → DPO flip legal_hold=false → DGS 重新進刪除佇列
+  3. **Customer notice**：7 天內送（per NFR-Priv-005）— LINE/SMS/Email 三層；通知 legal-hold 原因 + 預計解除
+  4. **PII leak**：立即遮蔽 / 清除 leak source + log scrub script + audit
+  5. **Notify**：DPO → 法務 → 甲方 → （如 > 100 客戶受影響）主管機關
+- **Compliance breach 升級**：
+  - 7 天未送 customer_notice → DPO 強制通報法務
+  - 30 天未完成 forget → 通報主管機關
+- **Escalation path**：DGS team → DPO → 法務 → 甲方 → 主管機關（嚴重時）
+- **Postmortem trigger**：mandatory；board-level if > 10 客戶 OR 涉及 L4 sensitive PII leak
+- **Prevent**：
+  - DGS cron retention 排程穩定（per IR-009 prevent）
+  - PII-CI 雙層防線（schema CI + runtime scan，per ADR-PII-002）
+  - Legal-hold flip 走 DPO + 法務 雙簽
+
+### IR-018：師傅 RBAC L1-L5 同步 lag → workforce sync 失敗（2026-05-28 added per ADR-0042 + FR-0036 sync-facts-master）
+- **Severity**：P1（影響派工 + 接案 + 結算正確性）
+- **Symptoms**：
+  - 師傅在 web app 登入後權限不對（看到不該看的 WO / 看不到自己的 WO）
+  - `workforce_sync_lag_seconds` 超過 baseline（per outbox 機制）
+  - 派工失敗：「找不到合適技能的師傅」但實際有
+  - 結算對不上：師傅 commission 算錯
+- **Diagnose**：
+  ```sql
+  -- 查 sync facts master vs RBAC tier 一致性
+  SELECT t.technician_id, t.rbac_tier, sfm.rbac_tier_synced, sfm.last_synced_at
+  FROM technician t
+  LEFT JOIN sync_facts_master sfm ON t.technician_id = sfm.technician_id
+  WHERE t.rbac_tier != sfm.rbac_tier_synced
+     OR sfm.last_synced_at < NOW() - INTERVAL '15 minutes'
+  LIMIT 50;
+  ```
+- **First responder**：DevOps + dev on-call
+- **Triage tree**：
+  - Sync outbox poller 卡（per IR-004）→ 走 outbox lag mitigation
+  - L1-L5 tier 升降級邏輯 bug → 走 app rollback (Layer 2)
+  - Sync FK constraint violation（如師傅被刪除但 sync 表還有 row）→ DBA repair
+- **Mitigate**：
+  1. **救急**：force sync 該 technician（admin API `POST /workforce/sync/{technician_id}/force`）
+  2. **Poller 重啟**：if poller pod 卡 → scale HPA / restart
+  3. **批次重 sync**：if > 10 technician 影響 → 跑 batch sync job
+  4. **Notify**：影響派工 → 客服主管 + 派工主管；影響結算 → 財務
+- **Escalation path**：DevOps → Tech Lead → 派工主管（如業務影響 > 30 min）
+- **Postmortem trigger**：if > 50 technician 受影響 OR 結算錯誤 > NTD 10k OR sync lag > 1h
+- **Prevent**：
+  - Outbox lag SLO (SLO-6 audit delivery) monitor
+  - Sync FK constraint test in CI
+  - Nightly workforce_sync consistency check cron
+
+### IR-019：LINE webhook 中斷 → fallback inbox（2026-05-28 added per FR-0024 + IR-001 extension）
+
+> 此 IR 是 IR-001 (LINE webhook 失敗率 > 1%) 的延伸場景：當 LINE 平台**完全中斷**（非我方服務問題）時的 fallback 路徑。
+
+- **Severity**：P0（LINE 是台灣 0-1 SaaS 主入口）
+- **Symptoms**：
+  - LINE Messaging API status 顯示 outage
+  - Webhook 全停（不是 5xx，是根本不來）
+  - SLO-4 chatbot drop 但 service 本身健康
+- **Diagnose**：
+  - LINE platform status: `https://status.line.me/`
+  - Webhook last-received timestamp（如 > 5 min 無 inbound → 嚴重）
+- **First responder**：DevOps on-call + 客服主管
+- **Mitigate（fallback inbox）**：
+  1. **客服 fallback inbox**：所有客戶聯繫導向「客服專線 / web form / email」三條備援
+  2. **Comms**：對甲方 LINE/SMS 通知「LINE 平台中斷，已啟用備援聯繫管道」；對 consumer 透過官網 banner + Google My Business 更新狀態
+  3. **資料補錄**：LINE 恢復後，dedup window 24h（per FR-0024）+ DLQ replay；如 LINE 平台 outage > 24h，需走 manual 補錄客戶聯繫（客服紀錄）
+  4. **不開 kill switch**：我方服務健康，不該下 kill switch
+- **Escalation path**：DevOps → PM → 業務 → 甲方
+- **Postmortem trigger**：if LINE outage > 30 min OR > 100 客戶受影響 → 跑 fallback inbox capacity review
+- **Prevent**：
+  - Fallback inbox（客服專線 / web form / email）保持 always-ready
+  - LINE status 自動監控（每 30s probe）+ alert
+  - 客服 standby 人力規劃 cover LINE outage 場景
+
 ---
 
 ## §3 Kill Switch（ADR-0028，3 layers）
@@ -346,17 +615,18 @@ PagerDuty alerting:
 
 ## §10 Gate 7 Release Ready Exit Criteria
 
-- ✅ SLO defined for all services（含 DGS、outbox、cache）
-- ✅ Runbook for top 10 incident scenarios
+- ✅ SLO defined for all services（含 DGS、outbox、cache）— 詳見 `slo-spec-smart-lock-saas.md` 7 SLO
+- ✅ Runbook for top 19 incident scenarios（IR-001..019，2026-05-28 補 IR-012..019 對齊新 ADR）
 - ✅ Kill switch 3-layer documented + drilled
-- ✅ Deployment pipeline with block-deploy gates
-- ✅ Rollback procedure + V1/V2 triggers + artifact SHA traceability
+- ✅ Deployment pipeline with block-deploy gates — 詳見 `pipeline-spec-smart-lock-saas.md`
+- ✅ Rollback procedure 三層（M18 ≤ 1 min / app ≤ 30 min / DB ≤ 4h）— 詳見 `rollback-plan-smart-lock-saas.md`
 - ✅ On-call rotation defined
 - ✅ Compliance continuous monitoring
-- ✅ DR drill schedule
+- ✅ DR drill schedule — 詳見 `rollback-plan-smart-lock-saas.md` §5
 - ✅ Observability stack ready
-- ⏳ DR drill execution（post-W17 quarterly）
+- ✅ Release readiness checklist 30-item — 詳見 `release-readiness-smart-lock-saas.md`
+- ⏳ DR drill execution（W17+4 annual + quarterly thereafter）
 
 ---
 
-**Gate 7 Release Ready Freeze** — ✅ ready
+**Gate 7 Release Ready Freeze** — ✅ ready（pending §10 [VALUE_DECISION_NEEDED] in `release-readiness-smart-lock-saas.md`）
