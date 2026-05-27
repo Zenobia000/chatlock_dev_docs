@@ -70,8 +70,8 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| ReAct loop | FR-TBD-A03 | AC-01 load_skill / AC-02 update_user_info / AC-03 transfer_to_human |
-| 連 3 輪 fallback | FR-TBD-A03-002 | AC-01 自動 handoff |
+| ReAct loop | FR-0028 | AC-01 load_skill / AC-02 update_user_info / AC-03 transfer_to_human |
+| 連 3 輪 fallback | FR-0028 | AC-01 自動 handoff |
 
 ## 相關
 - 主檔：[`../user-flow-smart-lock-saas.md#flow-s1`](../user-flow-smart-lock-saas.md)

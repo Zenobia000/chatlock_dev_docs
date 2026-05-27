@@ -75,10 +75,10 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| 匹配 | FR-TBD-S-M05-001 | AC-01 Top-5 / AC-02 skill+region+rating |
-| 推播 | FR-TBD-S-M05-002 | AC-01 Web Push / AC-02 SMS fallback |
-| SLA | FR-TBD-S-M05-003 | AC-01 general 10min / AC-02 emergency 5min / AC-03 breach escalate |
-| no candidate fallback | FR-TBD-S-M05-004 | AC-01 擴大區域 / AC-02 客服 escalate |
+| 匹配 | FR-0039 | AC-01 Top-5 / AC-02 skill+region+rating |
+| 推播 | FR-0039 | AC-01 Web Push / AC-02 SMS fallback |
+| SLA | FR-0039 | AC-01 general 10min / AC-02 emergency 5min / AC-03 breach escalate |
+| no candidate fallback | FR-0039 | AC-01 擴大區域 / AC-02 客服 escalate |
 
 ## 相關
 - 主檔 Flow S2：[`../user-flow-smart-lock-saas.md#flow-s2`](../user-flow-smart-lock-saas.md)

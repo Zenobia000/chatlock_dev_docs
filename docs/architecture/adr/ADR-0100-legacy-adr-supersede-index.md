@@ -196,12 +196,12 @@
 
 ## §4 Open Questions (給業主)
 
-| # | 問題 | 為什麼問 | 提案選項 | 建議 |
-|:--|:-----|:---------|:---------|:-----|
-| OQ-100-1 | §1 初步分類表是否需要更細分（例如增加 PARTIAL_SUPERSEDE = 部分章節 supersede 部分保留）？ | 治理顆粒度判斷 | A) 不分，REVIEW_REQUIRED 已涵蓋<br>B) 分，每條條目精細化 | A（避免治理顆粒度過細） |
-| OQ-100-2 | 47 條 STILL_VALID 批次 frontmatter update 是否需業主逐條確認？ | 治理嚴格度 vs 效率 | A) 自動批次，業主只看異常<br>B) 業主逐條 review | A |
-| OQ-100-3 | REVIEW_REQUIRED 6 條若 critique 結論為 SUPERSEDE，是否需業主對每條新 ADR 拍板？ | 業主決策 vs Architect 自決 | A) 業主拍板每條<br>B) Architect 拍板，業主只看 summary | A（治理嚴格） |
-| OQ-100-4 | `docs/architecture/adr/` 目錄含 6 個非 ADR 檔（INDEX.md / ARCH-*/DDD-*/C4-* 等架構索引）是否納入 supersede 評估？ | 範疇邊界 | A) 不納入（它們是架構索引非決策）<br>B) 納入 | A |
+| # | 問題 | 為什麼問 | 提案選項 | 建議 | 業主裁決 |
+|:--|:-----|:---------|:---------|:-----|:---------|
+| OQ-100-1 | §1 初步分類表是否需要更細分（例如增加 PARTIAL_SUPERSEDE = 部分章節 supersede 部分保留）？ | 治理顆粒度判斷 | A) 不分，REVIEW_REQUIRED 已涵蓋<br>B) 分，每條條目精細化 | A（避免治理顆粒度過細） | — |
+| OQ-100-2 | 47 條 STILL_VALID 批次 frontmatter update 是否需業主逐條確認？ | 治理嚴格度 vs 效率 | A) 自動批次，業主只看異常<br>B) 業主逐條 review | A | — |
+| OQ-100-3 | REVIEW_REQUIRED 6 條若 critique 結論為 SUPERSEDE，是否需業主對每條新 ADR 拍板？ | 業主決策 vs Architect 自決 | A) 業主拍板每條<br>B) Architect 拍板，業主只看 summary | A（治理嚴格） | — |
+| OQ-100-4 | `docs/architecture/adr/` 目錄含 6 個非 ADR 檔（INDEX.md / ARCH-*/DDD-*/C4-* 等架構索引）是否納入 supersede 評估？ | 範疇邊界 | A) 不納入（它們是架構索引非決策）<br>B) 納入 | A | ✅ **A (2026-05-28)** |
 
 ---
 

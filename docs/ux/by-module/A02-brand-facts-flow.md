@@ -72,7 +72,7 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| brand quick reply | FR-TBD-A02 | AC-01 常見品牌列表 / AC-02 「其他」free text |
+| brand quick reply | FR-0027 | AC-01 常見品牌列表 / AC-02 「其他」free text |
 
 ## 相關
 - 主檔：[`../user-flow-smart-lock-saas.md#flow-s1`](../user-flow-smart-lock-saas.md)

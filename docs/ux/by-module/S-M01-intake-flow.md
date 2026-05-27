@@ -59,7 +59,7 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| intake capture | FR-TBD-S-M01 | AC-01 channel/raw_text/media_ref / AC-02 不直接開 WO |
+| intake capture | FR-0035 | AC-01 channel/raw_text/media_ref / AC-02 不直接開 WO |
 
 ## 相關
 - 主檔：[`../user-flow-smart-lock-saas.md#flow-s1`](../user-flow-smart-lock-saas.md)

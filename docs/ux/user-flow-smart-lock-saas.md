@@ -96,15 +96,15 @@ related_adr: [ADR-0028, ADR-0031, ADR-0032, ADR-0034, ADR-0036, ADR-0037, ADR-00
 flowchart TD
     Start([使用者打 LINE 訊息]) --> Intent[AI 認意圖<br/>→ FR-0001 / AC-01]
     Intent --> Emergency{急件 4 類？<br/>鎖外 / 內困 / 安全風險 / 怒客<br/>→ FR-0002 / AC-01}
-    Emergency -->|是 bypass 三層| ForceHuman[5 分鐘內強制轉真人<br/>→ FR-TBD-A07 handoff]
-    Emergency -->|否| MultiTurn[多輪對話收齊資訊<br/>→ FR-TBD-A01 debounce / FR-TBD-A02 facts]
+    Emergency -->|是 bypass 三層| ForceHuman[5 分鐘內強制轉真人<br/>→ FR-0018 handoff]
+    Emergency -->|否| MultiTurn[多輪對話收齊資訊<br/>→ FR-0026 debounce / FR-0027 facts]
     MultiTurn --> PCComplete{資料齊？≥0.85<br/>→ FR-0003 / AC-01}
-    PCComplete -->|否| PhotoGuide[主動引導拍照<br/>→ FR-TBD-A08 multimodal]
+    PCComplete -->|否| PhotoGuide[主動引導拍照<br/>→ FR-0025 multimodal]
     PhotoGuide --> MultiTurn
     PCComplete -->|是| Triage[三層解決<br/>→ FR-0004 / AC-01]
-    Triage -->|案例庫命中| AIResp[AI 給回應<br/>→ FR-TBD-A05 safety guardrail]
+    Triage -->|案例庫命中| AIResp[AI 給回應<br/>→ FR-0030 safety guardrail]
     Triage -->|手冊 RAG| AIResp
-    Triage -->|失敗/連3次不齊| Human[轉真人<br/>→ FR-TBD-A07]
+    Triage -->|失敗/連3次不齊| Human[轉真人<br/>→ FR-0018]
 
     AIResp --> Clarify{AI 主動確認：<br/>問題釐清了嗎？<br/>→ FR-0005 / AC-02}
     AIResp -. 平行訊號 .-> Feedback[/有幫助 / 沒幫助<br/>K8 Eval 不影響案件流轉/]
@@ -113,18 +113,18 @@ flowchart TD
     Clarify -->|已釐清| Resolved[problem_card = resolved<br/>annotation: entry=open exit=resolved]
     Resolved --> NeedDispatch{AI 判斷需派師傅？}
     NeedDispatch -->|否，純諮詢| CustAck
-    NeedDispatch -->|是，建議客戶| CustChoose{客戶選擇開工單？<br/>→ FR-TBD-A05 越權攔截}
+    NeedDispatch -->|是，建議客戶| CustChoose{客戶選擇開工單？<br/>→ FR-0030 越權攔截}
     CustChoose -->|不需要| CustAck
-    CustChoose -->|要派工| WOTool[(客戶觸發 工單系統 Tool<br/>→ FR-TBD-S-M04 ConvertToWO)]
+    CustChoose -->|要派工| WOTool[(客戶觸發 工單系統 Tool<br/>→ FR-0038 ConvertToWO)]
 
-    ForceHuman --> CSHandle[客服真人接手<br/>→ FR-TBD-A07]
+    ForceHuman --> CSHandle[客服真人接手<br/>→ FR-0018]
     Human --> CSHandle
     CSHandle --> CSResolve{客服判斷}
     CSResolve -->|純客服解決| CSResolved[problem_card = resolved]
     CSResolved --> CustAck
     CSResolve -->|需派工| WOTool
 
-    WOTool --> CS1Click[客服 1-click 審核 + WO.created<br/>→ FR-TBD-S-M04 human gate]
+    WOTool --> CS1Click[客服 1-click 審核 + WO.created<br/>→ FR-0038 human gate]
     CS1Click --> S2([→ S2 派工流程])
 
     CustAck{使用者確認結案？} -->|按「已解決」| Closed([結案<br/>annotation: exit=closed])
@@ -170,7 +170,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    AIDraft[AI 草擬問題卡完整<br/>→ FR-0006 / AC-01] --> CSReview[客服 review PC<br/>→ FR-TBD-S-M03 human gate]
+    AIDraft[AI 草擬問題卡完整<br/>→ FR-0006 / AC-01] --> CSReview[客服 review PC<br/>→ FR-0037 human gate]
     CSReview --> Emergency{emergency_class<br/>4 類？<br/>→ FR-0002 / AC-02}
     Emergency -->|是| EmergencyWO[跳過 Quote 直接 WO.created<br/>annotation: entry=null exit=created<br/>→ FR-0007 / AC-03]
     Emergency -->|否| InternalQuote[客服內部報價<br/>Pricing Engine 算<br/>annotation: entry=draft<br/>→ FR-0008 / AC-01]
@@ -286,7 +286,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Resolved[案件已解決 + 有幫助<br/>annotation: entry=resolved<br/>→ FR-TBD-A10 SOP draft trigger] --> Draft[LLM 草擬 SOP draft<br/>annotation: entry=draft]
+    Resolved[案件已解決 + 有幫助<br/>annotation: entry=resolved<br/>→ FR-0017 SOP draft trigger] --> Draft[LLM 草擬 SOP draft<br/>annotation: entry=draft]
     Draft --> RiskCheck{屬於高風險嗎？}
     RiskCheck -->|報價 / 退款 / 法律| DualReview[雙審：客服主管 + Domain Expert]
     RiskCheck -->|FAQ 類| SingleReview[Knowledge Owner 單審]
@@ -375,13 +375,13 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Login[admin 登入 M18 admin UI<br/>→ FR-TBD-M18-001] --> Pick[選 config domain<br/>price table / SLA / template / reason_code / role permission]
+    Login[admin 登入 M18 admin UI<br/>→ FR-0043] --> Pick[選 config domain<br/>price table / SLA / template / reason_code / role permission]
     Pick --> Edit[在 UI 編輯 config draft<br/>annotation: entry=draft]
-    Edit --> Validate[schema validation 前置<br/>annotation: entry=draft exit=validated<br/>→ FR-TBD-M18-002]
+    Edit --> Validate[schema validation 前置<br/>annotation: entry=draft exit=validated<br/>→ FR-0043]
     Validate -->|fail| EditErr[顯示 validation error + 修正建議]
     EditErr --> Edit
-    Validate -->|pass| Approve[主管 approve + 設 effective_date<br/>annotation: exit=approved<br/>→ FR-TBD-M18-003]
-    Approve --> StagedRollout[staged rollout 啟動<br/>→ FR-TBD-M18-004]
+    Validate -->|pass| Approve[主管 approve + 設 effective_date<br/>annotation: exit=approved<br/>→ FR-0043]
+    Approve --> StagedRollout[staged rollout 啟動<br/>→ FR-0043]
     StagedRollout --> Canary[10% canary<br/>annotation: phase=canary]
     Canary --> Observe1{10min observation<br/>SLO / error rate OK？}
     Observe1 -->|fail| Rollback1[一鍵 rollback 至 prev version]
@@ -389,13 +389,13 @@ flowchart TD
     Stage50 --> Observe2{10min observation OK？}
     Observe2 -->|fail| Rollback2[一鍵 rollback]
     Observe2 -->|pass| Stage100[100% full rollout<br/>annotation: phase=full]
-    Stage100 --> CacheInvalidate[cache invalidation broadcast<br/>→ FR-TBD-M18-005]
+    Stage100 --> CacheInvalidate[cache invalidation broadcast<br/>→ FR-0043]
     CacheInvalidate --> AuditEntry[audit log: who / when / what diff / why<br/>annotation: phase=active]
 
-    AuditView[admin 查 audit view<br/>→ FR-TBD-M18-006] --> FilterByDomain[filter: domain / actor / date range]
+    AuditView[admin 查 audit view<br/>→ FR-0043] --> FilterByDomain[filter: domain / actor / date range]
     FilterByDomain --> DiffView[顯示 config diff + 操作者 + 時間 + reason]
 
-    RollbackReq[rollback request 業主 / 異常觸發<br/>→ FR-TBD-M18-007] --> RollbackWindowCheck{在 24h rollback window 內？}
+    RollbackReq[rollback request 業主 / 異常觸發<br/>→ FR-0043] --> RollbackWindowCheck{在 24h rollback window 內？}
     RollbackWindowCheck -->|是| RollbackPick[挑 prev version]
     RollbackWindowCheck -->|否| RollbackBlock[超過 window → 需走完整 change request]
     RollbackPick --> RollbackStaged[rollback 也走 staged rollout 10%/50%/100%]
@@ -408,11 +408,11 @@ flowchart TD
 **S5 journey 重點**：
 
 1. **edit config**：admin 在 M18 UI 編輯 draft（不直接寫 prod）
-2. **schema validation**：前置擋 mis-config（如把退款上限打 1000 倍）→ FR-TBD-M18-002
-3. **approve + effective_date**：主管 approve 並設定生效日 → FR-TBD-M18-003
+2. **schema validation**：前置擋 mis-config（如把退款上限打 1000 倍）→ FR-0043
+3. **approve + effective_date**：主管 approve 並設定生效日 → FR-0043
 4. **staged rollout**：自動 canary 10% → 10min observation → 50% → 10min observation → 100% → cache invalidation broadcast
-5. **audit view**：所有 config change 留 who / when / what diff / why（retention ≥ 7 yr，依 NFR）→ FR-TBD-M18-006
-6. **rollback**：≤ 24h window 內一鍵回退；rollback 也走 staged rollout 機制 → FR-TBD-M18-007
+5. **audit view**：所有 config change 留 who / when / what diff / why（retention ≥ 7 yr，依 NFR）→ FR-0043
+6. **rollback**：≤ 24h window 內一鍵回退；rollback 也走 staged rollout 機制 → FR-0043
 7. **escape hatch**：「強制全量」需 IT-admin 雙簽 + audit log highlight（不主推）
 
 **Edge case 與 P0 / ADR 對應**：

@@ -70,7 +70,7 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| 訊息合併 | FR-TBD-A01 | AC-01 buffer_wait / AC-02 media pending |
+| 訊息合併 | FR-0026 | AC-01 buffer_wait / AC-02 media pending |
 
 ## 相關
 - 主檔 Flow S1：[`../user-flow-smart-lock-saas.md#flow-s1`](../user-flow-smart-lock-saas.md)

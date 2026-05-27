@@ -80,10 +80,10 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| 下載 + 儲存 | FR-TBD-A08-001 | AC-01 LINE API → s3 / AC-02 壓縮 < 5MB |
-| placeholder 替換 | FR-TBD-A08-002 | AC-01 media_ref 注入 A03 turn |
-| alt-text 必填 | FR-TBD-A08-003 | AC-01 客服 review 時補 / AC-02 不允許空白 |
-| checkpoint cleanup | FR-TBD-A08-004 | AC-01 90 天後清理 |
+| 下載 + 儲存 | FR-0025 | AC-01 LINE API → s3 / AC-02 壓縮 < 5MB |
+| placeholder 替換 | FR-0025 | AC-01 media_ref 注入 A03 turn |
+| alt-text 必填 | FR-0025 | AC-01 客服 review 時補 / AC-02 不允許空白 |
+| checkpoint cleanup | FR-0025 | AC-01 90 天後清理 |
 
 ## 相關
 - 主檔 Flow S1：[`../user-flow-smart-lock-saas.md#flow-s1`](../user-flow-smart-lock-saas.md)

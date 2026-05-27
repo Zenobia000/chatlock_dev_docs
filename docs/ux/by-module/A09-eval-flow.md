@@ -120,11 +120,11 @@ stateDiagram-v2
 
 | Step | FR 反向指 | AC |
 |:-----|:----------|:---|
-| feedback signal 收集 | FR-TBD-A09-001 | AC-01 「有幫助 / 沒幫助」按鈕 / AC-02 平行訊號不阻斷流轉 |
-| LLM judge 評分 | FR-TBD-A09-002 | AC-01 relevance/safety/completeness/tone 四維 |
-| K8 200 題 daily 回歸 | FR-TBD-A09-003 | AC-01 pass rate ≥ 設定 threshold / AC-02 fail 觸發 alert |
-| SOP gap analysis trigger | FR-TBD-A09-004 | AC-01 fail score 觸發 A10 |
-| pre-deploy eval gate | FR-TBD-A09-005 | AC-01 deploy 前 K8 pass rate ≥ threshold 才放行 |
+| feedback signal 收集 | FR-0032 | AC-01 「有幫助 / 沒幫助」按鈕 / AC-02 平行訊號不阻斷流轉 |
+| LLM judge 評分 | FR-0032 | AC-01 relevance/safety/completeness/tone 四維 |
+| K8 200 題 daily 回歸 | FR-0032 | AC-01 pass rate ≥ 設定 threshold / AC-02 fail 觸發 alert |
+| SOP gap analysis trigger | FR-0032 | AC-01 fail score 觸發 A10 |
+| pre-deploy eval gate | FR-0032 | AC-01 deploy 前 K8 pass rate ≥ threshold 才放行 |
 | 急件 200 題列入 K8 | 主檔 acceptance | 急件 4 類偵測準確率 ≥ K8 設定值 |
 
 ---

@@ -149,13 +149,13 @@ stateDiagram-v2
 
 | Step | FR 反向指 | AC |
 |:-----|:----------|:---|
-| 客戶觸發 ConvertToWO | FR-TBD-S-M04-001 | AC-01 LINE Quick Reply / AC-02 A05 攔截 AI 越權 |
-| CS review queue | FR-TBD-S-M04-002 | AC-01 queue 顯示 + filter / AC-02 1-click approve |
+| 客戶觸發 ConvertToWO | FR-0038 | AC-01 LINE Quick Reply / AC-02 A05 攔截 AI 越權 |
+| CS review queue | FR-0038 | AC-01 queue 顯示 + filter / AC-02 1-click approve |
 | Quote-WO 硬綁定檢查 | FR-0010 | AC-01 425 QUOTE_NOT_CUSTOMER_SENT / AC-02 emergency carve-out 跳過 |
-| Idempotency | FR-TBD-S-M04-003 | AC-01 Idempotency-Key 擋重複 / AC-02 409 顯示已建單 |
-| CS reject + 退回 | FR-TBD-S-M04-004 | AC-01 reason 必填 / AC-02 PC 退回 collecting + 客戶通知 |
-| Outbox sync | FR-TBD-S-M04-005 | AC-01 outbox event / AC-02 DLQ + retry |
-| 越權偵測 audit | FR-TBD-A05-002 | AC-01 AI 嘗試繞過 → log + alert |
+| Idempotency | FR-0038 | AC-01 Idempotency-Key 擋重複 / AC-02 409 顯示已建單 |
+| CS reject + 退回 | FR-0038 | AC-01 reason 必填 / AC-02 PC 退回 collecting + 客戶通知 |
+| Outbox sync | FR-0038 | AC-01 outbox event / AC-02 DLQ + retry |
+| 越權偵測 audit | FR-0030 | AC-01 AI 嘗試繞過 → log + alert |
 
 ---
 

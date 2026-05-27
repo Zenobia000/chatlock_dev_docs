@@ -88,10 +88,10 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| auto draft trigger | FR-TBD-A10-001 (Phase II) | AC-01 rating>=4 / AC-02 LLM 草擬 |
-| dual / single review | FR-TBD-A10-002 | AC-01 高風險 dual / AC-02 FAQ single |
-| Family Reviewer 24h SLA | FR-TBD-A10-003 | AC-01 SLA enforcement / AC-02 缺席 escalate |
-| 替補機制 | FR-TBD-A10-004 | AC-01 累計 3 件 → ChangeRequest |
+| auto draft trigger | FR-0017 (Phase II) | AC-01 rating>=4 / AC-02 LLM 草擬 |
+| dual / single review | FR-0017 | AC-01 高風險 dual / AC-02 FAQ single |
+| Family Reviewer 24h SLA | FR-0017 | AC-01 SLA enforcement / AC-02 缺席 escalate |
+| 替補機制 | FR-0017 | AC-01 累計 3 件 → ChangeRequest |
 
 ## 相關
 - 主檔 Flow S3：[`../user-flow-smart-lock-saas.md#flow-s3`](../user-flow-smart-lock-saas.md)

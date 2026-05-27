@@ -130,12 +130,12 @@ stateDiagram-v2
 
 | Step | FR 反向指 | AC |
 |:-----|:----------|:---|
-| A01 訊息合併 | FR-TBD-A01 | AC-01 buffer_wait 合併 / AC-02 media pending 補齊 |
-| A02 brand/model facts | FR-TBD-A02 | AC-01 brand quick reply / AC-02 model fallback free text |
-| A03 ReAct agent | FR-TBD-A03 | AC-01 load_skill / AC-02 update_user_info / AC-03 transfer_to_human |
-| A05 safety guardrail | FR-TBD-A05 | AC-01 越權字串攔截 / AC-02 final quote 改口 |
-| A06 PC create | FR-TBD-A06 | AC-01 completeness ≥ 0.85 / AC-02 PC.draft → 客服 review |
-| A08 multimodal | FR-TBD-A08 | AC-01 photo guide / AC-02 alt-text 必填 |
+| A01 訊息合併 | FR-0026 | AC-01 buffer_wait 合併 / AC-02 media pending 補齊 |
+| A02 brand/model facts | FR-0027 | AC-01 brand quick reply / AC-02 model fallback free text |
+| A03 ReAct agent | FR-0028 | AC-01 load_skill / AC-02 update_user_info / AC-03 transfer_to_human |
+| A05 safety guardrail | FR-0030 | AC-01 越權字串攔截 / AC-02 final quote 改口 |
+| A06 PC create | FR-0031 | AC-01 completeness ≥ 0.85 / AC-02 PC.draft → 客服 review |
+| A08 multimodal | FR-0025 | AC-01 photo guide / AC-02 alt-text 必填 |
 | Clarify gate | FR-0005 | AC-02 客戶答「已釐清」才 resolved |
 
 ---

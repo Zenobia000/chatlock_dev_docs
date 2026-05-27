@@ -85,9 +85,9 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| 越權 pattern 偵測 | FR-TBD-A05-001 | AC-01 final quote 攔截 / AC-02 自行建單 攔截 / AC-03 免費保固 攔截 |
-| 越權嘗試 audit | FR-TBD-A05-002 | AC-01 log + alert |
-| hard block 觸發 handoff | FR-TBD-A05-003 | AC-01 危險字命中 → 強制 transfer_to_human |
+| 越權 pattern 偵測 | FR-0030 | AC-01 final quote 攔截 / AC-02 自行建單 攔截 / AC-03 免費保固 攔截 |
+| 越權嘗試 audit | FR-0030 | AC-01 log + alert |
+| hard block 觸發 handoff | FR-0030 | AC-01 危險字命中 → 強制 transfer_to_human |
 
 ## 相關
 - 主檔 Flow S1：[`../user-flow-smart-lock-saas.md#flow-s1`](../user-flow-smart-lock-saas.md)

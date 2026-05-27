@@ -74,9 +74,9 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| health probe | FR-TBD-A11-001 | AC-01 facts_db ping / AC-02 audit_db ping |
-| DB reconnect | FR-TBD-A11-002 | AC-01 連 3 次 retry / AC-02 fail 後 alert |
-| deploy gate | FR-TBD-A11-003 | AC-01 health pass 才放行 |
+| health probe | FR-0033 | AC-01 facts_db ping / AC-02 audit_db ping |
+| DB reconnect | FR-0033 | AC-01 連 3 次 retry / AC-02 fail 後 alert |
+| deploy gate | FR-0033 | AC-01 health pass 才放行 |
 
 ## 相關
 - 主檔：[`../user-flow-smart-lock-saas.md`](../user-flow-smart-lock-saas.md)

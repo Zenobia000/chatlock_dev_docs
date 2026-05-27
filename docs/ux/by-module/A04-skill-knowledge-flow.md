@@ -63,7 +63,7 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| skill load | FR-TBD-A04 | AC-01 router 引導 / AC-02 metadata 控制 brand/model |
+| skill load | FR-0029 | AC-01 router 引導 / AC-02 metadata 控制 brand/model |
 
 ## 相關
 - 主檔：[`../user-flow-smart-lock-saas.md#flow-s1`](../user-flow-smart-lock-saas.md)

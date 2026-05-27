@@ -85,9 +85,9 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| handoff trigger | FR-TBD-A07-001 | AC-01 急件 / AC-02 hard block / AC-03 連 3 輪 / AC-04 客戶主動 |
-| facts 帶過 | FR-TBD-A07-002 | AC-01 phone/address/device/media/history 完整 |
-| SLA enforcement | FR-TBD-A07-003 | AC-01 emergency 5min / AC-02 escalate breach |
+| handoff trigger | FR-0018 | AC-01 急件 / AC-02 hard block / AC-03 連 3 輪 / AC-04 客戶主動 |
+| facts 帶過 | FR-0018 | AC-01 phone/address/device/media/history 完整 |
+| SLA enforcement | FR-0018 | AC-01 emergency 5min / AC-02 escalate breach |
 
 ## 相關
 - 主檔 Flow S1：[`../user-flow-smart-lock-saas.md#flow-s1`](../user-flow-smart-lock-saas.md)

@@ -65,8 +65,8 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| completeness gate | FR-TBD-S-M03-001 | AC-01 score ≥ 0.85 → confirmed |
-| ERP sync | FR-TBD-S-M03-002 | AC-01 idempotent / AC-02 DLQ fallback |
+| completeness gate | FR-0037 | AC-01 score ≥ 0.85 → confirmed |
+| ERP sync | FR-0037 | AC-01 idempotent / AC-02 DLQ fallback |
 
 ## 相關
 - 主檔 Flow S1：[`../user-flow-smart-lock-saas.md#flow-s1`](../user-flow-smart-lock-saas.md)

@@ -66,9 +66,9 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| decision_log | FR-TBD-A12-001 (Phase II) | AC-01 ts/who/status/source 完整 |
-| source trace | FR-TBD-A12-002 (Phase II) | AC-01 link to ADR/spec/PRD |
-| reviewer workflow | FR-TBD-A12-003 (Phase II) | AC-01 assign + approve/reject |
+| decision_log | FR-0050 (Phase II) | AC-01 ts/who/status/source 完整 |
+| source trace | FR-0050 (Phase II) | AC-01 link to ADR/spec/PRD |
+| reviewer workflow | FR-0050 (Phase II) | AC-01 assign + approve/reject |
 
 ## 相關
 - 主檔：[`../user-flow-smart-lock-saas.md`](../user-flow-smart-lock-saas.md)

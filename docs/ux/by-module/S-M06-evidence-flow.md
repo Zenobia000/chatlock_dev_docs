@@ -68,9 +68,9 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| 拍照 / 簽名 / 報告 | FR-TBD-S-M06-001 | AC-01 multimodal capture / AC-02 必填項 |
-| upload + ERP append | FR-TBD-S-M06-002 | AC-01 idempotent / AC-02 DLQ |
-| RMA / 爭議 reference | FR-TBD-S-M06-003 | AC-01 evidence chain 可追溯 |
+| 拍照 / 簽名 / 報告 | FR-0040 | AC-01 multimodal capture / AC-02 必填項 |
+| upload + ERP append | FR-0040 | AC-01 idempotent / AC-02 DLQ |
+| RMA / 爭議 reference | FR-0040 | AC-01 evidence chain 可追溯 |
 
 ## 相關
 - 主檔 Flow S2：[`../user-flow-smart-lock-saas.md#flow-s2`](../user-flow-smart-lock-saas.md)

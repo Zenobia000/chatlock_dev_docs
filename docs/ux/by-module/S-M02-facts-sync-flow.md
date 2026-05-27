@@ -69,8 +69,8 @@ stateDiagram-v2
 ## FR 反向指
 | Step | FR | AC |
 |:---|:---|:---|
-| PII tokenize | FR-TBD-S-M02-001 | AC-01 vault 前置 |
-| SCD2 historize | FR-TBD-S-M02-002 | AC-01 變更保留歷史 / AC-02 idempotent skip |
+| PII tokenize | FR-0036 | AC-01 vault 前置 |
+| SCD2 historize | FR-0036 | AC-01 變更保留歷史 / AC-02 idempotent skip |
 
 ## 相關
 - 主檔：[`../user-flow-smart-lock-saas.md`](../user-flow-smart-lock-saas.md)

@@ -148,15 +148,15 @@ flowchart TD
 
 | Step | FR 反向指 | AC |
 |:-----|:----------|:---|
-| edit config draft | FR-TBD-M18-001 | AC-01 admin 編輯 draft + autosave |
-| schema validation 前置 | FR-TBD-M18-002 | AC-01 validation pass / AC-02 validation fail message |
-| 主管 approve + effective_date | FR-TBD-M18-003 | AC-01 single approve / AC-02 dual sign for high-risk |
-| staged rollout 10% → 50% → 100% | FR-TBD-M18-004 | AC-01 canary pass / AC-02 canary fail auto rollback / AC-03 full rollout cache invalidation |
-| cache invalidation broadcast | FR-TBD-M18-005 | AC-01 sub-second propagation |
-| audit view | FR-TBD-M18-006 | AC-01 filter by domain/actor/date / AC-02 diff view / AC-03 retention ≥ 7y |
-| rollback ≤ 24h window | FR-TBD-M18-007 | AC-01 within window staged rollback / AC-02 beyond window block |
-| reason code 維護 | FR-TBD-M18-008 | AC-01 ChangeRequest / AC-02 staged rollout |
-| role permission matrix | FR-TBD-M18-009 | AC-01 SoD 雙簽 high-risk / AC-02 validation 擋越權設定 |
+| edit config draft | FR-0043 | AC-01 admin 編輯 draft + autosave |
+| schema validation 前置 | FR-0043 | AC-01 validation pass / AC-02 validation fail message |
+| 主管 approve + effective_date | FR-0043 | AC-01 single approve / AC-02 dual sign for high-risk |
+| staged rollout 10% → 50% → 100% | FR-0043 | AC-01 canary pass / AC-02 canary fail auto rollback / AC-03 full rollout cache invalidation |
+| cache invalidation broadcast | FR-0043 | AC-01 sub-second propagation |
+| audit view | FR-0043 | AC-01 filter by domain/actor/date / AC-02 diff view / AC-03 retention ≥ 7y |
+| rollback ≤ 24h window | FR-0043 | AC-01 within window staged rollback / AC-02 beyond window block |
+| reason code 維護 | FR-0043 | AC-01 ChangeRequest / AC-02 staged rollout |
+| role permission matrix | FR-0043 | AC-01 SoD 雙簽 high-risk / AC-02 validation 擋越權設定 |
 
 ---
 
