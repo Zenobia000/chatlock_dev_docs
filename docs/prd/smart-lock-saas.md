@@ -1,9 +1,15 @@
 # PRD — 智慧鎖 AI 客服與派工平台
 
-> **狀態**：v2.2 frozen，給開發團隊接手（OQ 全 closed）
-> **更新**：2026-05-24
+> **狀態**：v2.3 — Final Spec 2026-05-20 Adoption + Chatbot Phase Scope Finalize（v2.2 內容保留，新增 §E 對齊章節）
+> **更新**：2026-05-28（v2.3 — Roundtable B + A4 chatbot KPI cascade）/ 2026-05-27（v2.3 §E baseline）/ 2026-05-24（v2.2）
 > **負責人**：PM
-> **版本**：v2.2（吸收 2 場 roundtable owner verdict — Option A 降級履約 + Voucher keeper 路線）
+> **版本**：v2.3（吸收 2026-05-20 final spec — M01-M20 ERP + A01-A12 Chatbot + S M01-M06 Sync；roundtable 2026-05-27 + 2026-05-28 共識 + 業主 Q1-Q4 / Q-OF1-Q-OF2 全採納建議；補 Chatbot Phase I/II 5 條 KPI counter-metric）
+>
+> **🆕 v2.3 新增**：本 PRD 範圍從「智慧鎖 AI 客服與派工平台」（M01/M03/M06 子集）擴大成 **全 M01-M20 ERP + Chatbot + Sync 三向矩陣**。詳見末段 **§E Final Spec 2026-05-20 Adoption**。v2.2 內容全部保留作 audit trail（治理模式 D2 supersede policy），不刪除。
+>
+> **🔗 Source spec**: [`docs/_source/01-workorder-erp.md`](../_source/01-workorder-erp.md) · [`docs/_source/02-ai-chatbot-sync.md`](../_source/02-ai-chatbot-sync.md)
+> **🔗 Roundtable MoM**: [Roundtable A 2026-05-27 final-spec-migration-strategy](../../.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md) · [Roundtable B 2026-05-28 user-flow-IA-strategy](../../.claude/context/devteam/meetings/2026-05-28-1200-user-flow-IA-strategy/MoM.md)
+> **🔗 Cross-ref**: [ADR-0067 M18 Runtime Config Governance](../architecture/adr/ADR-0067-m18-runtime-config-governance.md)（Phase 0 critical path）
 
 ---
 
@@ -307,8 +313,178 @@
 
 ---
 
-**End of PRD v2.1**
+**End of PRD v2.1 / v2.2 內容**
 
 > 業主 / PM 主要看的是：**📋 一頁讀完** + **🎯 為什麼要做** + **📊 KPI** + **⚠️ 風險** + **⚠️ 還沒答的問題** + **🚀 上線計畫**。
 >
 > 折疊區的技術 Appendix 是開發團隊用的，業主可略過。
+
+---
+
+## §E Final Spec 2026-05-20 Adoption（v2.3 新增）
+
+> 本章為 v2.3 新增。對應 2026-05-20 final spec（兩份 xlsx）+ 2026-05-27 roundtable 決議 + 業主 Q1-Q4 全採納建議。
+> 與 §A-D 並存（治理模式 D2 — 不刪舊內容、加新章節為主）。
+
+### §E.1 範圍擴張
+
+| 維度 | v2.2 範圍 | v2.3 擴張範圍 |
+|:-----|:----------|:--------------|
+| 主題 | 智慧鎖 AI 客服與派工平台 | 智慧鎖工單 ERP + AI Chatbot + Sync 三向矩陣 |
+| 模組 | 對應 M01 / M03 / M06 / M11 子集 | 全 M01-M20 (20 個 ERP) + A01-A12 (12 個 Chatbot) + S M01-M06 (6 個 Sync) |
+| Phase | V1 / V2 | Phase 0 / Phase I / Phase II / Phase III / Phase IV / Phase V |
+| FR 數 | 25 (FR-0001~FR-0025) | 25 + 估 +18 (Phase I 補 A01-A12 / S M01-M06) + 估 +8 (Phase II) ≈ **51** |
+| KPI 視角 | AI 客服 + 派工為主 | 增加 chatbot 模組層 KPI 與 counter-metric（見 §E.3） |
+| Configurable rule 治理 | hard-code 為主 | 全面 runtime config (ADR-0067 治理) |
+
+### §E.2 Phase Scope（roundtable D3 + 業主 Q2=C 採納）
+
+| Phase | 名稱 | Coding 狀態 | ERP 模組 | Chatbot 模組 | Sync 模組 | Exit Criteria 概要 |
+|:------|:-----|:-----------|:---------|:-------------|:----------|:-------------------|
+| **Phase 0** | Blueprint Freeze / System Setup | 可開始 | M17/M18 RBAC + Config + audit | A05 Guardrails + A11 Health | — | 服務項目、價格表、SLA、角色、狀態、template、approval owner 可設定；**ADR-0067 M18 config 治理 freeze**（critical path） |
+| **Phase I (MVP)** | Market Launch Core + Chatbot Core + Sync Core | 可開始 coding | M01-M06, M08, M09, M11, M13(基礎), M15, M16, M19(基礎) | A01-A09 (含 A06 ProblemCard Bridge + A09 Eval & Obs) | S M01-M06 全部（M04 ConvertToWO 強制 human gate） | 可跑標準案件、急件、改派、加價、取消、退款申請、基本報表；**A12 (Governance) 延 Phase II（Q2=C）** |
+| **Phase II** | Finance / Settlement + Chatbot Governance | 可開始 coding，全部 configurable | M11 完整 + M12 月結 + M15 異常深化 | **A12 Governance & PRD Trace（從 Phase I 延）** + A10 SOP Feedback 深化 | sync 對齊 finance event | 付款與月結可 export、可審核、可追 evidence、可調 config |
+| **Phase III** | Partner / B2B / Warranty | 後續階段 | M14 Partner Portal + M13 完整 + M10 完整 | partner/builder/warranty context aware | partner B2B sync | Partner visibility / contract rule / warranty responsibility 正式定義 |
+| **Phase IV** | AI Ops / Governance 深化 | 後續階段，guardrails 先做 | M20 AI Ops | RAG/SOP versioning, Eval, feedback loop, quality review | AI action/event/audit 對齊 ERP rule version | AI 回答有來源、有版本、有評測、有 rollback |
+| **Phase V** | BI / KPI Scale | 後續階段 | M19 完整 BI/KPI | resolution/handoff/failure/cost/latency dashboard | BI event 對齊 | KPI 依真實資料穩定，管理層可用報表做決策 |
+
+**Phase III/IV/V 骨架原則（roundtable D3）**：只列 module ID + owner + scope intent + out-of-scope bullet，**不寫 NFR baseline**；NFR 等該 phase 進入 Gate1 再補。
+
+### §E.3 Chatbot 層 KPI / Counter-metric（roundtable D3 PM 收尾 + Q2=C）
+
+> 補在 §KPI 之後。FR 內 G/W/T 走 per-FR per-acceptance；本表是 per-module outcome。
+> 對應 [`docs/_source/02-ai-chatbot-sync.md`](../_source/02-ai-chatbot-sync.md) §07 Eval品質系統。
+
+| 編號 | 指標 | 目標 | 適用模組 | 怎麼量 | Counter-metric |
+|:-----|:-----|:-----|:--------|:-------|:--------------|
+| **K-AI-1** | Chatbot 準確率（accuracy）| ≥ **85%**（v2.3 提升自 §K1 80%）| A03 ReAct Agent | Eval corpus（A09 Eval & Obs 提供）每 deploy 跑 | C-AI-1: 違禁區事件 < 1 / 萬次對話（同 §C1）|
+| **K-AI-2** | Human handoff rate（人工接手率）| ≤ **30%** | A07 Human Handoff | per session / per day | C-AI-2: AI 主動轉真人比 ≤ 25%（同 §C2）|
+| **K-AI-3** | ProblemCard 自動建立成功率 | ≥ 70%（draft → confirmed by human）| A06 ProblemCard Bridge | per intake → per ProblemCard | C-AI-3: ProblemCard re-edit rate ≤ 20%（避免 AI 草擬太差）|
+| **K-AI-4** | Guardrails 攔截率 | 100%（任何禁區 P0 都必須被攔下）| A05 Guardrails | 紅軍測試 / regression | — |
+| **K-AI-5** | Multimodal 理解正確率 | ≥ 75%（image-to-symptom mapping）| A08 Multimodal | 帶圖案件抽樣 review | C-AI-5: false confidence rate ≤ 5%（AI 答錯但 high confidence 比率）|
+| **K-AI-6** | RAG 引用率 | ≥ 90%（AI 回覆引用有來源 chunk）| A04 RAG Pipeline | A09 Eval 自動標記 | C-AI-6: stale source rate ≤ 10%（超過 effective_date 但被引用比率）|
+| **K-AI-7** (2026-05-28 cascade) | Chatbot intent classification accuracy | ≥ **85%** | A03 ReAct Agent | weekly eval set（A09 Eval 自動跑）| C-AI-7: handoff rate **不應 < 5%**（假同意風險 — AI 過度自信代替合理升級）|
+| **K-AI-8** (2026-05-28 cascade) | Human handoff rate | ≤ **30%** | A07 Human Handoff | LINE message / handoff event count | C-AI-8: SOP 命中率 ≥ 80%（避免 AI 不會卻假裝會，硬撐到 handoff）|
+| **K-AI-9** (2026-05-28 cascade) | Debounce window | **800ms ± 100ms** | A01 Channel Intake & Debounce | client-side timer p95 | C-AI-9: false-trigger rate < 1%（debounce 太短導致斷句誤判）|
+| **K-AI-10** (2026-05-28 cascade) | Multimodal fallback rate（photo too blurry / unsupported format）| < **15%** | A08 Multimodal Understanding | A09 telemetry — image quality reject event | C-AI-10: 強制 handoff 後 24h 內客訴率 ≤ 5%（防 fallback 變成棄案）|
+| **K-AI-11** (2026-05-28 cascade, **Phase II**) | Long-tail KB hit rate | ≥ **60%** | A04 RAG Pipeline + A12 Governance | RAG retrieval log（A09 標記）| C-AI-11: 答非所問率 < 5%（KB 命中但 retrieval 內容不對 prompt）|
+
+> **K-AI-1 vs §K1 關係**：§K1 (AI 準確率 ≥ 80%) 是 v2.2 合約承諾值；K-AI-1 是 v2.3 內部目標（向 ≥ 85% 對齊新規格 P0-20 AI 邊界）。合約底線仍 80%，team 內部 chase 85%。
+>
+> **K-AI-7 ~ K-AI-11 補充說明**（2026-05-28 業主裁決 cascade）：
+> - 全部對應 roundtable A Q2=C：A06 + A09 Phase I MVP / A12 Phase II
+> - K-AI-9 debounce 800ms 與 §10 spec source「1.5 秒」差異 → 採本 PRD 800ms ± 100ms 為內部目標（更貼近使用者感知 < 1s）；spec source 為極限上限，coding 階段以本表為準
+> - K-AI-7 ~ K-AI-10 為 **Phase I**；K-AI-11 為 **Phase II**
+> - 所有 counter-metric 都禁止 vanity gaming（防 AI 把困難 case 一律轉真人灌準確率、或把困難圖一律拒絕灌 multimodal 通過率）
+
+### §E.4 Sync 層 Gate（roundtable + spec §13 Chatbot對ERP）
+
+> 對應 [`docs/_source/02-ai-chatbot-sync.md`](../_source/02-ai-chatbot-sync.md) §14 Sync 架構 + §24 Sync對ERP。
+
+| Sync Gate | 規則 | Phase | Owner |
+|:----------|:-----|:------|:------|
+| **G-Sync-1 Quote gate** | 客戶只看實收總額；內部看成本拆分 | Phase I | AI Specialist + Accounting |
+| **G-Sync-2 Payment gate** | WorkOrder 可進行僅當所需訂金/付款證明已收到 | Phase I | AI Specialist + Accounting |
+| **G-Sync-3 AI convert-to-WorkOrder gate** | Phase I 強制 human confirmation；Phase IV 可考慮低風險自動化 | Phase I | AI Specialist / Operator Leader |
+| **G-Sync-4 Exception approval gate** | 保固不明、高風險、退款、安全/法律、客戶拒加價 → 暫停等核准 | Phase I | AI Specialist / Supervisor |
+| **G-Sync-5 Cancellation/travel/refund fee** | 不可 hardcode；走 M18 config（ADR-0067 治理）；金額未定前走 manual approval note | Phase I (manual-first) | Accounting |
+| **G-Sync-6 Communication templates** | quote/photo/payment/dispatch/delay/extra-price/completion/RMA/refund 都要 approved templates | Phase I | AI Specialist / Operator Leader |
+| **G-Sync-7 RBAC/audit** | 無 brand/locksmith all-access；can-view/can-edit/can-approve 分離 | Phase I | AI Specialist / System Admin |
+
+### §E.5 Module Scope Mapping（v2.2 FR ↔ v2.3 module 對照）
+
+> 完整 mapping 在 [`docs/_index/by-module/`](../_index/by-module/)（A3 task 產出）。本段給高層視圖。
+
+| v2.2 FR 範圍 | v2.3 主要對應 module |
+|:-------------|:---------------------|
+| FR-0001 line-intake | M01 + A01 |
+| FR-0002 problem-card-triage | M03 + A06 |
+| FR-0003 auto-dispatch / FR-0004 manual-dispatch | M06 + M07 |
+| FR-0005 technician-accept / FR-0006 onsite-photo / FR-0009 completion-sign | M07 + M08 + M09 |
+| FR-0007 material-request | M10 + M15 |
+| FR-0008 scope-change / FR-0010 reschedule-delay / FR-0013 dual-sign-dispute | M15（cross-cutting）|
+| FR-0011 consumer-payment / FR-0014 refund / FR-0015 warranty-claim | M11 + M13 |
+| FR-0012 monthly-settlement | M12 |
+| FR-0016 sla-2hr-soft / FR-0024 line-webhook-ha | **搬到 NFR matrix**（業主 Q3=A） |
+| FR-0017 sop-draft-review / FR-0018 cs-takeover | M20 + A10 |
+| FR-0019 rbac-dynamic / FR-0020 audit-log-export | M17 |
+| FR-0021 dashboard-reports | M19 |
+| FR-0022 consumer-tracking | M01 + M16 |
+| FR-0023 error-offline-page | M18 / M11 / NFR |
+| FR-0025 multimodal-understanding | A08 |
+
+**新增 FR-0026~ Phase I（估 +18 條）**：A01-A12 整批 + S M01-M06 整批 + M02/M04/M07/M09/M10/M18/M20 缺漏覆蓋。
+**新增 FR-0044~ Phase II（估 +8 條）**：M12 / M14 / M13 完整 / A12 Governance 等。
+
+### §E.6 與 v2.2 KPI 對齊備註
+
+| v2.2 KPI | v2.3 對齊處理 |
+|:---------|:--------------|
+| K1 AI 準確率 ≥ 80% | 保留為合約底線；新增 K-AI-1 ≥ 85% 為內部目標 |
+| K2 自助解決率 ≥ 60% | 保留；對應 K-AI-2 (handoff ≤ 30%) 為 counter-metric |
+| K3 family reviewer event log | 保留；併入 M17 audit + ADR-VCH-002 retention |
+| K4 ~~ProblemCard 完整率~~ | v2.2 已 V1 移除；v2.3 換 **K-AI-3 ProblemCard 自動建立成功率** |
+| K5 接單 SLA | 保留；對應新 spec P0「一般 10 分鐘 / 急件 5 分鐘」 |
+| K6/K7/K8/K9 | 全部保留，不變 |
+| K11 月結匯出退件率 ≤ 5% | 保留，對應新 spec M12 |
+
+### §E.7 業主 Open Questions 決議追蹤（roundtable 2026-05-27）
+
+| # | 問題 | 業主決議 | 影響本 PRD 段 |
+|:--|:-----|:--------|:--------------|
+| Q1 | Phase 0/I 有對外承諾日嗎？ | **B 無，按 phase quality 推進** | §E.2 phase 不綁時程，僅內部目標 |
+| Q2 | Chatbot A06/A09/A12 是否納 Phase I MVP？ | **C — A06+A09 Phase I，A12 Phase II** | §E.2 Phase I / Phase II module 欄已套 |
+| Q3 | FR-0016 / FR-0024 NFR-flavored 搬 NFR doc？ | **A 搬** | §E.5 已標「搬到 NFR matrix」；A3 task 執行 cascade |
+| Q4 | ADR-100 是否走 Lane A critique？ | **C — Reviewed Still Valid 那批走 Lane A，supersede 那批直接 merge** | §E §C Decision Log cascade（A2 task 執行） |
+
+### §E.8 v2.3 新增 ADR 對齊（補在 §C Decision Log）
+
+| ADR | 主題 | 狀態 |
+|:----|:-----|:----|
+| **ADR-0067** (new) | M18 Runtime Configuration Governance — Phase 0 critical path blocker | ✅ accepted (2026-05-27) |
+| **ADR-0100** (TBD) | Legacy ADR Supersede Index — 70+ ADR 逐條評估對照表 | ⏳ A2 task 進行中 |
+| **ADR-NEXT** | 跨 M18 邊界 Anti-corruption Layer（Config Read API spec）| ⏳ ADR-0067 follow-up |
+
+### §E.9 Decision Log（dated entries — v2.3 cascade）
+
+> 列已裁決事項與 source-of-truth 連結。新事項往下追加，不修舊條。
+
+| Date | Decision | Source / MoM | Impacted PRD sections |
+|:-----|:---------|:-------------|:----------------------|
+| 2026-05-22 | v2.1 / v2.2 PRD 全 11 條 OQ closed（family reviewer Option A 降級履約、第二甲方延後、Epic 4 升回 V1、voucher V1 內部）| 3 場 Forum final report + Gate1 review | §OQ、§K3、§K11、§C ADR-VCH/PIVOT |
+| 2026-05-24 | OQ-007 voucher 路線（Platform = keeper / 7y retention）+ ADR-VCH-001/002 + ADR-PIVOT-001 accepted | Roundtable #2 + 業主裁決 | §C Decision Log、§K11 |
+| **2026-05-27** | **Roundtable A — final-spec-migration-strategy**：IA hybrid (D1)、ADR supersede 策略 + ADR-100 (D2)、Phase 0/I/II 寫完整 / III-V 骨架 (D3)、Excel SoT + auto-dump (D4)、FR 殼 + rule 搬 BR (D5)、M18 config 治理納 Phase 0 critical path → ADR-0067 (D6)。業主 Q1=B / Q2=C / Q3=A / Q4=C | [`.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md`](../../.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md) | §E 全章 |
+| **2026-05-28** | **Roundtable B — user-flow-IA-strategy**：user flow IA hybrid + by-module 子檔 (D1)、Chatbot 對話流呈現 = sequence + state + scripted dialogue 寫 FR 殼 (D2)、user flow journey level vs FR 殼 atomic step 粒度切分 (D3)、M18 admin journey = 主檔 Flow S5 (D4)、wireframe 抽獨立檔 (D5)。業主 Q-OF1=B / Q-OF2=A (WCAG 2.2 AA) | [`.claude/context/devteam/meetings/2026-05-28-1200-user-flow-IA-strategy/MoM.md`](../../.claude/context/devteam/meetings/2026-05-28-1200-user-flow-IA-strategy/MoM.md) | §UX、§E.2、§K-AI-* |
+| **2026-05-28** | **Chatbot Phase scope finalize**（A4 cascade）：A06 ProblemCard Bridge + A09 Eval & Observability 納 Phase I MVP（業主 Q2=C）；A12 Governance & PRD Trace 延 Phase II。新增 K-AI-7 ~ K-AI-11 共 5 條 chatbot KPI / counter-metric | 本 PRD §E.3 + cascade context pack §3.2 A4 | §E.3、§E.2 |
+
+### §E.10 Stakeholder Map / Impact Assessment（v2.3 cascade）
+
+> 本次 cascade 影響的 stakeholder 與其行動需求。對應 [`docs/governance/stakeholders.md`](../governance/stakeholders.md) baseline。
+
+| Stakeholder 分類 | 角色 | 本次 cascade 影響 | 行動需求 |
+|:----------------|:-----|:------------------|:--------|
+| **Business** | 業主 / 出資方 | Q1=B 無對外承諾日（quality-first），財務壓力轉內部 phase 節奏 | 接受 Phase 推進需求；準備 Phase II finance / settlement 資源 |
+| **Business** | 客服主管 + AI Ops Lead | A06+A09 Phase I 上線後雙簽 AI Employee；新 KPI K-AI-7 ~ K-AI-10 進入週報 | Approval chain on K-AI 4-週滾動審視；準備 handoff rate 異常 SOP |
+| **Business** | 法務 / DPO | 與 v2.2 同（家族覆核 retrospective + 個資 GDPR + 個資法）| 無新動作 |
+| **Dev** | AI engineer | A06 ProblemCard Bridge + A09 Eval pipeline Phase I 必交；K-AI-9 debounce 800ms 客戶端實作 | Phase I coding 啟動，先行 KB v2.3 對齊 |
+| **Dev** | Knowledge owner | A04 RAG 質量、A12 governance Phase II 才接 | Phase I 保持 RAG citation ≥ 90%；Phase II 接 K-AI-11 long-tail KB |
+| **Dev** | Backend / ERP | A06 → M03 ProblemCard sync + S M03 ConvertToWO 強制 human gate | 同 cascade A3 task；無新增 onboarding 需求 |
+| **Dev** | SRE / DevOps | A09 telemetry + A11 deployment health + 新 K-AI-9 ~ K-AI-10 監控 dashboard | 加 4 條新 dashboard alert（accuracy / handoff / debounce p95 / multimodal fallback） |
+| **Ops** | Data steward | A02 brand/model master data 對齊 Phase I | 同 v2.2，無新動作 |
+| **Ops** | QA / Eval owner | K-AI-7 weekly eval set + K-AI-10 強制 handoff 24h 客訴抽查 | 補 corpus 與 sampling 排程 |
+
+**業主 Q (open)：對 chatbot Phase I 訂的 KPI 是否需要新增運營資源？**
+
+- **AI Ops Lead**（既有）：KPI K-AI-7/8/10 加進 4-週滾動審視，**不需** 新增 headcount，但需擴充 weekly eval batch size（67 → 300 cases，AI QA 半人月 ramp-up）
+- **客服 hub**（既有）：handoff rate ≤ 30% 在現有客服 capacity 內可吸收（V1 50 同時在線 → 至多 15 人/min handoff，遠低於目前 30 人 / min 容量）
+- **SRE on-call**（既有）：4 條新 alert 走既有 PagerDuty rotation，無新 headcount
+- **NEW resource ask**: K-AI-11 (Phase II) long-tail KB ≥ 60% 需要 Knowledge owner 半人月做 long-tail corpus expansion（M20 AI Ops scope，列入 Phase II planning）
+
+→ **結論：Phase I 不需新增運營資源；Phase II long-tail KB 需 Knowledge owner 半人月 budget（已標 [VALUE_DECISION_NEEDED] 待業主 Phase II planning 時裁決）**
+
+---
+
+**End of PRD v2.3**
+
+> v2.3 採「最小破壞性 + 治理模式 D2 supersede」：v2.2 內容全部保留，本 §E 為對齊新規格新增章節；引用 §A-D 處皆未改。
+> 完整 v2.3 cascade 路徑見 `13_doc_migration_playbook.md` §3 Cascade 順序：本 PRD 更新後，下游 ERD / OpenAPI / NFR matrix / test plan / runbook 由 A3 與後續 driver skill 處理。
