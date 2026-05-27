@@ -1,0 +1,98 @@
+name: Excel Source-of-Truth Auto-Dump
+
+# Triggers: 任何 .xlsx 變動觸發；手動可 dispatch
+on:
+  push:
+    paths:
+      - '*.xlsx'
+      - 'tools/dump_xlsx.py'      # script 變動也重跑
+      - '.github/workflows/excel-dump.yml'
+  workflow_dispatch:               # 手動觸發
+  schedule:
+    - cron: '0 0 * * 1'            # 週一凌晨 backup re-dump（防 drift）
+
+permissions:
+  contents: write                  # commit markdown mirror back
+
+jobs:
+  dump:
+    name: Dump XLSX → docs/_source/
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install openpyxl
+
+      - name: Verify dump script exists
+        run: |
+          if [ ! -f tools/dump_xlsx.py ]; then
+            echo "tools/dump_xlsx.py not found — initial setup pending"
+            exit 1
+          fi
+
+      - name: Run dump
+        run: |
+          mkdir -p docs/_source
+          python3 tools/dump_xlsx.py
+
+      - name: Detect changes
+        id: diff
+        run: |
+          git add docs/_source/
+          if git diff --staged --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "✅ No changes to docs/_source/"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "📝 Changes detected — preparing commit"
+            git diff --staged --stat
+          fi
+
+      - name: Commit & push if changed
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(source): auto-dump xlsx → docs/_source/ (D4 SoT mirror)
+
+Triggered by: ${{ github.event_name }} on ${{ github.ref }}
+Files changed: see diff above
+Per ADR Roundtable D4 governance — markdown mirror auto-sync from xlsx master.
+"
+          git push
+
+      - name: Freshness check warning
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          echo "::warning::Source spec drift detected. Downstream FR/ADR may need cascade review."
+          echo "業主請 review docs/_source/ commit diff，確認新 spec 變動是否需 trigger A2.4 critique 或 FR cascade rewrite。"
+
+  validate:
+    name: Validate dump integrity (Post-dump check)
+    runs-on: ubuntu-latest
+    needs: dump
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check no orphan FRs introduced
+        run: |
+          if [ -f tools/traceability_matrix.py ]; then
+            pip install openpyxl pyyaml
+            python3 tools/traceability_matrix.py 2>&1 | tee /tmp/traceability.log
+            orphan_count=$(grep "Orphan FR:" /tmp/traceability.log | awk '{print $3}')
+            if [ "$orphan_count" -gt 0 ]; then
+              echo "::warning::Orphan FR count = $orphan_count (after xlsx update). Check fr-mapping cascade."
+            else
+              echo "✅ No orphan FR after xlsx update."
+            fi
+          else
+            echo "::warning::tools/traceability_matrix.py not found — skip validation"
+          fi
