@@ -176,6 +176,77 @@
 
 ---
 
+## ADR Supersede Chain 判定規則
+
+> Source: Roundtable A (2026-05-27) D2 + 業主 Q4=C。
+> 此段補 Gate 4 (NFR + ADR Baseline) freeze 前的 supersede 判定 SOP；boundary criteria 在 [`13_doc_migration_playbook §8`](13_doc_migration_playbook.md) 有完整 case study。
+
+### 判定三類
+
+| 類別 | Status 標記 | 判定門檻 | 處置流程 |
+|:-----|:------------|:---------|:---------|
+| **已覆寫** | `Status: Superseded by <ADR-or-clause>` | 同時滿足 C1+C2+C3（[ref: KB-13 §8.1]） | Architect 直 merge（Q4=C），不走 Lane A |
+| **仍 valid** | `Status: Reviewed, Still Valid Under M-NN` | 任一滿足 V1/V2/V3（[ref: KB-13 §8.2]） | 走 Lane A critique（arch+sa+pm 三方），業主裁決 |
+| **部分覆寫** | `Status: Partially Superseded` | 能拆 sub-decision，部分衝突部分仍 valid（[ref: KB-13 §8.3]） | 拆寫補充 ADR；強制 Lane A critique |
+
+### 「已覆寫」criteria（必三條全 yes）
+
+被歸為 Superseded 必須符合：
+
+- **C1: 直接衝突** — 新規格 P0 規則 / BR clause 與舊 ADR Decision 段落核心結論不可共存
+- **C2: 同一 scope** — 新規格覆寫範圍與舊 ADR scope 完全或近完全重疊
+- **C3: 無共存路徑** — 不存在同時 honor 舊 ADR + 新規格的實作方案
+
+若三條只滿足 1-2 條 → 走「部分覆寫」或「仍 valid」判定。
+
+### 「仍 valid」criteria（任一即可）
+
+- **V1: 架構/技術選型基底未變** — ADR 講技術基底（DB / framework / cache），新規格只動 business rule
+- **V2: 新規格未蓋過 ADR scope** — module 拆分沒涵蓋 ADR 的 cross-cutting 主題
+- **V3: ADR Context 段部分過時但 Decision 仍適用** — Decision 段描述的決策原則對新模組仍適用，只是 Context 提到的舊模組名稱已過時
+
+### Boundary case（部分覆寫）
+
+當 ADR 含 N 個 sub-decision 但新規格只覆寫其中 M 個（M < N）：
+
+```
+是否能拆 sub-decision？
+├─ 是 → 標 status: partially_superseded
+│       frontmatter:
+│         superseded_clauses:
+│           - "Decision §2.1 by <new-ADR>"
+│         still_valid_clauses:
+│           - "Decision §2.2, §4"
+│       Lane A critique 必走（不可 Architect 單獨 merge）
+│
+└─ 否（單一 Decision 段、模糊不一致）→ 強制 Lane A critique
+   critique 結論：
+     ├─ 多數實質衝突 → 升 Superseded
+     └─ 多數可詮釋仍 valid → Reviewed_Still_Valid + 加 "Interpretation Note"
+```
+
+### Lane 路由規則
+
+| Status | Review Lane | Reviewer | 業主介入點 |
+|:-------|:-------------|:---------|:-----------|
+| Superseded（C1+C2+C3） | — (直 merge) | Architect | ADR-100 簽核 |
+| Partially Superseded | Lane A strict | arch + sa + pm | critique report 簽核 |
+| Reviewed Still Valid | Lane A standard | arch + sa | critique report 簽核 |
+| 模糊不可判 | 升 Lane B Forum-Lite | proposer + critics | facilitator 三訊號 AND 後升業主 |
+
+### Gate 4 ADR Baseline evidence 強制項
+
+當 cascade 大量 ADR 時（如本次 73 個 ADR），Gate 4 evidence 額外加：
+
+- [ ] ADR-100 supersede index 已建（列所有 ADR + status + reviewer）
+- [ ] 所有 `superseded` 標記的 ADR 已 frontmatter 更新 `superseded_by` + `superseded_on` + `superseded_reason`
+- [ ] 所有 `partially_superseded` ADR 已新增補充 ADR 或在 ADR-100 內註明拆分
+- [ ] CI 跑 traceability matrix tool，§6 Health Issues `broken_supersede` count = 0
+
+[ref: KB-13 §2 ADR Supersede 判定樹]、[ref: KB-13 §8 邊界 criteria]
+
+---
+
 ## Evidence 儲存
 
 每個 gate 的 evidence 寫入 `.claude/context/devteam/evidence/<gate>-<feature>-<date>.md`，至少含：

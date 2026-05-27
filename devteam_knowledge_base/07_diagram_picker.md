@@ -255,6 +255,124 @@ flowchart TD
 
 ---
 
+## 5.5 Chatbot Multimodal + 多輪異步 Diagram Picker
+
+> Source: Roundtable B (2026-05-28) D2 — Chatbot A01-A12 對話流呈現形式。
+> 場景：使用者透過 LINE / Web Chat 與 AI bot 交握，含 debounce 等待、ReAct loop、guardrails 中斷、handoff 給真人、multimodal 輸入（文字 + 圖片）。
+
+### 5.5.1 為什麼單一 flowchart 不夠
+
+| 表達需求 | flowchart 為何不適 |
+|:---------|:--------------------|
+| 多 actor 交握（user / AI / orchestrator / handoff agent / external tool） | flowchart 沒有 actor 軸，誰呼誰看不出來 |
+| 異步等待（debounce window / streaming response） | flowchart 沒有時間軸，等待 vs 處理混在一起 |
+| 對話 session 生命週期（idle / typing / waiting_ai / handoff_queued / handoff_active / fallback / ended） | flowchart 表流程不表狀態，state 轉換用 condition node 表達會爆 |
+| 中斷與恢復（guardrails 拒答、tool call 失敗、超時重試） | flowchart 的中斷會變多分支，可讀性差 |
+| Multimodal fork（文字 → OCR → ReAct vs 圖片 → vision API → ReAct） | flowchart 可表分支但無法表「同 session 多次 fork-join」 |
+
+### 5.5.2 推薦組合 — Sequence + State Machine 雙圖
+
+**Sequence diagram**（actor 交握 + 時間軸）：用於表達「誰呼誰、debounce 何時啟動、handoff 怎麼接手」。
+
+**State Machine**（session lifecycle）：用於表達「對話 session 從 idle 走到 ended 的所有狀態轉換」。
+
+兩圖**對應同一 use case 但視角不同**：
+- Sequence 主角是 message flow（用戶 → AI → tool → 用戶）
+- State machine 主角是 session 本身
+
+每張 chatbot user flow / FR 殼 acceptance 段建議**兩圖並存**：
+- sequence 給工程實作參考（API 呼叫、timing）
+- state machine 給 QA + UX 對齊（state coverage、edge case）
+
+### 5.5.3 Sequence Diagram 範例（Chatbot A06 報修 intake 含 multimodal + handoff）
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User (LINE)
+    participant CB as Chatbot Orchestrator
+    participant LLM as LLM Service
+    participant V as Vision API
+    participant GR as Guardrails
+    participant HA as Handoff Agent (人)
+
+    U->>CB: 文字 "鎖打不開"
+    CB->>CB: debounce 3s（等後續 message）
+    U->>CB: 圖片 (壞掉的鎖)
+    CB->>V: OCR + image embedding
+    V-->>CB: {label: "lock", confidence: 0.92}
+    CB->>LLM: ReAct (text + image context)
+    LLM-->>CB: tool_call: lookup_warranty
+    CB->>LLM: tool_result {covered: true}
+    LLM-->>CB: draft reply
+    CB->>GR: guardrails check
+    GR-->>CB: ✅ approved
+    CB-->>U: "已記錄報修，工單號 #1234"
+    Note over CB,HA: 若 confidence < 0.7 → handoff
+    CB->>HA: queue handoff (context bundle)
+    HA-->>U: 真人接手回覆
+```
+
+要點：
+- **autonumber** 必加（critique 才能引用步驟）
+- debounce 用 `CB->>CB` 自迴圈表達
+- handoff 用 `Note over` + 後續 `HA->>U` 表達
+- guardrails 用獨立 participant，凸顯為 cross-cutting concern
+
+### 5.5.4 State Machine 範例（Chatbot Session Lifecycle）
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Typing: user.message_start
+    Typing --> Debouncing: user.message_end
+    Debouncing --> Debouncing: user.message_start (重置 timer)
+    Debouncing --> Processing: debounce_timeout (3s)
+    Processing --> WaitingTool: llm.tool_call
+    WaitingTool --> Processing: tool.result
+    WaitingTool --> Fallback: tool.error / timeout
+    Processing --> GuardrailsCheck: llm.draft_ready
+    GuardrailsCheck --> Replying: guardrails.pass
+    GuardrailsCheck --> Fallback: guardrails.block
+    Processing --> HandoffQueued: low_confidence (<0.7)
+    HandoffQueued --> HandoffActive: agent.accept
+    HandoffActive --> Idle: agent.close
+    HandoffQueued --> Fallback: queue_timeout (5min)
+    Replying --> Idle: reply.delivered
+    Fallback --> Idle: fallback_message.sent
+    Idle --> Ended: session.timeout (30min idle)
+    Ended --> [*]
+```
+
+要點：
+- 每個 state 是 session 的單一觀察狀態（不是 UI screen）
+- 邊上標 event（如 `user.message_end`、`guardrails.block`） — 對應 FR `emits_events` 欄位
+- Fallback / Ended 是吸收態（terminal）
+- Debouncing 自迴圈表達「等更多訊息時間 reset」
+
+### 5.5.5 Anti-patterns（chatbot 特有）
+
+| Anti-pattern | 為什麼錯 | 正確做法 |
+|:-------------|:---------|:---------|
+| 單一 flowchart 表達整個 chatbot 流程 | 多 actor + 異步 + 中斷無法在 flowchart 表達 | sequence + state machine 雙圖 |
+| sequence 沒畫 guardrails 路徑 | guardrails 是 cross-cutting，不畫 = 漏 alternate flow | guardrails 為獨立 participant，含 block 路徑 |
+| state machine 只畫 happy path（Idle → Processing → Replying → Idle） | 漏 fallback / handoff / timeout | 強制畫 Fallback + HandoffQueued + Ended 終結態 |
+| sequence 把 debounce 當「沒事發生」省略 | debounce 是有意義的 timing 決策，QA 要測 window | 用自迴圈或 `Note` 明示 debounce 時間 |
+| handoff 流用 sequence 但沒在 state machine 對應 state | sequence 看到 handoff 但 state 沒對齊 → 兩圖不一致 | sequence 內每個 handoff event 對應 state machine 一個 transition |
+| Multimodal（文字+圖片）只畫文字路徑 | 圖片路徑（OCR / vision API）獨特，漏掉 = scope 不完整 | sequence 內含 vision API 呼叫 + state machine 處理路徑共用 Processing 但不同 entry note |
+
+### 5.5.6 對應 FR 殼與 user flow 的分工
+
+| 文件 | 放什麼 chatbot 內容 |
+|:-----|:--------------------|
+| `docs/ux/by-module/A06-flow.md`（user flow by-module 子檔） | sequence + state machine 雙圖；journey level step；UI state 列表 |
+| `docs/analysis/fr/FR-NNNN.md`（chatbot FR 殼） | acceptance G/W/T；**Example Dialogue** sub-section（3-5 條 scripted dialogue + a11y variant，A3.6 強制） |
+| `docs/architecture/c4-l3-*.md` | Chatbot Orchestrator container 內部 component（LLM client / guardrails / tool registry） |
+
+[ref: KB-13 §9 粒度切分檢核表]、[ref: cascade-2026-05-28-context-pack.md §1.2 D2]
+
+---
+
 ## 6. Cross-ref
 
 - [[06_quality_attributes_catalog]] §6 — C4 層級對照（本檔 §2.2 延伸）
