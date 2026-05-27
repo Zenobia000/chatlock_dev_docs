@@ -15,6 +15,14 @@ last_reviewed: 2026-05-09
 last_updated: 2026-05-09
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_cross-cutting`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: cross-cutting
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # i18n Strategy — 多語系實作決策
 
 **版本**：v1.0（2026-05-09）

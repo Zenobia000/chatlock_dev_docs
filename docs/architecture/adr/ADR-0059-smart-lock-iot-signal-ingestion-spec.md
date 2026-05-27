@@ -14,6 +14,14 @@ pre_mortem: F7 (被 AI 巨頭吞噬死)
 eternal_transient: Eternal Event Schema (B5) + Transient device adapter (C1)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_cross-cutting`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: cross-cutting
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0059 — 電子鎖 IoT 狀態訊號接入規格
 
 ## Status

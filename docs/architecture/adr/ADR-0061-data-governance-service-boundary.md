@@ -10,6 +10,14 @@ related: [ADR-0030, ADR-0042, ADR-0050, ADR-0051, ADR-0057, ADR-PII-002]
 source: Forum F-04 final-report + MoM #1 (OQ-NEW-1 業主裁決)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M17_M18`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M17, M18
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0061: Data Governance Service (DGS) Boundary — Independent Service
 
 ## v2 Update Note (2026-05-24)

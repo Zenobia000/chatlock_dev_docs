@@ -15,6 +15,14 @@ pre_mortem: F6 (人才流失) + F2 (知識被技術綁架)
 eternal_transient: Eternal Process (D2 知識護城河)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M20_A10`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M20, A10
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0038 — AI feedback / SOP 審核機制
 
 ## Status

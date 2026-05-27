@@ -11,6 +11,14 @@ pre_mortem: F1 (UX friction) + F3 (HITL 邊界漂移) + F6 (audit chain 斷裂)
 eternal_transient: Eternal Lifecycle Invariant (B3)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M04_M05`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M04, M05
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0066: Quote ↔ WorkOrder Lifecycle Hard Binding（with Emergency Carve-out）
 
 ## Status

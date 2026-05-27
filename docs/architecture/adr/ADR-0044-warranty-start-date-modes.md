@@ -15,6 +15,13 @@ pre_mortem: F5 (規模困境) + F4 (合規崩潰 — 保固爭議)
 eternal_transient: Eternal (B1 Device schema)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `REVIEW_REQUIRED (Lane A critique pending — A2.4)`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0044 — 保固起算多模式
 
 ## Status

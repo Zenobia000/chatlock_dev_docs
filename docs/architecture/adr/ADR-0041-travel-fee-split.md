@@ -15,6 +15,14 @@ pre_mortem: F6 (人才流失) + F4 (cash flow)
 eternal_transient: Eternal Policy + Configurable
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M11_M07`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M11, M07
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0041 — 車馬費歸屬
 
 ## Status

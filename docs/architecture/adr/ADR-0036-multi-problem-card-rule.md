@@ -13,6 +13,14 @@ pre_mortem: F2 (簡單原則勝過 case-by-case)
 eternal_transient: Eternal State Machine (B2)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M03`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M03
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0036 — 同 conversation 多 ProblemCard 規則
 
 ## Status

@@ -14,6 +14,14 @@ pre_mortem: F6 (人才流失死)
 eternal_transient: Eternal Contract (B3) + Transient adapter (C4)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_A04_M20`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: A04, M20
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0058 — 外部知識傳承平台 → AI Agent ingestion contract
 
 ## Status

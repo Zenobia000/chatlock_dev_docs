@@ -8,6 +8,13 @@ related: [ADR-0060, ADR-0061, DR-0004, MoM #1]
 source: MoM #1 (Q5 業主裁決 = A 6 個月 ROI 視窗)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `HISTORICAL`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-PIVOT-001: V2 重啟 trigger 機制
 
 ## Context

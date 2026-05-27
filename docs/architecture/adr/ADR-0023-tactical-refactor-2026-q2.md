@@ -18,6 +18,13 @@ related:
   - "../4-exploration/WBS-0002-2026-q2-tactical-refactor.md"
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `HISTORICAL`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0023 — Tier 1 戰術級資料夾與整合層重構（2026 Q2）
 
 > ⚠ **本 ADR 已被 [ADR-0024](./ADR-0024-tier1-refactor-revised.md) 取代** — 詳見本檔 §8 變更紀錄

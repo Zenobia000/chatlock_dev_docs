@@ -7,6 +7,14 @@ date: 2026-02-17
 deciders: [技術負責人, 開發團隊]
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M20_A03_A04`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M20, A03, A04
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-003: 選擇 LangChain 作為 LLM 整合框架
 
 > **ADR 狀態更新（2026-04-21）**

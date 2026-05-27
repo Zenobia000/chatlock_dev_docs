@@ -11,6 +11,14 @@ pre_mortem: F4 (合規崩潰) + F5 (規模困境)
 eternal_transient: Eternal Schema Pattern (B4)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M15_M18`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M15, M18
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0065: ChangeRequest.type Lookup Table Migration
 
 ## Status

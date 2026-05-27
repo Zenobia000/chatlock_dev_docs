@@ -7,6 +7,13 @@ date: 2026-05-09
 deciders: [Sunny（PM, Tech Lead 角色）]
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `REVIEW_REQUIRED (Lane A critique pending — A2.4)`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern）
 
 **狀態:** **Accepted**（2026-05-09 17:00 拍板）

@@ -15,6 +15,24 @@ pre_mortem: F4 (合規崩潰 — PII 外洩)
 eternal_transient: Eternal RBAC (B3 + B5)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `PARTIAL_UPDATE (Lane A critique done — 3/3 persona consensus)`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Critique merge report**: [`.claude/context/devteam/reviews/2026-05-28-adr-0050-critique/merge-report.md`](../../../.claude/context/devteam/reviews/2026-05-28-adr-0050-critique/merge-report.md)
+> **Per ADR-0100 §1 classification** ([roundtable MoM](../../../.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md))
+>
+> **🛠 待 cascade 補強（per critique merge report 6 維度）**：
+> 1. 矩陣升維：role × `lifecycle_phase` × `action(view/edit/approve)` × `attr_mask`（Architect: BR-M17-01 強制三維拆分）
+> 2. 補 actor: IT support 臨時權限 (time-boxed + audit)（SA + Architect）
+> 3. 每列補 G/W/T acceptance（SA：目前全自然語言 QA 無法套）
+> 4. scope 屬性擴階層 `{tenant, brand, project, household}` for Phase III（SA）
+> 5. column 級 PII classification + mask matrix（DBA）
+> 6. retention 改引用 ADR-0051，DB 補 `(tenant_id, brand_scope, visible_until)` composite index + `closed_at` 月分區（DBA）
+>
+> Decision 主體（9 角色矩陣概念）**保留**；本 ADR 原地 update 為 v2 即可，**不需新 ADR 取代**。
+
+
 # ADR-0050 — Evidence 可見性矩陣
 
 ## Status

@@ -15,6 +15,14 @@ pre_mortem: F3 (HITL 邊界漂移) + F4 (合規崩潰)
 eternal_transient: Eternal Policy (B3 永恆禁區)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M04_M13`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M04, M13
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0035 — 保固 / 建案案件 AI 報價邊界
 
 ## Status

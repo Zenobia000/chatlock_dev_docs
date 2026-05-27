@@ -14,6 +14,14 @@ pre_mortem: F2 (知識被技術綁架) + F5 (規模困境)
 eternal_transient: Eternal State Machine (B2)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M01_M02`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M01, M02
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0032 — 缺地址時的處理規則
 
 ## Status

@@ -15,6 +15,14 @@ pre_mortem: F4 (合規崩潰 — SLA 履行) + F5 (規模困境)
 eternal_transient: Eternal Process + Transient config
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M06`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M06
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0045 — 接單 SLA
 
 ## Status

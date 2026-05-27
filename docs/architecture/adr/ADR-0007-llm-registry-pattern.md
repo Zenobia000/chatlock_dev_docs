@@ -7,6 +7,14 @@ date: 2026-05-07
 deciders: [技術負責人, 開發團隊]
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M20_A03`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M20, A03
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-007: LLM Registry 形式 — 承認 LiteLLM 字串路由為 dict registry 替代方案
 
 **狀態:** Accepted

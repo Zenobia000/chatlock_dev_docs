@@ -15,6 +15,13 @@ pre_mortem: F4 (合規崩潰)
 eternal_transient: Eternal RBAC (B3 + B4)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `REVIEW_REQUIRED (Lane A critique pending — A2.4)`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0040 — 退款核准分層
 
 ## Status

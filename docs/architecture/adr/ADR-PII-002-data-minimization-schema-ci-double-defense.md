@@ -8,6 +8,14 @@ related: [ADR-0030, ADR-0050, ADR-0051, ADR-0060, ADR-0061]
 source: MoM #1 (OQ-NEW-1 cascade — Option A 降級履約附帶 §5 殘留 rule)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M17_M02_cross-cutting`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M17, M02, cross-cutting
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-PII-002: 資料極小化雙層防線
 
 ## Context

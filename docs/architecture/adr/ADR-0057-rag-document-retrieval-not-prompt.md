@@ -14,6 +14,14 @@ pre_mortem: F2 (知識被技術綁架) + F3 (HITL 邊界漂移)
 eternal_transient: Eternal Pattern (B3 + C2) + Transient prompt template
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_A04`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: A04
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0057 — 合約 / 規則走 RAG 文件檢索，禁寫進 prompt
 
 ## Status

@@ -14,6 +14,13 @@ related:
   - "../4-exploration/WBS-0002-2026-q2-tactical-refactor.md (同步修正)"
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `HISTORICAL`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0024 — Tier 1 戰術級重構（2026 Q2）— hands-on 修正版
 
 ## Status

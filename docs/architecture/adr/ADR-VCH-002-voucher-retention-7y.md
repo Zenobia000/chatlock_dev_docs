@@ -8,6 +8,14 @@ related: [ADR-VCH-001, ADR-0051, ERD §5]
 source: MoM #2 (OQ-007 cascade — Q3 業主裁決 = 7y)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M11_M17`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M11, M17
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-VCH-002: Voucher Retention 7 年
 
 ## Context

@@ -12,6 +12,13 @@ related:
   - "_pending-split-pm-alignment-Q1-Q10.md (原始決策矩陣)"
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `HISTORICAL`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0019 — V1.0 金流範圍
 
 ## Status

@@ -12,6 +12,14 @@ superseded-by: null
 related: [ADR-0009, ADR-0024, ADR-0025, ADR-0026, CR-0001]
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_A05_cross-cutting`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: A05, cross-cutting
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0029: Fail-soft 路徑統一收斂到 Outbox + Audit + Review Queue 三件組
 
 ## Status

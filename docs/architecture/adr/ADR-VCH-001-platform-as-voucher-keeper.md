@@ -8,6 +8,14 @@ related: [ADR-VCH-002, BR-VCH-001-012, ERD §5]
 source: MoM #2 (OQ-007 cascade — Q2 業主裁決 = keeper)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M11_M16`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M11, M16
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-VCH-001: Platform = Voucher Keeper
 
 ## Context

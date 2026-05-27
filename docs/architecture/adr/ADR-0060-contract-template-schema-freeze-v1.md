@@ -10,6 +10,14 @@ related: [ADR-0030, ADR-0042, ADR-0043, ADR-0046]
 source: Forum F-01 final-report + MoM #1 (OQ-NEW-3 業主裁決)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M14_M18`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M14, M18
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0060: Contract Template Schema Reserved Nullable (V1)
 
 ## v2 Update Note (2026-05-24)

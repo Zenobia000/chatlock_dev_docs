@@ -14,6 +14,14 @@ pre_mortem: F4 (合規崩潰 — 加價爭議)
 eternal_transient: Eternal (B3 + B5)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M08_M15`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M08, M15
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0049 — 現場加價三件套
 
 ## Status

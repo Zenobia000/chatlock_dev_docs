@@ -13,6 +13,14 @@ pre_mortem: F4 (對帳惡夢) + F6 (師傅體驗)
 eternal_transient: Eternal (B1 + B4)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M10_M07`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M10, M07
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0052 — 庫存歸屬
 
 ## Status

@@ -15,6 +15,14 @@ pre_mortem: F3 (HITL 邊界漂移死)
 eternal_transient: Eternal Policy (B3) + Transient UI (C4)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M03_S-M04`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M03, S-M04
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0031 — AI 是否可自動 `convert_to_work_order`
 
 ## Status

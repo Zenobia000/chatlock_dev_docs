@@ -14,6 +14,14 @@ pre_mortem: F2 (知識被技術綁架死)
 eternal_transient: Eternal Contract (B3) + Transient adapter (C2)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_A03_A04`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: A03, A04
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0055 — SKILL ↔ LLM 解耦合約
 
 ## Status

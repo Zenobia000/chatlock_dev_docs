@@ -7,6 +7,14 @@ date: 2026-02-17
 deciders: [技術負責人, 開發團隊]
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_cross-cutting`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: cross-cutting
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-001: 選擇 FastAPI 作為後端框架
 
 **狀態:** 已接受 (Accepted)

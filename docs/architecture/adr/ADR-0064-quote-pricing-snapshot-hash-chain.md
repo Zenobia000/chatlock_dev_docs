@@ -11,6 +11,14 @@ pre_mortem: F4 (合規崩潰) + F6 (audit chain 斷裂)
 eternal_transient: Eternal Audit Pattern (B4)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_M04_M11`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: M04, M11
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0064: Quote Pricing Snapshot Hash Chain（獨立鏈）
 
 ## Status

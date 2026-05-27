@@ -15,6 +15,14 @@ pre_mortem: F3 + F4
 eternal_transient: Eternal Policy (B3) + E3 治理
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_A07_M16`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: A07, M16
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0048 — AI 轉真人 7 條件
 
 ## Status

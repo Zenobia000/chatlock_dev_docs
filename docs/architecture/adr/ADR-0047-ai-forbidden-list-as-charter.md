@@ -15,6 +15,14 @@ pre_mortem: F3 (HITL 邊界漂移)
 eternal_transient: Eternal Policy (B3 永恆禁區)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_A05_M20`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: A05, M20
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0047 — AI 禁止決策清單入 charter
 
 ## Status

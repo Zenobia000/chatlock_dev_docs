@@ -7,6 +7,14 @@ date: 2026-05-11
 deciders: [Imding1211, Claude（implementor）]
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `STILL_VALID_UNDER_A03`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Module scope**: A03
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-010: Belief-Augmented ReAct（Turn Cycle 實驗）
 
 **狀態:** **Experimental — On Hold**（2026-05-11 Stage B 完工 / 2026-05-13 roadmap 轉向 hermes-cs → 本 ADR 對應實驗暫不進 production）

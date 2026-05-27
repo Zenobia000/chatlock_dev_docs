@@ -15,6 +15,13 @@ pre_mortem: F4 (合規崩潰 — 取消費爭議引發法務糾紛)
 eternal_transient: Eternal Policy (B3) + Configurable rule (B4 ledger)
 ---
 
+> 
+> **🔄 Migration Status (2026-05-28)**: `REVIEW_REQUIRED (Lane A critique pending — A2.4)`
+> **Reviewed against**: 2026-05-20 final spec (xlsx)
+> **Reviewed on**: 2026-05-28
+> **Per ADR-0100 §1 classification** (.claude/context/devteam/meetings/2026-05-27-1130-final-spec-migration-strategy/MoM.md)
+
+
 # ADR-0039 — 取消費分段
 
 ## Status
