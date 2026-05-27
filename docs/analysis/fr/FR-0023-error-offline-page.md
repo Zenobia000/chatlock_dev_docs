@@ -1,66 +1,110 @@
 ---
 id: FR-0023
 title: 錯誤頁 / 離線體驗（cross-cutting）
-tier: 2
-priority: P2
 status: active
-blockers: [F-110]
-lifecycle: partial
-lifecycle-reason: "建議新增 F-110 cross-cutting"
-last-synced-with: 4e9658e90324cbceb26f5e5445f481fc5678df1f
-sync-source: doc
-synced-at: 2026-05-15
+phase: I
+mapped_to:
+  - cross-cutting
+superseded_clauses:
+  - BR-XCUT-NN    # 400/401/403/404/429/5xx 錯誤頁範本
+  - BR-XCUT-NN    # offline page (Service Worker)
+  - BR-XCUT-NN    # WCAG 2.2 AA conformance
+emits_events:
+  - ErrorPageRendered
+nfr_flavored: false
+priority: P2
+tier: 2
+owner: Frontend / UX
+last_reviewed: 2026-05-28
+related_adrs: []
 legacy_id: REQ-023
 trace_to_flow: F-023
+last-synced-with: 4e9658e90324cbceb26f5e5445f481fc5678df1f
 related:
-  - "../../0-principles/id-mapping-legacy.md §A.3 (REQ→FR)"
-  - "../../0-principles/PRIN-0001-product-principles.md"
-  - "../flows/business/"
-  - "../api/openapi.yaml"
+  - "../../_source/01-workorder-erp.md#m16-comms"
 ---
 
 # FR-0023 — 錯誤頁 / 離線體驗（cross-cutting）
 
-> 從 `docs/_flows-bdd-test/north-star-requirements.md REQ-023` 抽出，升級為 4-digit FR ID。
+> **Migration**: 2026-05-28 改為 D5 殼結構（rule → BR）。
 
-## §1 Description
+## §1 Use Case Skeleton
 
-錯誤頁 / 離線體驗（cross-cutting）
+| 欄位 | 內容 |
+|:-----|:-----|
+| **Actor** | 任何 user |
+| **Secondary Actors** | Frontend, Service Worker |
+| **Trigger** | HTTP error (400/401/403/404/429/5xx) / offline |
+| **Precondition** | — |
+| **Main Flow** | 詳見 §1.1 → user-flow:cross-cutting |
+| **Alternative Flow** | 詳見 §1.2 |
+| **Postcondition** | error page render；emit `ErrorPageRendered` |
 
-## §2 Priority
+### §1.1 Main Flow
 
-**P2** (Should-have)
+1. Frontend 偵測 HTTP error / network offline
+2. render 對應錯誤頁（依範本 [ref: BR-XCUT-NN]）
+3. 提示 retry / contact CS
+4. emit `ErrorPageRendered` (含 error_code + path)
+5. END
 
-## §3 Acceptance Criteria
+### §1.2 Alternative Flow
 
-### §3.1 SLO（正常路徑）
+```
+A1. Service Worker offline:
+    A1.1 render cached offline page
+    A1.2 retry queue 收 user action
+    A1.3 連線恢復 → sync
 
-全 5xx error 顯示友善訊息 + retry 按鈕；offline 偵測切換離線頁。
+A2. WCAG conformance check:
+    A2.1 screen reader 朗讀「錯誤」+ error code
+    A2.2 keyboard tab order: 錯誤訊息 → retry button
+```
 
-### §3.2 邊界案例
+## §2 Acceptance Criteria
 
-- Network restore → 自動 retry pending requests
-- Backend degraded（部分服務 OK）→ 顯示「部分功能受限」
+### AC-01: 404 error page
 
-### §3.3 異常處理
+```gherkin
+When user 開不存在的 URL
+Then render 404 page
+  And `ErrorPageRendered` emit (code=404)
+```
 
-- 錯誤訊息不可洩漏 stack trace 或內部路徑
-- 5xx 連續 3 次 → frontend circuit breaker 啟用
+### AC-02: 5xx error page
 
-### §3.4 TC Coverage
+```gherkin
+When backend 5xx
+Then render 「系統忙碌」+ retry button
+```
 
-涵蓋之 TC（per `docs/2-contracts/test-cases/registry.yaml`）: IT-0061 (degraded health check)
+### AC-03: Offline mode
 
-## §4 Trace
+```gherkin
+Given network offline
+When user 開 page
+Then render cached offline page
+  And user 動作存 queue
+```
 
-| Aspect | Reference |
-| :-- | :-- |
-| Legacy ID | REQ-023 |
-| Legacy F-XXX flow | F-023 |
-| Implementation status | ⚠ partial（建議新增 F-110 cross-cutting） |
+### AC-04: WCAG 2.2 AA
 
-## §5 Change Log
+```gherkin
+When screen reader 讀錯誤頁
+Then 朗讀「錯誤」+ error code + 可選動作
+  And keyboard tab order 正確
+```
+
+## §3 Reference Map
+
+| 類型 | ID | 用途 |
+|:-----|:---|:-----|
+| BR | BR-XCUT-NN | error page / offline / a11y |
+| Event | ErrorPageRendered | M19 |
+
+## §4 Change Log
 
 | Date | Change |
-| :--- | :--- |
-| 2026-05-10 | 從 north-star-requirements REQ-023→FR-0023 split |
+|:-----|:-------|
+| 2026-05-10 | REQ-023→FR-0023 |
+| 2026-05-28 | **D5 殼 rewrite** |

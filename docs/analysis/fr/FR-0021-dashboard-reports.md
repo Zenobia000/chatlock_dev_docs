@@ -1,65 +1,109 @@
 ---
 id: FR-0021
 title: Dashboard / 報表（KPI / Revenue / Tech ranking）
-tier: 2
-priority: P1
 status: active
-lifecycle: partial
-lifecycle-reason: "後端 filter TODO"
-last-synced-with: 4e9658e90324cbceb26f5e5445f481fc5678df1f
-sync-source: doc
-synced-at: 2026-05-15
+phase: I
+mapped_to:
+  - M19    # BI / Dashboard
+superseded_clauses:
+  - BR-M19-NN    # KPI / Revenue / Tech ranking 三類
+  - BR-M19-NN    # date range filter
+  - BR-M19-NN    # role-based dashboard scope (主管 vs 技師)
+emits_events:
+  - ReportGenerated
+nfr_flavored: false
+priority: P1
+tier: 2
+owner: 數據分析 / 主管
+last_reviewed: 2026-05-28
+related_adrs: []
 legacy_id: REQ-021
 trace_to_flow: F-021
+last-synced-with: 4e9658e90324cbceb26f5e5445f481fc5678df1f
 related:
-  - "../../0-principles/id-mapping-legacy.md §A.3 (REQ→FR)"
-  - "../../0-principles/PRIN-0001-product-principles.md"
-  - "../flows/business/"
-  - "../api/openapi.yaml"
+  - "../../_source/01-workorder-erp.md#m19-bi"
 ---
 
 # FR-0021 — Dashboard / 報表（KPI / Revenue / Tech ranking）
 
-> 從 `docs/_flows-bdd-test/north-star-requirements.md REQ-021` 抽出，升級為 4-digit FR ID。
+> **Migration**: 2026-05-28 改為 D5 殼結構（rule → BR）。
 
-## §1 Description
+## §1 Use Case Skeleton
 
-Dashboard / 報表（KPI / Revenue / Tech ranking）
+| 欄位 | 內容 |
+|:-----|:-----|
+| **Actor** | 主管 / 派工主管 / 財務 |
+| **Secondary Actors** | M19 BI engine |
+| **Trigger** | Admin Console 開 dashboard |
+| **Precondition** | RBAC dashboard.view |
+| **Main Flow** | 詳見 §1.1 → user-flow:S5-step30 |
+| **Alternative Flow** | 詳見 §1.2 |
+| **Postcondition** | render dashboard / export report |
 
-## §2 Priority
+### §1.1 Main Flow
 
-**P1** (Should-have)
+1. Actor 選 dashboard category (KPI / Revenue / Tech ranking) + date range
+2. 系統依 role scope filter ([ref: BR-M19-NN])
+3. 系統 query BI engine
+4. render dashboard / export CSV
+5. emit `ReportGenerated`
+6. END
 
-## §3 Acceptance Criteria
+### §1.2 Alternative Flow
 
-### §3.1 SLO（正常路徑）
+```
+A1. 缺 dashboard.view permission:
+    A1.1 403 + audit
 
-Dashboard 即時顯示 KPI（uptime, dispatch SLA, complaint rate），5s 內更新。
+A2. Date range > 1 yr:
+    A2.1 系統 reject + 提示「分段查詢」
 
-### §3.2 邊界案例
+A3. BI engine timeout:
+    A3.1 回 503 + retry hint
+```
 
-- Tier-1 uptime 99.5% 邊界視為達標
-- 報表查詢過去 1 年 → 分頁 + 快取（5 min stale OK）
+## §2 Acceptance Criteria
 
-### §3.3 異常處理
+### AC-01: 主管看全公司
 
-- 資料來源（DB）不可用 → 顯示 stale 但標時間戳
-- 前端 polling 失敗 → 重連 + degraded indicator
+```gherkin
+Given 主管 role
+When 開 Tech ranking
+Then 看到全公司 ranking
+```
 
-### §3.4 TC Coverage
+### AC-02: 技師只看自己
 
-涵蓋之 TC（per `docs/2-contracts/test-cases/registry.yaml`）: IT-0057~0062 (sla-monitor uptime 計算), IT-0086 (financial reports export)
+```gherkin
+Given 技師 role
+When 開 KPI dashboard
+Then 只看自己 KPI
+```
 
-## §4 Trace
+### AC-03: Date range filter
 
-| Aspect | Reference |
-| :-- | :-- |
-| Legacy ID | REQ-021 |
-| Legacy F-XXX flow | F-021 |
-| Implementation status | ⚠ partial（後端 filter TODO） |
+```gherkin
+When 選 date range 2026-01 ~ 2026-03
+Then 報表只含該區間
+```
 
-## §5 Change Log
+### AC-04: Export CSV
+
+```gherkin
+When tap "export"
+Then 下載 CSV + `ReportGenerated` emit
+```
+
+## §3 Reference Map
+
+| 類型 | ID | 用途 |
+|:-----|:---|:-----|
+| BR | BR-M19-NN | KPI/Revenue/Ranking / range filter / role scope |
+| Event | ReportGenerated | audit |
+
+## §4 Change Log
 
 | Date | Change |
-| :--- | :--- |
-| 2026-05-10 | 從 north-star-requirements REQ-021→FR-0021 split |
+|:-----|:-------|
+| 2026-05-10 | REQ-021→FR-0021 |
+| 2026-05-28 | **D5 殼 rewrite** |

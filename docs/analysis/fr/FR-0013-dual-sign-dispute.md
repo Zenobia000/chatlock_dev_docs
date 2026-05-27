@@ -1,65 +1,132 @@
 ---
 id: FR-0013
 title: 對帳爭議雙簽
-tier: 2
-priority: P0
 status: active
-blockers: [Q2=A, Q4=C]
-lifecycle: pending-decision
-last-synced-with: 4e9658e90324cbceb26f5e5445f481fc5678df1f
-sync-source: doc
-synced-at: 2026-05-15
+phase: I
+mapped_to:
+  - M15    # Exception
+  - M17    # Audit
+superseded_clauses:
+  - BR-M15-NN    # 雙簽 CSM + ops_manager
+  - BR-M15-NN    # 60 天未解 → 升 ops_director
+  - BR-M15-NN    # 撤銷 → closed_withdrawn
+  - BR-M15-NN    # 單方 close → 409 dual_sign_required
+  - BR-M15-NN    # close 後 reopen → dispute_v2
+emits_events:
+  - DisputeOpened
+  - DisputeApprovedBySingleParty
+  - DisputeClosed
+  - DisputeEscalated
+nfr_flavored: false
+priority: P0
+tier: 2
+owner: CSM / 運營主管
+last_reviewed: 2026-05-28
+related_adrs:
+  - ADR-0014    # 雙簽終簽人階層 (historical)
+  - ADR-0040    # refund-approval-tiers
 legacy_id: REQ-013
 trace_to_flow: F-013
+last-synced-with: 4e9658e90324cbceb26f5e5445f481fc5678df1f
 related:
-  - "../../0-principles/id-mapping-legacy.md §A.3 (REQ→FR)"
-  - "../../0-principles/PRIN-0001-product-principles.md"
-  - "../flows/business/"
-  - "../api/openapi.yaml"
+  - "../../_source/01-workorder-erp.md#m15-exception"
 ---
 
 # FR-0013 — 對帳爭議雙簽
 
-> 從 `docs/_flows-bdd-test/north-star-requirements.md REQ-013` 抽出，升級為 4-digit FR ID。
+> **Migration**: 2026-05-28 改為 D5 殼結構（rule → BR）。
 
-## §1 Description
+## §1 Use Case Skeleton
 
-對帳爭議雙簽
+| 欄位 | 內容 |
+|:-----|:-----|
+| **Actor** | 客戶 (open dispute) / CSM (review) / ops_manager (co-sign) |
+| **Secondary Actors** | M17 Audit, M15 Exception |
+| **Trigger** | 客戶 / 技師發起 dispute |
+| **Precondition** | 標的 wo / payment / settlement 存在 |
+| **Main Flow** | 詳見 §1.1 → user-flow:S4-step5 |
+| **Alternative Flow** | 詳見 §1.2 |
+| **Postcondition** | dispute row 落地；雙簽後 close |
 
-## §2 Priority
+### §1.1 Main Flow
 
-**P0** (Must-have for V1)
+1. 客戶開 dispute（subject + reason） → user-flow:S4-step5
+2. emit `DisputeOpened`
+3. CSM review + propose resolution
+4. ops_manager co-sign （[ref: BR-M15-NN dual sign]）
+5. 兩方都 approve → status = closed
+6. emit `DisputeClosed`
+7. END
 
-## §3 Acceptance Criteria
+### §1.2 Alternative Flow
 
-### §3.1 SLO（正常路徑）
+```
+A1. 單方 close 嘗試 (第 5 步):
+    A1.1 系統 409 dual_sign_required
 
-Disputes 進雙簽流程，CSM + operations_manager 共識才能 close。
+A2. 60 天未解 (cron):
+    A2.1 自動升 ops_director
+    A2.2 emit `DisputeEscalated`
 
-### §3.2 邊界案例
+A3. 客戶撤銷:
+    A3.1 status = closed_withdrawn
 
-- 60 天未解決 → 自動升 operations_director
-- 客戶撤銷 dispute → 標 closed_withdrawn
+A4. close 後 reopen:
+    A4.1 拒絕直接 reopen
+    A4.2 必須新建 dispute_v2 引用原 dispute
+```
 
-### §3.3 異常處理
+## §2 Acceptance Criteria
 
-- 單方 close 嘗試 → 409 dual_sign_required
-- 已 close 的 dispute 再 open → 必須新建 dispute_v2 引用前一個
+### AC-01: Dual sign close
 
-### §3.4 TC Coverage
+```gherkin
+Given dispute D-001 opened
+When CSM approve + ops_manager co-sign
+Then status = closed + emit `DisputeClosed`
+```
 
-涵蓋之 TC（per `docs/2-contracts/test-cases/registry.yaml`）: IT-0052 (雙簽流程 250k), IT-0134 (warranty disputes 進入)
+### AC-02: Single party reject
 
-## §4 Trace
+```gherkin
+When CSM 單方 close
+Then 409 dual_sign_required
+```
 
-| Aspect | Reference |
-| :-- | :-- |
-| Legacy ID | REQ-013 |
-| Legacy F-XXX flow | F-013 |
-| Implementation status | ✅ pending Q2=A / Q4=C |
+### AC-03: 60 天升 director
 
-## §5 Change Log
+```gherkin
+Given D-001 open 60 天
+When cron
+Then 升 ops_director + emit `DisputeEscalated`
+```
+
+### AC-04: 撤銷
+
+```gherkin
+When 客戶撤銷
+Then status = closed_withdrawn
+```
+
+### AC-05: reopen → v2
+
+```gherkin
+Given D-001 closed
+When 客戶嘗試 reopen
+Then 必須新建 D-001-v2 引用 D-001
+```
+
+## §3 Reference Map
+
+| 類型 | ID | 用途 |
+|:-----|:---|:-----|
+| BR | BR-M15-NN | dual sign / 60d / 撤銷 / reopen |
+| ADR | ADR-0040 | refund tiers |
+| Event | DisputeOpened/Closed/Escalated | — |
+
+## §4 Change Log
 
 | Date | Change |
-| :--- | :--- |
-| 2026-05-10 | 從 north-star-requirements REQ-013→FR-0013 split |
+|:-----|:-------|
+| 2026-05-10 | REQ-013→FR-0013 |
+| 2026-05-28 | **D5 殼 rewrite** |

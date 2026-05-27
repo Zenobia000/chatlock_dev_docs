@@ -3,7 +3,11 @@ id: FR-0016
 title: SLA 2hr 到場（Soft 警報）
 tier: 2
 priority: P0
-status: active
+status: superseded
+superseded_by: ../../architecture/nfr-matrix-smart-lock-saas.md#§2-availability--reliability (NFR-SLA-001 ~ NFR-SLA-003)
+superseded_on: 2026-05-28
+superseded_reason: "Roundtable Q3=A — NFR-flavored FR 搬到 NFR matrix"
+nfr_flavored: true
 blockers: [Q5=B]
 lifecycle: partial
 lifecycle-reason: "Q5=B Soft SLA"
@@ -19,7 +23,12 @@ related:
   - "../api/openapi.yaml"
 ---
 
-# FR-0016 — SLA 2hr 到場（Soft 警報）
+> [!IMPORTANT]
+> **🔄 SUPERSEDED 2026-05-28**: 本 FR 已被搬到 `docs/architecture/nfr-matrix-smart-lock-saas.md#§2-availability--reliability` (NFR-SLA-001 ~ NFR-SLA-003)。
+> **Reason**: Roundtable 2026-05-27 D5 + 業主 Q3=A — NFR-flavored FR (`nfr_flavored: true`) 從 FR 列表搬到 NFR matrix。
+> **本檔保留**作 audit trail；新引用請走 NFR matrix。
+
+# FR-0016 — SLA 2hr 到場（Soft 警報） [SUPERSEDED]
 
 > 從 `docs/_flows-bdd-test/north-star-requirements.md REQ-016` 抽出，升級為 4-digit FR ID。
 

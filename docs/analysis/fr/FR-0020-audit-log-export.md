@@ -1,63 +1,122 @@
 ---
 id: FR-0020
 title: 稽核日誌完整性與匯出
-tier: 2
-priority: P0
 status: active
-last-synced-with: 4e9658e90324cbceb26f5e5445f481fc5678df1f
-sync-source: doc
-synced-at: 2026-05-15
+phase: I
+mapped_to:
+  - M17    # Audit (primary)
+superseded_clauses:
+  - BR-M17-NN    # append-only + hash chain
+  - BR-M17-NN    # 7 yr retention
+  - BR-M17-NN    # 匯出 PDF / CSV
+  - BR-M17-NN    # 匯出 audit access
+emits_events:
+  - AuditLogExported
+  - AuditTamperDetected
+nfr_flavored: false
+priority: P0
+tier: 2
+owner: IT admin / 法務
+last_reviewed: 2026-05-28
+related_adrs:
+  - ADR-0061    # data-governance-service-boundary
+  - ADR-VCH-002  # 7y retention
 legacy_id: REQ-020
 trace_to_flow: F-020
+last-synced-with: 4e9658e90324cbceb26f5e5445f481fc5678df1f
 related:
-  - "../../0-principles/id-mapping-legacy.md §A.3 (REQ→FR)"
-  - "../../0-principles/PRIN-0001-product-principles.md"
-  - "../flows/business/"
-  - "../api/openapi.yaml"
+  - "../../_source/01-workorder-erp.md#m17-audit"
 ---
 
 # FR-0020 — 稽核日誌完整性與匯出
 
-> 從 `docs/_flows-bdd-test/north-star-requirements.md REQ-020` 抽出，升級為 4-digit FR ID。
+> **Migration**: 2026-05-28 改為 D5 殼結構（rule → BR）。
 
-## §1 Description
+## §1 Use Case Skeleton
 
-稽核日誌完整性與匯出
+| 欄位 | 內容 |
+|:-----|:-----|
+| **Actor** | IT admin / 法務 |
+| **Secondary Actors** | M17 Audit ledger, Nightly verify cron |
+| **Trigger** | Manual export / nightly verify |
+| **Precondition** | RBAC `audit.export` |
+| **Main Flow** | 詳見 §1.1 → user-flow:S5-step20 |
+| **Alternative Flow** | 詳見 §1.2 |
+| **Postcondition** | 匯出檔案 / hash chain verify pass |
 
-## §2 Priority
+### §1.1 Main Flow
 
-**P0** (Must-have for V1)
+1. Admin 選日期範圍 + 匯出格式 (PDF/CSV)
+2. 系統 verify hash chain integrity (per row)
+3. 匯出 file
+4. emit `AuditLogExported` (本動作也寫 audit)
+5. END
 
-## §3 Acceptance Criteria
+### §1.2 Alternative Flow
 
-### §3.1 SLO（正常路徑）
+```
+A1. Hash chain mismatch (verify 失敗):
+    A1.1 emit `AuditTamperDetected`
+    A1.2 alert IT admin + 法務
+    A1.3 匯出附 tamper warning
 
-7 種 audit event 依保留期限（90d / 1y / 2y / 7y）可匯出。Append-only 強制 DB trigger。
+A2. UPDATE/DELETE attempt on audit (任一時間):
+    A2.1 DB trigger 拒絕 (append-only)
+    A2.2 此嘗試本身寫 audit
 
-### §3.2 邊界案例
+A3. 缺 export permission:
+    A3.1 403 forbidden + audit
 
-- 保留期限到期當天仍可查；翌日 cleanup job 標 deleted
-- 並發寫入（μs 級）UUID 唯一防衝突
+A4. > 7 yr 資料 query:
+    A4.1 回 410 gone (已 lifecycle 清除)
+```
 
-### §3.3 異常處理
+## §2 Acceptance Criteria
 
-- DELETE/UPDATE audit_logs → DB trigger raise + audit tamper_attempt
-- Audit DB 連線失效 → 整 transaction rollback
+### AC-01: Happy path 匯出
 
-### §3.4 TC Coverage
+```gherkin
+When admin 匯出 2025 全年 audit
+Then 系統 verify hash chain pass
+  And 匯出 PDF
+  And `AuditLogExported` emit
+```
 
-涵蓋之 TC（per `docs/2-contracts/test-cases/registry.yaml`）: IT-0069~0074 (audit-logger 6 cases), IT-0081~0086 (data-export)
+### AC-02: Hash chain mismatch
 
-## §4 Trace
+```gherkin
+Given audit row 被竄改
+When verify
+Then `AuditTamperDetected` emit + alert
+```
 
-| Aspect | Reference |
-| :-- | :-- |
-| Legacy ID | REQ-020 |
-| Legacy F-XXX flow | F-020 |
-| Implementation status | ✅ Live |
+### AC-03: UPDATE 拒絕
 
-## §5 Change Log
+```gherkin
+When 任何 user UPDATE audit row
+Then DB trigger 拒絕
+  And 此嘗試本身寫 audit
+```
+
+### AC-04: 7y boundary
+
+```gherkin
+When query 7 yr + 1 day 前 audit
+Then 410 gone (lifecycle 已清)
+```
+
+## §3 Reference Map
+
+| 類型 | ID | 用途 |
+|:-----|:---|:-----|
+| BR | BR-M17-NN | append-only / 7y / export / hash chain |
+| ADR | ADR-0061 | data governance |
+| ADR | ADR-VCH-002 | 7y retention |
+| Event | AuditLogExported / AuditTamperDetected | — |
+
+## §4 Change Log
 
 | Date | Change |
-| :--- | :--- |
-| 2026-05-10 | 從 north-star-requirements REQ-020→FR-0020 split |
+|:-----|:-------|
+| 2026-05-10 | REQ-020→FR-0020 |
+| 2026-05-28 | **D5 殼 rewrite** |

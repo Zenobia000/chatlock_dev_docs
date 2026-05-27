@@ -3,7 +3,11 @@ id: FR-0024
 title: LINE Webhook 高可用（ack < 200ms）
 tier: 2
 priority: P0
-status: active
+status: superseded
+superseded_by: ../../architecture/nfr-matrix-smart-lock-saas.md#§2-availability--reliability (NFR-Avail-004 ~ NFR-Avail-007)
+superseded_on: 2026-05-28
+superseded_reason: "Roundtable Q3=A — NFR-flavored FR 搬到 NFR matrix"
+nfr_flavored: true
 last-synced-with: 4e9658e90324cbceb26f5e5445f481fc5678df1f
 sync-source: doc
 synced-at: 2026-05-15
@@ -16,7 +20,12 @@ related:
   - "../api/openapi.yaml"
 ---
 
-# FR-0024 — LINE Webhook 高可用（ack < 200ms）
+> [!IMPORTANT]
+> **🔄 SUPERSEDED 2026-05-28**: 本 FR 已被搬到 `docs/architecture/nfr-matrix-smart-lock-saas.md#§2-availability--reliability` (NFR-Avail-004 ~ NFR-Avail-007)。
+> **Reason**: Roundtable 2026-05-27 D5 + 業主 Q3=A — NFR-flavored FR (`nfr_flavored: true`) 從 FR 列表搬到 NFR matrix。
+> **本檔保留**作 audit trail；新引用請走 NFR matrix。
+
+# FR-0024 — LINE Webhook 高可用（ack < 200ms） [SUPERSEDED]
 
 > 從 `docs/_flows-bdd-test/north-star-requirements.md REQ-024` 抽出，升級為 4-digit FR ID。
 
