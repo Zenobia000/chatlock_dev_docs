@@ -47,7 +47,8 @@ stateDiagram-v2
     [*] --> triggered
     triggered --> facts_collecting
     facts_collecting --> queued : enqueued to CS inbox
-    queued --> assigned : CS pick up (SLA: emergency 5min / 一般 30min)
+    queued --> assigned : CS pick up
+    note right of assigned : SLA — emergency 5min / 一般 30min
     assigned --> human_handling : CS 接管對話
     human_handling --> escalated : CS 升級主管
     human_handling --> resolved : CS 完成處理

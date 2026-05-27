@@ -88,7 +88,8 @@ stateDiagram-v2
     CS_review_queue --> CS_approved : CS 1-click approve
     CS_review_queue --> PC_collecting : CS reject + reason (退回對話)
     CS_approved --> quote_check : 一般單檢查 quote.customer_confirmed
-    quote_check --> WO_created : ✓ confirmed (一般單) / ✓ emergency carve-out
+    quote_check --> WO_created : ✓ confirmed / emergency
+    note right of WO_created : 一般單 quote.customer_confirmed / emergency carve-out
     quote_check --> blocked_425 : ❌ 425 QUOTE_NOT_CUSTOMER_SENT
     blocked_425 --> CS_review_queue : CS 處理後重試
     WO_created --> [*]

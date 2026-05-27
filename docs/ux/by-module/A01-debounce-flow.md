@@ -46,7 +46,8 @@ sequenceDiagram
 stateDiagram-v2
     [*] --> idle
     idle --> buffering : 第一則訊息進
-    buffering --> buffering : 同 conversation 連發
+    buffering --> bufferingAccum : 同 conversation 連發
+    bufferingAccum --> buffering : merge 到 turn
     buffering --> media_pending : 含 media 但未下載完
     media_pending --> buffering : media 下載完成
     buffering --> flushed : buffer_wait timeout (2s)

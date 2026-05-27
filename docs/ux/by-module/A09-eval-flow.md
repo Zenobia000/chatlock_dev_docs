@@ -60,7 +60,8 @@ sequenceDiagram
 
 ```mermaid
 stateDiagram-v2
-    [*] --> triggered : feedback signal / scheduled batch / pre-deploy gate
+    [*] --> triggered : trigger event
+    note right of triggered : feedback signal / scheduled batch / pre-deploy gate
     triggered --> running : judge 啟動
     running --> scored : LLM judge 完成
     scored --> passed : score ≥ threshold

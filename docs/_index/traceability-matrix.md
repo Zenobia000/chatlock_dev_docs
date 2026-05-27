@@ -21,8 +21,8 @@ source_specs:
 | 指標 | 計數 | 健康 |
 |:-----|:-----|:-----|
 | Total FR | 51 | — |
-| Total BR | 1 | — |
-| Total ADR | 72 | — |
+| Total BR | 110 | — |
+| Total ADR | 73 | — |
 | FR status: active | 49 | — |
 | FR status: superseded | 2 | ✅ tracked |
 | FR with empty `mapped_to` (orphan) | 0 | ✅ |
@@ -30,7 +30,7 @@ source_specs:
 | ADR migration_status: HISTORICAL | 14 | ✅ |
 | ADR migration_status: REVIEW_REQUIRED | 5 | 🟡 awaiting A2.4 critique |
 | ADR migration_status: PARTIAL_UPDATE | 1 | 🟢 Lane A done, 6 dim cascade pending |
-| ADR not yet classified (incl. new post-2026-05-28 ADRs) | 2 | 🟡 |
+| ADR not yet classified (incl. new post-2026-05-28 ADRs) | 3 | 🟡 |
 
 ---
 
@@ -583,6 +583,7 @@ source_specs:
 | [ADR-0065-change-request-type-lookup-table](docs/architecture/adr/ADR-0065-change-request-type-lookup-table.md) | ADR-0065: ChangeRequest.type Lookup Table Migration | STILL_VALID_UNDER_M15_M18 | M15, M18 |
 | [ADR-0066-quote-workorder-lifecycle-binding](docs/architecture/adr/ADR-0066-quote-workorder-lifecycle-binding.md) | ADR-0066: Quote ↔ WorkOrder Lifecycle Hard Binding（with Emergency Carve-out） | STILL_VALID_UNDER_M04_M05 | M04, M05 |
 | [ADR-0067-m18-runtime-config-governance](docs/architecture/adr/ADR-0067-m18-runtime-config-governance.md) | ADR-0067 — M18 Runtime Configuration Governance | NOT_CLASSIFIED | - |
+| [ADR-0068-m18-anti-corruption-layer](docs/architecture/adr/ADR-0068-m18-anti-corruption-layer.md) | ADR-0068 — M18 Cross-Module Anti-Corruption Layer (Config Read API) | NOT_CLASSIFIED | - |
 | [ADR-0100-legacy-adr-supersede-index](docs/architecture/adr/ADR-0100-legacy-adr-supersede-index.md) | ADR-0100 — Legacy ADR Supersede Index (post Final Spec 2026-05-20) | NOT_CLASSIFIED | - |
 | [ADR-PII-002-data-minimization-schema-ci-double-defense](docs/architecture/adr/ADR-PII-002-data-minimization-schema-ci-double-defense.md) | ADR-PII-002: 資料極小化雙層防線 | STILL_VALID_UNDER_M17_M02_cross-cutting | M17, M02, cross-cutting |
 | [ADR-PIVOT-001-v2-restart-trigger](docs/architecture/adr/ADR-PIVOT-001-v2-restart-trigger.md) | ADR-PIVOT-001: V2 重啟 trigger 機制 | HISTORICAL | - |
@@ -595,6 +596,7 @@ source_specs:
 
 ### 🟡 ADR not yet classified
 - ADR-0067-m18-runtime-config-governance (docs/architecture/adr/ADR-0067-m18-runtime-config-governance.md)
+- ADR-0068-m18-anti-corruption-layer (docs/architecture/adr/ADR-0068-m18-anti-corruption-layer.md)
 - ADR-0100-legacy-adr-supersede-index (docs/architecture/adr/ADR-0100-legacy-adr-supersede-index.md)
 
 ### 🟡 ADR awaiting Lane A critique (A2.4 task)

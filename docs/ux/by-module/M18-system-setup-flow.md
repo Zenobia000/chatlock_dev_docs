@@ -73,7 +73,8 @@ sequenceDiagram
 stateDiagram-v2
     [*] --> draft : admin 開始編輯
     draft --> validated : schema check pass
-    draft --> draft : validation fail (修正後重試)
+    draft --> validation_fail : schema check fail
+    validation_fail --> draft : 修正後重試
     validated --> approved : 主管 approve + effective_date
     validated --> draft : 退回修改
     approved --> canary : staged rollout 啟動 (10%)

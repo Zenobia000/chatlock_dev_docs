@@ -64,7 +64,8 @@ sequenceDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> collecting : 對話開始
-    collecting --> collecting : facts 不齊 (< 0.85) 繼續多輪
+    collecting --> collectingNext : facts 不齊 (< 0.85) 繼續多輪
+    collectingNext --> collecting : 新一輪輸入
     collecting --> photo_pending : A08 引導拍照
     photo_pending --> collecting : 收到照片
     collecting --> safety_check : facts ≥ 0.85
