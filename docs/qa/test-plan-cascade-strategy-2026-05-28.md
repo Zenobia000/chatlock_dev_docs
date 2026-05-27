@@ -16,6 +16,22 @@ related_roundtable: 2026-05-27 final-spec-migration-strategy + 2026-05-28 user-f
 
 ---
 
+## §0 Cascade Status（2026-05-28 update vs test-plan-smart-lock-saas.md v2.3）
+
+| Section | Status | Notes |
+|:--------|:-------|:------|
+| §1 What changed (test plan 影響範圍) | **active** | 仍 valid，主檔已對齊 v2.3 |
+| §2 Cascade Strategy (auto-gen) | **active** | tools/generate_test_stubs.py 是 follow-up action（A3.7.2）|
+| §3 Test Stub Auto-gen Spec | **active** | spec freeze；待 dev 實作 |
+| §4 既有 Test Plan Doc 處理 | **partial supersede** | 主檔 test-plan-smart-lock-saas.md v2.3 已升維（§A scope / §4.6 P0 critical test / §5.5 NFR / §6 defect triage / §10 completion report），手動 cascade 部分由 v2.3 完成；auto-gen stub 部分仍待 |
+| §5 Open Questions | **active** | 4 個 OQ 待業主回 |
+| §6 Follow-up Action Items | **partial done** | A3.7.4 (合約紅線 cascade) + A3.7.6 (cross-module integration scenario) 由主檔 v2.3 §4.6 / §5.5 cover；A3.7.2 / A3.7.3 / A3.7.7 / A3.7.8 / A3.7.9 仍 pending |
+| §7 Cross-references | **active** | 補 test-data-strategy + automation-coverage-map sibling docs |
+
+**Supersede rule**：本 strategy 與主檔重疊處（合約紅線 cascade / cross-module FR test set / 既有 test plan v2.3 frontmatter note），以 **主檔 v2.3 為 SoT**；strategy doc 保留 auto-gen stub 設計 + open questions + 9 個 follow-up action 為主要 ownership。
+
+---
+
 ## §1 What changed (test plan 受影響範圍)
 
 | 變動 | 對 test plan 影響 |

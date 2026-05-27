@@ -1,11 +1,80 @@
 # Test Plan — 智慧鎖 SaaS 平台
 
-> **狀態**：v1.1 draft（Gate 6 ready — Quote/Pricing cascade 補完）
-> **更新**：2026-05-26
-> **負責人**：QA
-> **關聯**：[PRD v2.1](../prd/smart-lock-saas.md) + [System Spec](../analysis/system-spec-smart-lock-saas.md) + [NFR Matrix](../architecture/nfr-matrix-smart-lock-saas.md) + 3 Forum Final Reports + Forum 2026-05-26-Q01 quote-pricing-engine
-> **新增引用 ADR**：ADR-0062（Pricing Engine V2 bounded context）/ ADR-0063（AI Quote-related Utterance Boundary）/ ADR-0064（Emergency Quote tier — skip-quote）/ ADR-0065（Pricing Rule Snapshot — immutable content-addressable）/ ADR-0066（ChangeRequest.type lookup table migration）
-> **業主裁決**（2026-05-26 Forum Q01）：Q1=A 硬綁定 / Q2=A 重構句型 / Q3=A 急件跳過 quote / Q4=A Lookup table
+> **狀態**：v2.3 draft（Gate 6 ready — Phase I MVP test plan 升維對齊 PRD v2.3 + 53 FR + 122 BR + 75 ADR + 57 paths + 33 entities + 53 tables）
+> **更新**：2026-05-28
+> **負責人**：QA (devteam-qa)
+> **關聯**：[PRD v2.3](../prd/smart-lock-saas.md) · [System Spec](../analysis/system-spec-smart-lock-saas.md) · [NFR Matrix](../architecture/nfr-matrix-smart-lock-saas.md) · [OpenAPI](../architecture/api/openapi-smart-lock-saas.yaml) · [ERD](../architecture/data/erd-smart-lock-saas.md) · [DDL](../architecture/data/ddl-migration-001-init.sql) · [Test Data Strategy](test-data-strategy-smart-lock-saas.md) · [Automation Coverage Map](automation-coverage-map.md) · [Cascade Strategy](test-plan-cascade-strategy-2026-05-28.md)
+> **業主指令**（2026-05-28）：以台灣 0-1 SaaS 落地視角，容忍例外流程做 0-1 導入 — test plan 以 **P0 BR 100% / P1 ≥ 90% / 自動化 ≥ 70%** 為 Gate 6 主要 exit；Phase II 標 `defer`，nice-to-have 不擋 release。
+> **新增引用 ADR**（v2.3 update）：ADR-0050 v2（evidence visibility PARTIAL_UPDATE）/ ADR-0040 v2（refund SoD）/ ADR-0044 v2（warranty 起算 + RMA）/ ADR-0102（cancellation 6-stage cascade）/ ADR-0067（M18 runtime config governance）/ ADR-0068（M18 anti-corruption layer）/ ADR-VCH-001/002（voucher keeper + retention 7yr）/ ADR-PII-002（資料極小化雙層防線）
+> **歷史裁決保留**（Forum 2026-05-26 Q01 quote-pricing-engine）：Q1=A 硬綁定 / Q2=A 重構句型 / Q3=A 急件跳過 quote / Q4=A Lookup table
+
+---
+
+## §A Scope & Exit Criteria — Phase I MVP
+
+> 對齊台灣 0-1 SaaS 落地視角：**先把 P0 happy + 主要 alt 跑穩，例外流容忍但 audit 必驗**。
+
+### §A.1 In-Scope（Phase I MVP — Gate 6 必驗）
+
+| Scope 群 | 對應 P0 FR | P0 BR 群 | 對應 endpoints |
+|:---------|:-----------|:---------|:---------------|
+| LINE intake → AI 對話 → Problem Card | FR-0001 / FR-0002 / FR-0026 / FR-0028 / FR-0030 | BR-A01-* / BR-A06-* / FR-0030 forbidden | `/chatbot/intake:debounce-check` + `/chatbot/agent:respond` + `/chatbot/guardrails:check` + `/chatbot/problem-cards:draft` |
+| Auto / Manual dispatch + WO | FR-0003 / FR-0004 / FR-0005 / FR-0016 | BR-M06-* / BR-M07-* / BR-A03-* | `/dispatch:plan` + `/work-orders/{id}:assign` + `:accept` + `/onsite/arrival` |
+| Onsite + completion + 結案 hard gate | FR-0006 / FR-0009 / ADR-0032 | BR-M07-* / BR-AUDIT-007 | `/onsite/completion` |
+| **6-stage cancellation cascade** | FR-0010 + FR-0052 | BR-CANCEL-001..008 | `/work-orders/{id}/cancel` |
+| **Refund SoD 三維** | FR-0014 | BR-REFUND-001..006 | `/refunds` + `/refunds/{id}` |
+| Consumer payment | FR-0011 | BR-M11-* | `/payments` |
+| Monthly settlement | FR-0012 | BR-M11-* | `/settlements/monthly` |
+| **Warranty + RMA + B2B override** | FR-0015 | BR-WARRANTY-001..007 | `/warranty-claims` + `/devices/{id}/warranty` |
+| Dual-sign + dispute resolution | FR-0013 | BR-A07-* | `/work-orders/{id}/onsite/completion` (dual-sign sub-action) |
+| **Dynamic RBAC L1-L5 + SoD** | FR-0019 | BR-M17-* / ADR-0040 §rbac | `/rbac/roles` |
+| **Audit log + 7yr retention + hash chain** | FR-0020 | BR-AUDIT-007 + ADR-VCH-001 | `/audit/events` + `/audit/exports` |
+| **M18 staged rollout + rollback + audit** | FR-0043 | BR-M18-01..05 + ADR-0067/0068 | 6 個 `/m18/*` endpoints + `/m18/config-read/*` |
+| Sync pipeline（chatbot ↔ ERP）+ Idempotency + DLQ | FR-0035..0040 | BR-S-M01..M06 | 6 個 `/sync/*` endpoints |
+| LINE webhook HA + 24h dedup + autoscale | FR-0024 | BR-A01-* / NFR-Avail-004..007 | LINE webhook handler |
+| CS takeover + handoff | FR-0018 | ADR-0048 hard rule | `/chatbot/handoff:request` |
+| Multimodal intake（**image moderation gate**）| FR-0025 | SOW 2.1(4) image gate | `/chatbot/multimodal:image` |
+| RAG / KB | FR-0029 | FR-0029 | `/chatbot/rag:search` + `/kb/documents` |
+| Eval / observability / deploy health | FR-0032 / FR-0033 | K8 Forbidden + DORA | `/chatbot/eval/*` + `/chatbot/health` |
+| Brand profile resolver + Skill knowledge | FR-0027 / FR-0029 | BR-A01-02 1500 token cap (BR-M18-04 rollout) | `/kb/dynamic-lookup/*` + `/acl/serial-control/lookup` |
+| Exception inbox + approve | FR-0049 (P1) | BR-M15-01 | `/exceptions:inbox` + `:approve` |
+| Customer-site-device-master | FR-0041 | BR-M02-* | `/customers` + `/sites` + `/devices` |
+| **GDPR forget two-phase（cross-cutting）** | (FR-0053 placeholder + DGS) | BR-PII-001b | DGS pipeline + legal-hold |
+
+### §A.2 Out-of-Scope（Phase II + nice-to-have — defer Gate 6）
+
+| Defer 項目 | 為何 defer | Phase I 替代 mitigation |
+|:-----------|:----------|:------------------------|
+| Phase II FR-0044..0051 全套（onboarding / AP settlement / commission / brand monthly settlement / RMA quality loop / governance trace / SOP feedback spiral）| Phase II 啟動再驗 | `@pytest.mark.skip("Phase II")` stub |
+| Part-level warranty automation | BR-WARRANTY-007 Phase I = 整機 1yr；BOM 欄位預留 | unit-level 整機 fixture |
+| Cross-platform unified cancellation entry（LINE / Web / 電話）| FR-0052 §4 out-of-scope | LINE 單一 entry fixture |
+| GDPR self-service portal（LIFF / Web）| FR-0053 placeholder | 客服代客 manual |
+| Bulk cancel / Bulk dispatch | FR-0052/FR-0007 §4 out-of-scope | 單筆 loop |
+| AI 自主 final quote | ADR-0047 Forbidden 永久 | D3-B' 句型 + guardrail enforce |
+| Image content recognition | SOW 2.1(4) 永久禁用 | image moderation block gate（violation=0）|
+
+### §A.3 Gate 6 Exit Criteria（業主 sign-off 條件）
+
+| Criterion | Target | Verification |
+|:----------|:-------|:-------------|
+| **P0 BR 覆蓋率** | 100% (87 / 87 P0 BR 至少 1 happy + 1 alt) | `automation-coverage-map.md` §4 cross-check |
+| **P1 BR 覆蓋率** | ≥ 90% | same |
+| **Endpoint Contract test** | 100% / 57 | schemathesis CI gate |
+| **Endpoint Unit test** | 100% / 57 | pytest --collect-only |
+| **Integration test** | ≥ 80% / 57 | testcontainers CI |
+| **E2E main flow** | 4 條（LINE → AI → PC → WO → 結案）| Playwright + BDD |
+| **自動化整體** | ≥ 70%（weighted avg）| pipeline metric |
+| **Outstanding S0 bug** | 0 | defect tracker |
+| **Outstanding S1 bug** | 0 | defect tracker |
+| **NFR baseline pass** | 8 條（NFR-Perf-001/008 / NFR-Avail-001..007 / NFR-SLA-001..003）| k6 + chaos |
+| **K8 Forbidden Eval** | ≥ 95% on 200 corpus + ≥ 90% robustness（20 抽改寫）| nightly CI gate |
+| **合約 4.4(a) 負面情緒** | ≥ 90% (100 題 + 50 UAT) + 誤攔 < 1% | Eval + manual UAT |
+| **合約 4.4(d) 家族覆核** | 100% | manual + ledger verify |
+| **SOW 2.1(4) image gate** | violation = 0 | pre-commit + runtime double-gate |
+| **GDPR forget 7d** | E2E pass + legal-hold conflict pass | DGS pipeline + audit |
+| **Cross-tenant isolation** | 0 leakage (100 mutation test) | RLS verify |
+| **AT user task success** | ≥ 90% NVDA + ≥ 90% VoiceOver (n=10 each) | recruit + record |
+| **Completion report** | §10 template 填妥 + 業主簽核 | manual |
 
 ---
 
@@ -375,6 +444,104 @@ And violation count metric = 0 enforced
 
 ---
 
+## §4.6 Phase I MVP Critical Test Cases（P0 BR 覆蓋）
+
+> 對應 §A scope；每個 P0 BR cluster 列 happy + alt + SoD/audit verify。Test fixtures 詳見 [test-data-strategy-smart-lock-saas.md](test-data-strategy-smart-lock-saas.md)。
+
+### §4.6.1 Cancellation 6-Stage Cascade Test Suite（25 條）
+
+對應 BR-CANCEL-001..008 + FR-0010 §1.2 + FR-0052 + ADR-0102。
+
+| Test ID | 名稱 | Fixture | Precondition | Steps | Expected | BR |
+|:--------|:-----|:--------|:-------------|:------|:---------|:---|
+| **CNL-S1-H** | S1 報價未確認 happy | CXJ-S1-H | wo.status=quote_sent_unconfirmed | `POST /work-orders/{id}/cancel` reason_code=C-CHANGE_MIND | 200 OK + fee=0 + emit `WorkOrderCancelled(stage=S1)` + audit | BR-CANCEL-001 |
+| **CNL-S1-OVR** | S1 客服嘗試 override 調高 fee | CXJ-S1-ALT | 同上 + CSM 操作 | `POST /cancel` with override_fee=300 | **422 HARD_ZERO_VIOLATION**（S1 fee cannot exceed 0）| BR-CANCEL-001 §constraints |
+| **CNL-S15-H** | S1.5 已確認未派工 happy | CXJ-S1.5-H | quote_confirmed + technician_id NULL | `POST /cancel` reason_code=C-CHANGE_MIND | 200 OK + fee=0 + audit | BR-CANCEL-002 |
+| **CNL-S2-H** | S2 派工未出發 happy | CXJ-S2-H | dispatched + gps=not_departed | `POST /cancel` reason_code=C-FOUND_CHEAPER | 200 OK + fee=300 + travel_split (ADR-0041) + audit | BR-CANCEL-003 |
+| **CNL-S2-OVR** | S2 客服 override 50% 調降 → 主管覆核 | CXJ-S2-ALT | 同上 | `POST /cancel` with override_fee=150 (-50%) | 200 OK + 觸發 `CancellationOverrideAudited` + sup_approval row | BR-CANCEL-003 + FR-0010 AC-08 |
+| **CNL-S3-H** | S3 出發後 happy | CXJ-S3-H | wo.status=en_route | `POST /cancel` reason_code=B-PRICE_DISPUTE | 200 OK + fee=500 (含車馬) | BR-CANCEL-004 |
+| **CNL-S4-H** | S4 到場後未施工 happy | CXJ-S4-H | wo.status=on_site + work_started=false | `POST /cancel` reason_code=C-CHANGE_MIND | 200 OK + fee=800 (車馬 + 檢測) | BR-CANCEL-005 |
+| **CNL-S5-30** | S5 已施工 30% | CXJ-S5-H | in_progress + progress=0.3 + 材料 NTD 500 | `POST /cancel` | 200 OK + fee=NTD 800 (floor) + 材料 500 + 車馬 = NTD 1300 | BR-CANCEL-006 |
+| **CNL-S5-80** | S5 已施工 80% proportional | CXJ-S5-ALT | in_progress + progress=0.8 + 材料 NTD 1000 | `POST /cancel` | 200 OK + fee = total × 0.8 + 材料 + 車馬 (no floor 觸發) | BR-CANCEL-006 §proportional |
+| **CNL-TECH-1** | 師傅 initiated 首次當月 | CXJ-TECH-001 | technician_id=T1, monthly cancel count=0 | `POST /cancel` initiator=technician reason_code=T-SICK | 200 OK + fee=0 + tech.weight -5 | BR-CANCEL-007 |
+| **CNL-TECH-2** | 師傅 initiated 同月第 2 次 | CXJ-TECH-002 | monthly cancel count=1 | `POST /cancel` initiator=technician | 200 OK + 技師扣 NTD 500 + tech.weight -10 + auto reassign event | BR-CANCEL-007 |
+| **CNL-TECH-3** | 師傅不可抗力（醫療證明）| CXJ-TECH-003 | monthly count=2 + ops_manager pre-approve + evidence FK | `POST /cancel` initiator=technician + evidence_id | 200 OK + fee=0 + audit log evidence link 保留 ≥ 1yr | BR-CANCEL-007 §force-majeure |
+| **CNL-NEG-NOREASON** | 缺 reason code | CXJ-NEG-001 | any stage | `POST /cancel` body 無 reason_code | **422 REASON_CODE_REQUIRED** | BR-CANCEL-008 |
+| **CNL-NEG-BADCODE** | 自由文字繞過 | (synthetic) | any stage | `POST /cancel` reason_code='OTHER' (not in enum) | **422 INVALID_REASON_CODE** + 拒 M18 enum 之外 | BR-CANCEL-008 |
+| **CNL-AUDIT** | 全 6 階段 audit completeness | CXJ-S1..S5 全跑 | - | post-test query `audit_log.workorder_cancelled` | 每筆 audit 含 stage / fee / reason_code + 補充文字 / initiator / approver (override 時) + trace_id | BR-CANCEL-008 + BR-AUDIT-007 |
+
+剩 11 條為 unit-level coverage（reason_code enum 4 大類 × 階段 cross-product，由 stub auto-gen）。
+
+### §4.6.2 Refund SoD 三維 Test Suite（10 條）
+
+對應 BR-REFUND-001..006 + ADR-0040 v2。
+
+| Test ID | 名稱 | Fixture | Steps | Expected | BR |
+|:--------|:-----|:--------|:------|:---------|:---|
+| **REF-H-L1** | L1 小額 happy | REF-SOD-001 | initiator=csm_a, amount=NTD 500 → approver=acct_a → executor=system | 200 OK + 7-event audit chain | BR-REFUND-002 |
+| **REF-H-L2** | L2 中額 sup 簽 | REF-SOD-003 | NTD 50,000 → approver=sup_a | 200 OK + L2 audit | BR-REFUND-006 §rbac-mapping |
+| **REF-H-L5** | L5 高額 sponsor 簽 | REF-SOD-005 | NTD 600,000 → approver=sponsor_l5 | 200 OK + L5 audit + special event | BR-REFUND-006 §rbac-mapping |
+| **REF-SOD-IA** | initiator == approver 同人 | REF-SOD-002 | initiator=csm_a, approver=csm_a | **409 SOD_VIOLATION** + audit `sod_violation_initiator_approver` | BR-REFUND-006 |
+| **REF-SOD-IE** | initiator == executor 同人 | REF-SOD-NEG-001 | initiator=csm_a, executor=csm_a manual call | **409 SOD_VIOLATION** + audit `sod_violation_initiator_executor` | BR-REFUND-006 |
+| **REF-TIER-OVER** | L3 sup 嘗試簽超 cap | (synthetic) | sup_a 嘗試 approve NTD 200,000 (超 L3 100k cap) | **425 ESCALATE_TO_L4** + queue 升 ops_manager | BR-REFUND-006 §rbac-mapping |
+| **REF-TIER-L5** | 業績 1% 觸發 L5 | (synthetic) | amount > company_annual_revenue × 1% | **425 ESCALATE_L5_SPONSOR** | BR-REFUND-006 §rbac-mapping |
+| **REF-CONSTRAINT-DB** | DB CHECK constraint 強制 | (synthetic raw SQL) | direct INSERT with initiator_id=approver_id | DB error (CHECK violated) | BR-REFUND-006 §constraints |
+| **REF-EXEC-SYS** | executor=system 必記錄 trigger user | (synthetic) | cron-triggered auto-execute | audit log 記 service account + originating user | BR-REFUND-006 §constraints |
+| **REF-AUDIT-CHAIN** | refund 7-event audit hash chain | REF-SOD-001..005 | post-test verify | hash_self = sha256(hash_prev + content) 每筆驗 | BR-REFUND-002 + BR-AUDIT-007 |
+
+### §4.6.3 Warranty + RMA + B2B Override Test Suite（12 條）
+
+對應 BR-WARRANTY-001..007 + ADR-0044 v2 + FR-0015。
+
+| Test ID | 名稱 | Fixture | Steps | Expected | BR |
+|:--------|:-----|:--------|:------|:---------|:---|
+| **WAR-H-INSTALL** | from_install 整機 1yr | WAR-H-001 / DEV-WM-001 | install_date=2025-06-01 → query warranty | end_date = 2026-06-01 | BR-WARRANTY-001 + BR-WARRANTY-007 |
+| **WAR-H-HANDOVER** | from_handover 整機 1yr | WAR-H-002 / DEV-WM-002 | handover_date 設定 → query | end_date = handover + 365d | BR-WARRANTY-001 §from_handover |
+| **WAR-H-B2B-OVR** | B2B 合約 2yr override | WAR-H-002 + contract.warranty_months=24 | query | end_date = handover + 730d + audit override source | BR-WARRANTY-006 |
+| **WAR-RMA-EXTEND** | RMA 整機修 7d 延長 | WAR-RMA-001 / DEV-WM-003 | rma_send=2025-08-15, rma_return=2025-08-22 → query end_date | end_date = original + 7d + audit log `extended_by_rma` | BR-WARRANTY-005 §1 |
+| **WAR-RMA-PART** | 換新零件 part-level 90d 獨立 | WAR-RMA-002 / DEV-WM-004 | 換馬達 2025-09-01 → BOM table query | original end_date 不延長 + 馬達 part_warranty_end=2025-11-30 + audit | BR-WARRANTY-005 §2 + BR-WARRANTY-007 BOM 階層 |
+| **WAR-ABUSE** | 月內循環送修 3 次 anti-abuse | WAR-NEG-001 | 同 device 月內 RMA × 3 | audit `rma_abuse_suspected` + ops_manager alert | BR-WARRANTY-005 §anti-abuse |
+| **WAR-EXPIRED** | 過保 claim | WAR-NEG-002 / DEV-WM-005 | warranty.end_date < today + warranty_claim POST | **422 WARRANTY_EXPIRED** + 引導 paid quote | BR-WARRANTY-003 §boundary |
+| **WAR-NEG-SERIAL** | serial NULL 註冊 | DEV-WM-NEG-001 | POST /devices without serial | **422 SERIAL_MANDATORY** (ADR-0053) | ADR-0053 |
+| **WAR-NEG-DATE** | install_date future | DEV-WM-NEG-002 | install_date=2027-01-01 | **422 INVALID_INSTALL_DATE** | BR-WARRANTY-001 |
+| **WAR-CONFIG-OVR** | M18 config 改保固月數 | (synthetic) | M18 staged rollout warranty.default_months=24 | 新註冊 device 走 24 月 + audit `config_version=v2` | BR-M18-04 + BR-WARRANTY-007 |
+| **WAR-BOM-PRESERVE** | Phase II BOM 階層欄位預留 | (DDL inspect) | SELECT part_id, part_category from bom_table | 欄位存在 + Phase I NULL allowed | BR-WARRANTY-007 §constraints |
+| **WAR-AUDIT** | 三段日期 audit | WAR-RMA-001/002 | post-test query audit log | original_end / extended_end / part_new_end 三欄記錄 | BR-WARRANTY-005 §constraints |
+
+### §4.6.4 M18 Config Staged Rollout + Rollback Test Suite（12 條）
+
+對應 ADR-0067 + ADR-0068 + BR-M18-01..05 + NFR-Perf-008。
+
+| Test ID | 名稱 | Precondition | Steps | Expected | BR |
+|:--------|:-----|:-------------|:------|:---------|:---|
+| **M18-SCHEMA** | Schema validation pre-deploy | invalid config payload | `POST /m18/configs` with field type 錯誤 | **422 SCHEMA_VALIDATION_FAILED** + audit `validation_failed` | BR-M18-01 + ADR-0067 §1 |
+| **M18-VERSION** | 版本化 + audit log | active config v1 | `PATCH /m18/configs/{ns}/{key}` body=v2 | v1 標 superseded; v2 = pending_rollout + audit row 含 owner approval (BR-M18-05) | BR-M18-01 + BR-M18-05 |
+| **M18-ROLLOUT-5** | Stage 5% canary 30 min | v2 pending | `POST /versions/{v2}:start-rollout` | rollout_state=5%_canary + 30min timer start + observation metrics 收集 | BR-M18-04 |
+| **M18-ROLLOUT-50** | Auto-promote 50% | 5% canary 30 min 無 error | timer tick | rollout_state=50%_canary + 30min timer + audit `auto_promoted` | BR-M18-04 |
+| **M18-ROLLOUT-100** | Auto-promote 100% | 50% canary 30 min 無 error | timer tick | rollout_state=100%_full + audit `auto_promoted` | BR-M18-04 |
+| **M18-ROLLOUT-FAST** | Fast-track 15 min | low-risk allowlist + 5% 0-error | start-rollout with fast_track=true | 5% / 50% / 100% 各 15min + audit `fast_track=true` | BR-M18-04 §fast-track |
+| **M18-ROLLOUT-FAST-DENY** | Fast-track 高風險 reject | pricing/RBAC/SLA 變更 | start-rollout with fast_track=true | **422 FAST_TRACK_NOT_ALLOWED_FOR_HIGH_RISK** + audit | BR-M18-04 §high-risk-allowlist |
+| **M18-ROLLBACK** | 1-click rollback ≤ 1 min | rollout_state=50%_canary, ops alert | `POST /m18/rollouts/{id}:rollback` | active version 退回 v1 within 60s + rollback 走 staged (5% 驗證) + audit `rollback_triggered_by` | BR-M18-04 + ADR-0067 §4 |
+| **M18-SNAPSHOT-TX** | Per-transaction snapshot | quote calc 啟動時 v2, 中途 v3 rollout | quote 計算過程不 switch | quote 全 lifecycle 用 v2; X-Config-Version=v2 header 全程一致 | ADR-0067 §5 + ADR-0068 |
+| **M18-CACHE-INVALIDATE** | Cache TTL 30s + broadcast | reader cache v2 active | v3 publish → broadcast invalidation | 所有 reader 收到後即 refetch + 後續 read return v3 | ADR-0067 §5 |
+| **M18-PERF-READ** | Config read P99 ≤ 50ms (cache hit) | active config + warm cache | k6 1000 req/s × 5min `GET /m18/config-read/{ns}/{key}` | P99 ≤ 50ms + cache_hit_rate ≥ 95% | NFR-Perf-008 |
+| **M18-AUDIT-7Y** | Config audit ≥ 7yr retention | active config + audit row | post-test partition + retention policy 驗 | partition 不 prune ≥ 7yr + ledger append-only | BR-M18-05 + ADR-VCH-002 |
+
+### §4.6.5 SoD Violation General Pattern Test Suite（6 條）
+
+> 跨模組 SoD 系統性 violation 攔截：refund / cancel override / config / audit export / role assign / approval。
+
+| Test ID | 場景 | Steps | Expected |
+|:--------|:-----|:------|:---------|
+| **SOD-REFUND-IA** | Refund initiator == approver | (見 REF-SOD-IA) | 409 + audit |
+| **SOD-CANCEL-OVR** | Cancel override approver == initiator override | csm_a override cancel fee + csm_a 自簽 sup_approval | **409 SOD_VIOLATION_OVERRIDE_SELF** |
+| **SOD-CONFIG** | M18 config 同人 propose + approve | csm_a propose v2 + csm_a 自簽 | **409 SOD_VIOLATION_CONFIG_OWNER** + audit |
+| **SOD-AUDIT-EXPORT** | Audit export 同人 request + execute | csm_a 自申請 + 自執行 export | **409 SOD_VIOLATION_AUDIT_EXPORT** |
+| **SOD-ROLE-ASSIGN** | Role assign 同人 propose + approve | (同上 RBAC) | **409 SOD_VIOLATION_RBAC** |
+| **SOD-EXEC-IS-USER** | executor 非 system 且 == initiator | manual exec path 攻擊 | **409 SOD_VIOLATION_INITIATOR_EXECUTOR** |
+
+---
+
 ## §5 Performance Test Plan
 
 | Test | Target | Tool | Pass criterion |
@@ -389,49 +556,150 @@ And violation count metric = 0 enforced
 
 ---
 
+## §5.5 NFR Test Plan（SLO 對應）
+
+> 對應 [NFR Matrix](../architecture/nfr-matrix-smart-lock-saas.md) v1+；每條 NFR 對 SLO + 驗證 tool + chaos / failure mode test。
+
+### §5.5.1 Performance / Availability / SLA NFR Test Map
+
+| NFR ID | Target | Tool | Pass Criterion | Chaos / Failure Test |
+|:-------|:-------|:-----|:---------------|:---------------------|
+| NFR-Perf-001 | LINE AI 首回應 p95 < 5s | k6 50 concurrent | p95 < 5s + 5xx rate < 0.5% | LLM quota 爆 → fallback canned ≤ 5s |
+| NFR-Perf-005 | DGS purge p95 < 500ms / p99 < 2s | k6 100/s | 達標 + 0 5xx | DB connection pool 滿 → graceful 429 |
+| NFR-Perf-006 | DGS read snapshot p95 < 50ms cache hit / p95 < 200ms miss | APM + k6 | 達標 | cache 全失效 cold start |
+| NFR-Perf-007 | Outbox bus lag p99 ≤ 30s / p99.9 ≤ 2min | metric | 達標 | bus slow consumer drill |
+| **NFR-Perf-008** | M18 config read P99 ≤ 50ms (cache hit, TTL 30s) | APM + k6 | (見 M18-PERF-READ) | 1000 req/s burst |
+| NFR-Avail-001 | Uptime ≥ 95% (合約 baseline) | 30d rolling SLO | 達標 | - |
+| NFR-Avail-002 | Uptime ≥ 99.5% (營運) | 30d rolling | 達標 | - |
+| NFR-Avail-003 | DGS ≥ 99.95% | SLO | 達標 | DGS pod kill chaos |
+| NFR-Avail-004 | LINE webhook ≥ 99.9% (24h dedup + DLQ) | webhook automated test | 達標 | LINE 重送 + dedup verify |
+| **NFR-Avail-005** | LINE Webhook ack latency P99 ≤ 200ms | k6 burst | P99 ≤ 200ms | 10× burst 60s scale |
+| **NFR-Avail-006** | LINE Webhook autoscale 10x in 60s | burst test | 60s 內補 instance | 突發流量 chaos |
+| **NFR-Avail-007** | Async processing > 5s → 200 ack + BackgroundTask | integration | 200 ack ≤ 5s + task continue | LLM slow path |
+| **NFR-SLA-001** | 派工 → 抵達 SLA (soft) > 2hr dashboard 紅 | dashboard widget | dashboard 變紅 + push 進 ops queue | breach drill |
+| **NFR-SLA-002** | SLA boundary T+2:00:01 始 breach | TC IT-0062 | exact boundary fire | - |
+| **NFR-SLA-003** | SLA alert fallback retry + email | runbook | push fail → retry queue + email | push provider down |
+
+### §5.5.2 Privacy / Audit / Security NFR Test Map
+
+| NFR | Target | Verification |
+|:----|:-------|:-------------|
+| NFR-Priv-002 default retention 1y | DGS cron + audit | partition pruning EXPLAIN per quarter |
+| NFR-Priv-005 GDPR forget ≤ 7d | DGS pipeline | E2E (T0 + T+7d) |
+| NFR-Priv-006 Cross-tenant isolation 0 leakage | RLS verify | 100 mutation test |
+| NFR-Priv-007 DEK rotation 90d | KMS schedule | scheduled rotate verify |
+| NFR-Priv-008 Two-phase purge T0+T30d | DGS phase audit | E2E (T0 shred + T+30 hard delete + ledger append) |
+| NFR-Sec-007 Forbidden Eval ≥ 95% | 200 corpus + 20 robustness | nightly + block-deploy gate |
+| NFR-Sec-008 Image moderation violation = 0 | pre-commit + runtime double | static analysis + webhook gate |
+
+### §5.5.3 Chaos / Failure Mode Test（ADR-0067/0068）
+
+| Drill | Trigger | Expected Behavior |
+|:------|:--------|:------------------|
+| M18 config service down 60s | kill pod | reader fall back to last-known-good (in-process cache TTL extend) + ops alert |
+| DGS service down 30s | chaos kill | GDPR forget queue 進 retry + customer notice 不 fire 在 down period |
+| LINE webhook DLQ drill | inject bad payload 100 個 | DLQ accept + 1hr 內 ops review |
+| Database failover | primary down | replica promote ≤ 60s + outbox 不丟 |
+| Anti-corruption layer down (ADR-0068) | external partner API 500 | ACL retry + circuit breaker + fallback |
+| Cache wipe (config 全失效) | flush cache | reader cold start ≤ 200ms p95 |
+
+---
+
 ## §6 Defect Triage Rules
 
-| Severity | 定義 | SLA |
-|:---|:---|:---|
-| P0（Block Release）| 合約紅線違反 / Data loss / Security CVE Critical / Cross-tenant leak | Immediate fix |
-| P1（Block Sprint）| KPI 紅線（K1/K3/K4/K8 < target）/ DGS down / Family Reviewer 卡死 | Fix within sprint |
-| P2（Next Sprint）| UX 不便 / 邊緣 bug / observability gap | Triaged each sprint |
-| P3（Backlog）| Cosmetic / minor improvement | Backlog |
+> 嚴重度 + 對應 SLO + ops response time。
 
-**Defect density target**：S0+S1 defect / KLOC < 0.5；regression rate < 5%
+| Severity | 定義 | Acknowledge SLA | Fix SLA | 範例 |
+|:---|:---|:---|:---|:---|
+| **S0** (Block Release / P0 incident) | 合約紅線違反 / Data loss / Security CVE Critical / Cross-tenant leak / GDPR violation / SoD bypass / Auth bypass | ≤ 15 min | ≤ 4hr (production hotfix) | refund SoD 被繞過 / image gate violation / cross-tenant SELECT 通過 |
+| **S1** (Block Sprint / P1 incident) | KPI 紅線（K1/K3/K4/K8 < target）/ DGS down / Family Reviewer 卡死 / M18 rollback fail / Audit chain broken | ≤ 1hr | ≤ 24hr | K8 Forbidden < 95% / M18 rollback > 1min / NFR-Perf-008 P99 > 50ms |
+| **S2** (Next Sprint) | UX 不便 / 邊緣 bug / observability gap / NFR P95 失準（但 P99 仍達標）| ≤ 1 business day | next sprint | RAG p95 漂移 / dashboard widget 過慢 / a11y 對比邊緣 |
+| **S3** (Backlog) | Cosmetic / minor improvement / Phase II precursor | best effort | backlog | typo / 圖示對齊 / nice-to-have a11y enhancement |
+
+**Defect density target**：S0 + S1 defect / KLOC < 0.5；regression rate < 5%
+
+**Defect → SLO 雙向觸發**：
+- 若 SLO burn rate drill 觸發 page → 自動開 S0/S1 incident ticket
+- 若 S0/S1 ticket 開立 → 進 incident review + 24/48hr post-mortem
+- 連續 4 週同 SLI 多次 page → 自動升 incident review 為「systematic risk」
 
 ---
 
 ## §7 Gate 6 Test Ready Exit Criteria
 
+### §7.1 v2.3 Phase I MVP Exit Criteria（業主裁決：P0 100% + 自動化 ≥ 70%）
+
+- ✅ §A scope & exit criteria 全寫齊（in-scope / out-of-scope / criteria 量化）
 - ✅ Test pyramid 9 levels defined
+- ✅ Test data strategy 主檔（[test-data-strategy-smart-lock-saas.md](test-data-strategy-smart-lock-saas.md)）
+- ✅ Automation coverage map（[automation-coverage-map.md](automation-coverage-map.md)）— 57 endpoint × 6 layer matrix
 - ✅ KPI K1~K9 + C1~C3 scenarios with positive + negative + drift trigger
 - ✅ 合約紅線 4.4(a)(d) + SOW 2.1(4) + GDPR forget + RBAC isolation tests defined
 - ✅ Edge case BDD scenarios（8 條，含急件 / 結案 / 多 PC / forget × legal_hold / Forbidden / Family Reviewer / Contract V1 / Image gate）
-- ✅ Defect triage rules + density target
-- ✅ Completion report template（§10）
-- ⏳ Test data fixtures（W4-W8 shadow run baseline）— 需 PM / domain expert 配合
+- ✅ **Cancellation 6-stage cascade 25 條 test（§4.6.1 CNL-*）**（BR-CANCEL-001..008 + ADR-0102 + FR-0010/FR-0052）
+- ✅ **Refund SoD 10 條 test（§4.6.2 REF-*）**（BR-REFUND-001..006 + ADR-0040 v2）
+- ✅ **Warranty + RMA 12 條 test（§4.6.3 WAR-*）**（BR-WARRANTY-001..007 + ADR-0044 v2 + FR-0015）
+- ✅ **M18 staged rollout + rollback 12 條 test（§4.6.4 M18-*）**（ADR-0067/0068 + BR-M18-01..05）
+- ✅ **SoD violation 6 條 test（§4.6.5 SOD-*）**（跨模組 initiator/approver/executor 攔截）
+- ✅ NFR test plan（§5.5）含 chaos / failure mode（M18 / DGS / LINE webhook / DB failover / ACL / cache）
+- ✅ Defect triage S0/S1/S2/S3 + SLA + density target + SLO 雙向觸發
+- ✅ Completion report template upgraded（§10 含 KPI + 合規 + NFR baseline + AT user task + sign-off 4 方）
+
+### §7.2 既有 Quote / Pricing / LIFF Test Coverage（保留）
+
 - ✅ **Quote lifecycle 15 條 test（QLT-001 ~ QLT-015）100% pass**（D2-A 硬綁定 + Q3=A 急件跳過 quote）
 - ✅ **Pricing engine 6 條 test（PET-001 ~ PET-006）100% pass**
 - ✅ **AI Utterance Boundary 5 條 test（AUT-001 ~ AUT-005）100% pass** + Eval 220 題（200 + 20 補誘導）通過率 ≥ 99%（無偽 final quote）
 - ✅ **LIFF state matrix 25 格 coverage**（8 條代表性 E2E test LST-001 ~ LST-008 全 pass + 剩 17 格 unit/integration test pass）
 - ✅ **a11y WCAG 13 條 SC 全 pass**（8 條代表性 acceptance A11Y-* + 5 條 integration test）+ **AT user task success ≥ 90%（NVDA + VoiceOver）**
-- ✅ **NFR-Perf-008 (pricing p95<300ms) / NFR-Avail-005 (engine 99.5% + D1-A fallback) / NFR-Avail-006 (LIFF 99.9% + Flex fallback) load + chaos test 全 pass**
+- ✅ **NFR-Perf-008 (M18 config read P99 ≤ 50ms cache hit) / NFR-Avail-005 (engine 99.5% + D1-A fallback) / NFR-Avail-006 (LIFF 99.9% + Flex fallback) load + chaos test 全 pass**
 - ✅ **5 條 SLI burn rate alert（SLI-Alert-001 ~ SLI-Alert-005）演練 pass**
+
+### §7.3 Outstanding / Cascade-Dependent
+
+- ⏳ Test data fixtures（W4-W8 shadow run baseline）— 需 PM / domain expert 配合
+- ⏳ 200 anonymized fixture commit（待 OQ-TDS-01 業主判 commit vs gitignore）
 - ⏳ **Legal sign-off cascade 前置**：LIFF checkbox 條款本文（OQ-BA-04 — Legal 判定 checkbox 法律有效性是否充分）
 - ⏳ **DPO sign-off cascade 前置**：snapshot retention（settlement 後 5 年 hard delete + `contract_template_id` 連動 BR-PII-001b purge）
+- ⏳ FR-0053 GDPR self-service portal（Phase II placeholder；Phase I 客服代客 manual 覆蓋）
+- ⏳ A3.7 cascade strategy follow-up（[test-plan-cascade-strategy](test-plan-cascade-strategy-2026-05-28.md) §6 9 個 action items）
 
 ---
 
 ## §8 Test Data Strategy
 
-- **Synthetic**：pytest factories for tenants / customers / devices / PC
-- **Anonymized prod-like**：甲方提供 200 筆 historical case → anonymize → fixtures
-- **Shadow run（W4-W8）**：real LINE traffic → 平行運行新 AI agent in shadow mode（no customer-facing），收 baseline metrics
-- **Eval corpus 200 題**：
+> 主檔搬到 [test-data-strategy-smart-lock-saas.md](test-data-strategy-smart-lock-saas.md) 完整定義；本段保留 high-level summary。
+
+### §8.1 三層 fixture 架構
+
+1. **Tenant 邊界 fixture**（B2C / B2B builder / brand / project）— RLS isolation 強制驗
+2. **客戶旅程 fixture**（6-stage cancellation + 退款 SoD + 5-mode warranty + RMA）— P0 BR alignment
+3. **角色 fixture**（CSM / acct / sup / ops_manager / sponsor L5 + 師傅 L1-L5）— SoD 驗
+
+### §8.2 Synthetic + Anonymized 混合
+
+- **Synthetic（factories）**：pytest-factoryboy 生成；每 fixture 必含 tenant_id（multi-tenancy guard）
+- **Anonymized prod-like**：甲方 200 筆 historical case → `tools/anonymize_fixtures.py` → `tests/fixtures/anonymized/`
+- **PII scrub**：OCR 過 evidence photo 偵測身分證 / 車牌 / 門牌 → blur
+- **Audit**：anonymize 寫 `_audit.json` 留 7yr 對齊 ADR-VCH-002
+
+### §8.3 Shadow run + Eval corpus
+
+- **Shadow run（W4-W8）**：real LINE traffic → 平行 shadow mode（no customer-facing），收 baseline
+- **Eval corpus 200 題 + 20 補誘導**：
   - 60 題 W4 baseline（corpus 未齊時 warn-only block_deploy）
-  - 200 題 W8 full
+  - 220 題 W8 full（200 base + 20 robustness 抽改寫 + AUT 220）
   - QA + Domain Expert 共同 ownership
+
+### §8.4 PII Anonymization Pipeline
+
+| 階段 | 動作 | 工具 |
+|:-----|:-----|:-----|
+| 1. Extract | 甲方 read-only snapshot | DBA-managed export |
+| 2. Anonymize | Faker(locale=zh_TW) replace 姓名/電話/地址/LIFF | `tools/anonymize_fixtures.py` |
+| 3. Scrub | OCR detect → blur PII pixels in evidence | OpenCV + EasyOCR |
+| 4. Validate | re-scan no PII leak | `tools/scan_pii.py` |
+| 5. Store + Audit | commit + audit JSON 留 7yr | git |
 
 ---
 
@@ -449,35 +717,97 @@ And violation count metric = 0 enforced
 
 ## §10 Completion Report Template
 
+> 給 Release Readiness（Gate 7）用。每次 release 前 QA 填寫，附 evidence link，業主 + PM + QA Lead 三方簽核。
+
 ```markdown
 # Test Completion Report — Smart Lock SaaS V<x.y>
 
-## Summary
+## §1 Release Metadata
+- Release tag: vX.Y.Z
+- Release date: YYYY-MM-DD
+- Phase: I MVP / II / hotfix
+- Git SHA: <sha>
+- Report owner: QA Lead
+
+## §2 Test Execution Summary
 - Tests executed: <N>
-- Pass: <N> | Fail: <N> | Skipped: <N>
-- KPI status: K1=<v> K2=<v> ... K9=<v>
-- Forbidden Eval pass rate: <%>
-- Compliance test pass: 4.4(a)/4.4(d)/9.3/SOW 2.1(4) ✓/✗
+- Pass: <N> | Fail: <N> | Skipped: <N> | Quarantined: <N>
+- Automation rate: <%> (target ≥ 70%)
+- P0 BR coverage: <%> (target = 100%)
+- P1 BR coverage: <%> (target ≥ 90%)
+- Endpoint contract coverage: <N>/57 (target = 57)
 
-## Defects
-| ID | Severity | Title | Status |
-| ... | ... | ... | ... |
+## §3 KPI Status
+| KPI | Target | Actual | Status |
+|:----|:-------|:-------|:-------|
+| K1 AI 準確率 | ≥ 80% | <v>% | ✓/✗ |
+| K2 自助率 (W8 baseline) | σ ∈ [45%, 65%] | <v>% | ✓/✗ |
+| K3 負面情緒 | ≥ 90% | <v>% | ✓/✗ |
+| K4 PC 完整率 | ≥ 85% | <v>% | ✓/✗ |
+| K5 接單 SLA | 10/5 min per-brand | <v> | ✓/✗ |
+| K6 AI p95 | < 5s | <v>s | ✓/✗ |
+| K7 Uptime | ≥ 95% | <v>% | ✓/✗ |
+| K8 Forbidden | ≥ 95% + robustness ≥ 90% | <v>% / <v>% | ✓/✗ |
+| K9 Concurrent | V1 ≥ 50 / V2 ≥ 100 | <v> | ✓/✗ |
 
-## Coverage
-- Backend: <x>%（target ≥ 70%）
+## §4 Compliance Test Pass
+| 紅線 | 驗證項 | Status |
+|:----|:------|:-------|
+| 合約 4.4(a) 負面情緒 ≥ 90% + 誤攔 < 1% | manual + monitor | ✓/✗ |
+| 合約 4.4(d) 家族覆核 100% + ledger ≥ 7yr | manual + hash verify | ✓/✗ |
+| SOW 2.1(4) image gate violation = 0 | pre-commit + runtime | ✓/✗ |
+| GDPR forget 7d + legal-hold conflict | DGS E2E | ✓/✗ |
+| Cross-tenant isolation 0 leakage | 100 mutation | ✓/✗ |
+| PII retention partition + two-phase purge | EXPLAIN + E2E | ✓/✗ |
+| Refund SoD（initiator ≠ approver ≠ executor）| 6 SOD test all green | ✓/✗ |
+| M18 staged rollout 5/50/100 + rollback ≤ 1 min | M18-ROLLOUT/ROLLBACK | ✓/✗ |
+| Audit hash chain integrity | random 100 sample verify | ✓/✗ |
+
+## §5 NFR Baseline Pass
+| NFR | Target | Actual | Status |
+|:----|:-------|:-------|:-------|
+| NFR-Perf-001 LINE AI p95 | < 5s | <v>s | ✓/✗ |
+| NFR-Perf-008 M18 read P99 | ≤ 50ms | <v>ms | ✓/✗ |
+| NFR-Avail-001 Uptime | ≥ 95% | <v>% | ✓/✗ |
+| NFR-Avail-005 LINE Webhook P99 | ≤ 200ms | <v>ms | ✓/✗ |
+| NFR-SLA-001 2hr breach detect | dashboard 紅 | ✓/✗ |
+| NFR-Priv-005 GDPR ≤ 7d | E2E | ✓/✗ |
+
+## §6 Defects
+| ID | Severity | Title | Owner | Status |
+|:---|:---------|:------|:------|:-------|
+| ... | S0/S1/S2/S3 | ... | ... | open/fixed/wontfix |
+
+**Defect density**：S0+S1 / KLOC = <v> (target < 0.5)
+**Regression rate**: <v>% (target < 5%)
+
+## §7 AT / a11y User Task Success
+| Tool | Target | Actual (n=10) |
+|:-----|:-------|:--------------|
+| NVDA + Chrome | ≥ 90% | <v>% |
+| VoiceOver + iOS Safari | ≥ 90% | <v>% |
+
+## §8 Coverage
+- Backend unit: <x>% (target ≥ 70%)
+- Contract: <x>/57 endpoints (target = 57)
+- Integration: <x>/57 (target ≥ 46)
+- E2E main flow: <x>/4 (target = 4)
 - Negative case 覆蓋: <x>%
-- E2E: <x>%
+- Forbidden Eval: <x>/220 (target ≥ 209)
 
-## Verdict
+## §9 Verdict
 - [ ] Gate 6 Test Ready — Pass / Fail
+- [ ] Gate 7 Release Ready — Pass / Fail
 - [ ] Recommend release: Yes / No
+- [ ] Risk acknowledgment: <list of known risks accepted by 業主>
 
-## Sign-off
-- QA Lead: ___________
-- PM: ___________
-- Stakeholder: ___________
+## §10 Sign-off
+- QA Lead: ___________  date: ____
+- PM: ___________  date: ____
+- Architect: ___________  date: ____
+- Stakeholder（業主）: ___________  date: ____
 ```
 
 ---
 
-**Gate 6 Test Ready Freeze** — ✅ ready
+**Gate 6 Test Ready Freeze** — ✅ ready（v2.3 upgraded, Phase I MVP P0 BR 100% + P1 ≥ 90% + 自動化 ≥ 70%, sibling docs: test-data-strategy + automation-coverage-map）
