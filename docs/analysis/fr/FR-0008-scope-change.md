@@ -28,6 +28,8 @@ related_adrs:
   - ADR-0046    # change-request-object
   - ADR-0049    # onsite-scope-change-protocol
   - ADR-0065    # change-request-type-lookup-table
+  - ADR-0040    # refund-approval-tiers v2 (downstream from A4 rejection → refund)
+  - ADR-0102    # cancellation 6-stage cascade (downstream when CR rejection cascades to cancel)
 cross_module_note: "本 FR 為 D1 IA 治理的 cross-module FR 範例 — 由 SA 龍蝦 Round 2 提出（FR-0008 異常核准 alternative flow 橫跨 M15+M17+M16）。會出現在 docs/_index/by-module/{M15,M17,M16,M08}.md 四個 reverse lookup。"
 legacy_id: REQ-008
 trace_to_flow: F-008
@@ -222,6 +224,10 @@ Then 按 §1.1 main flow 跑（含 idempotency 檢查）
 | ADR | ADR-0065 | change-request-type-lookup-table |
 | ADR | ADR-0041 | travel-fee-split |
 | ADR | ADR-0042 | RBAC four-tier (admin 簽核權限) |
+| ADR | ADR-0040 v2 | refund-approval-tiers (downstream A4.6 路徑：rejected → refund) |
+| ADR | ADR-0102 | cancellation 6-stage cascade (downstream A4 路徑：rejected → cancel scenarios) |
+| BR (downstream) | BR-REFUND-001/006 | 雖 refund 規則 owner 在 FR-0014，A4.6 出口承接 5-tier + SoD |
+| BR (downstream) | BR-CANCEL-001..008 | A4 撤離若觸發 cancel 路徑，計費依 6-stage cascade（owner FR-0010） |
 | Domain Event | ChangeRequestSubmitted | M15 inbox |
 | Domain Event | ChangeRequestApproved | WO 繼續 + audit |
 | Domain Event | ChangeRequestRejected | WO 暫停 + refund 觸發 |
@@ -234,3 +240,4 @@ Then 按 §1.1 main flow 跑（含 idempotency 檢查）
 |:-----|:-------|:----|
 | 2026-05-10 | REQ-008→FR-0008 split | — |
 | 2026-05-28 | **B' 殼 rewrite (D5)**：rule clause 搬 BR-M15-NN + BR-M08-NN + BR-M17-NN；明標 cross-module nature；新增 frontmatter `mapped_to: [M15, M17, M16, M08]`；補 §1 skeleton + 6 條 alternative flow + 8 條 G/W/T AC + §3 cross-module routing notes | Roundtable 2026-05-27 D5 + SA 龍蝦案例 |
+| 2026-05-28 | **Cross-ref backfill**：補 ADR-0040 v2 / ADR-0102 + BR-REFUND-001/006 + BR-CANCEL-001..008 為下游引用（A4.6 rejected → refund 出口 / A4 撤離 → cancel cascade） | ADR cascade 2026-05-28 |

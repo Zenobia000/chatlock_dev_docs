@@ -28,9 +28,9 @@ source_specs:
 | FR with empty `mapped_to` (orphan) | 0 | ✅ |
 | ADR migration_status: STILL_VALID | 50 | ✅ |
 | ADR migration_status: HISTORICAL | 14 | ✅ |
-| ADR migration_status: REVIEW_REQUIRED | 3 | 🟡 awaiting A2.4 critique |
+| ADR migration_status: REVIEW_REQUIRED | 0 | 🟡 awaiting A2.4 critique |
 | ADR migration_status: PARTIAL_UPDATE | 1 | 🟢 Lane A done, 6 dim cascade pending |
-| ADR not yet classified (incl. new post-2026-05-28 ADRs) | 7 | 🟡 |
+| ADR not yet classified (incl. new post-2026-05-28 ADRs) | 10 | 🟡 |
 
 ---
 
@@ -52,7 +52,7 @@ source_specs:
 | [FR-0012](docs/analysis/fr/FR-0012-monthly-settlement.md) | 技師月結撥款（V1.0 升級！） | draft | M11, M12, M17 | BR-M12-NN, BR-M12-NN, BR-M12-NN, BR-M12-NN, BR-M12-NN | SettlementCalculated, SettlementPayoutInitiated, SettlementPayoutFailed | - |
 | [FR-0013](docs/analysis/fr/FR-0013-dual-sign-dispute.md) | 對帳爭議雙簽 | active | M15, M17 | BR-M15-NN, BR-M15-NN, BR-M15-NN, BR-M15-NN, BR-M15-NN | DisputeOpened, DisputeApprovedBySingleParty, DisputeClosed, DisputeEscalated | - |
 | [FR-0014](docs/analysis/fr/FR-0014-refund.md) | 退款流程（5-tier + SoD 三維） | active | M11, M15, M17 | BR-REFUND-001, BR-REFUND-002, BR-REFUND-003, BR-REFUND-004, BR-REFUND-005, BR-REFUND-006 | RefundRequested, RefundApproved, RefundRejected, RefundExecuted, RefundNotificationFailed | - |
-| [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) | 保固申訴受理（3-mode start_date + RMA 重算 + B2B 覆寫 + Phase I 整機） | active | M13, M15, M02 | BR-WARRANTY-001, BR-WARRANTY-002, BR-WARRANTY-003, BR-WARRANTY-004, BR-WARRANTY-005, BR-WARRANTY-006, BR-WARRANTY-007 | WarrantyClaimSubmitted, WarrantyClaimApproved, WarrantyClaimDenied, WarrantyClaimDisputed, WarrantyB2BOverride, WarrantyRecalculatedAfterRMA | - |
+| [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) | 保固申訴受理（3-mode start_date + B2B negotiated + Phase II ship_date placeholder + RMA 重算 + Phase I 整機） | active | M13, M15, M02 | BR-WARRANTY-001, BR-WARRANTY-002, BR-WARRANTY-003, BR-WARRANTY-004, BR-WARRANTY-005, BR-WARRANTY-006, BR-WARRANTY-007 | WarrantyClaimSubmitted, WarrantyClaimApproved, WarrantyClaimDenied, WarrantyClaimDisputed, WarrantyB2BOverride, WarrantyRecalculatedAfterRMA | - |
 | [FR-0016](docs/analysis/fr/FR-0016-sla-2hr-soft.md) | SLA 2hr 到場（Soft 警報） | ↶ superseded | _(empty)_ | - | - | ⚠️ yes |
 | [FR-0017](docs/analysis/fr/FR-0017-sop-draft-review.md) | SOP 草稿審核（AI 自進化） | active | A10, M20, A04 | BR-A10-NN, BR-A10-NN, BR-A10-NN, BR-A10-NN, BR-A04-NN | SopDraftSubmitted, SopDraftApproved, SopDraftRejected, FamilyReviewCompleted, SopPublished | - |
 | [FR-0018](docs/analysis/fr/FR-0018-cs-takeover.md) | 客服接管對話（三層解決機制） | active | A07, M16, M03 | BR-A07-01, BR-A07-NN, BR-A07-NN, BR-A07-NN, BR-A07-NN, BR-A07-NN, BR-A07-NN | HumanHandoffTriggered, CsAgentTookOver, WorkOrderCreatedByCs, ConversationResolved, CustomerAcknowledged | - |
@@ -89,12 +89,22 @@ source_specs:
 | [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) | Exception Approval Inbox（M15 完整深化） | placeholder | M15, M17, M16 | - | - | - |
 | [FR-0050](docs/analysis/fr/FR-0050-ai-governance-prd-trace.md) | AI Governance & PRD Traceability（A12） | placeholder | A12, M20 | - | - | - |
 | [FR-0051](docs/analysis/fr/FR-0051-sop-feedback-spiral-deep.md) | SOP Feedback Spiral 深化（A10） | placeholder | A10, M20, M13 | - | - | - |
-| [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) | Cancellation Fee 5-Tier Flow（取消費分層 + reason code + 師傅 initiated） | placeholder | M15, M17, M16, M18 | - | - | - |
+| [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) | Cancellation Fee 6-Tier Flow（取消費分層 + reason code + 師傅 initiated） | active | M15, M17, M16, M18, M11 | BR-CANCEL-001, BR-CANCEL-002, BR-CANCEL-003, BR-CANCEL-004, BR-CANCEL-005, BR-CANCEL-006, BR-CANCEL-007, BR-CANCEL-008 | WorkOrderCancelled, TechnicianInitiatedCancel, CancellationFeeCharged, CancellationOverrideAudited | - |
 | [FR-0053](docs/analysis/fr/FR-0053-dpo-forget-gdpr-flow.md) | DPO Forget / GDPR Right-to-be-Forgotten Flow（cross-cutting） | placeholder | M17, cross-cutting | - | - | - |
 
 ---
 
 ## §3 By-Module Reverse Index
+
+### (agent
+
+**ADRs**:
+- [ADR-0009-agent-admin-bridge-pattern](docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md) — ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern） (NOT_CLASSIFIED)
+
+### (config
+
+**ADRs**:
+- [ADR-0009-agent-admin-bridge-pattern](docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md) — ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern） (NOT_CLASSIFIED)
 
 ### A01
 
@@ -190,6 +200,9 @@ source_specs:
 **FRs**:
 - [FR-0033](docs/analysis/fr/FR-0033-deploy-health.md) — Chatbot 部署 / 健康檢查 (Cloud Run + health)
 
+**ADRs**:
+- [ADR-0009-agent-admin-bridge-pattern](docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md) — ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern） (NOT_CLASSIFIED)
+
 ### A12
 
 **FRs**:
@@ -214,7 +227,7 @@ source_specs:
 ### M02
 
 **FRs**:
-- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理（3-mode start_date + RMA 重算 + B2B 覆寫 + Phase I 整機）
+- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理（3-mode start_date + B2B negotiated + Phase II ship_date placeholder + RMA 重算 + Phase I 整機）
 - [FR-0027](docs/analysis/fr/FR-0027-brand-profile-resolver.md) — Chatbot 品牌型號與用戶資料 Resolver
 - [FR-0036](docs/analysis/fr/FR-0036-sync-facts-master.md) — Sync — Facts 主檔同步（phone/address/device → ERP）
 - [FR-0041](docs/analysis/fr/FR-0041-customer-site-device-master.md) — Customer / Site / Device Master 維護
@@ -329,6 +342,7 @@ source_specs:
 - [FR-0012](docs/analysis/fr/FR-0012-monthly-settlement.md) — 技師月結撥款（V1.0 升級！）
 - [FR-0014](docs/analysis/fr/FR-0014-refund.md) — 退款流程（5-tier + SoD 三維）
 - [FR-0042](docs/analysis/fr/FR-0042-quote-internal-vs-external-view.md) — Quote 內外部視圖（客戶實收 vs 內部成本）
+- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 6-Tier Flow（取消費分層 + reason code + 師傅 initiated）
 
 **ADRs**:
 - [ADR-0041-travel-fee-split](docs/architecture/adr/ADR-0041-travel-fee-split.md) — ADR-0041 — 車馬費歸屬 (STILL_VALID_UNDER_M11_M07)
@@ -347,7 +361,7 @@ source_specs:
 ### M13
 
 **FRs**:
-- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理（3-mode start_date + RMA 重算 + B2B 覆寫 + Phase I 整機）
+- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理（3-mode start_date + B2B negotiated + Phase II ship_date placeholder + RMA 重算 + Phase I 整機）
 - [FR-0048](docs/analysis/fr/FR-0048-rma-quality-feedback-loop.md) — RMA 品質回饋迴圈
 - [FR-0051](docs/analysis/fr/FR-0051-sop-feedback-spiral-deep.md) — SOP Feedback Spiral 深化（A10）
 
@@ -373,10 +387,10 @@ source_specs:
 - [FR-0010](docs/analysis/fr/FR-0010-reschedule-delay.md) — 改約 / 延遲通知 / 取消（V1.0 LINE only）
 - [FR-0013](docs/analysis/fr/FR-0013-dual-sign-dispute.md) — 對帳爭議雙簽
 - [FR-0014](docs/analysis/fr/FR-0014-refund.md) — 退款流程（5-tier + SoD 三維）
-- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理（3-mode start_date + RMA 重算 + B2B 覆寫 + Phase I 整機）
+- [FR-0015](docs/analysis/fr/FR-0015-warranty-claim.md) — 保固申訴受理（3-mode start_date + B2B negotiated + Phase II ship_date placeholder + RMA 重算 + Phase I 整機）
 - [FR-0030](docs/analysis/fr/FR-0030-guardrails-output-validator.md) — Chatbot Guardrails & Output Validator
 - [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) — Exception Approval Inbox（M15 完整深化）
-- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 5-Tier Flow（取消費分層 + reason code + 師傅 initiated）
+- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 6-Tier Flow（取消費分層 + reason code + 師傅 initiated）
 
 **ADRs**:
 - [ADR-0034-urgent-red-code-definition](docs/architecture/adr/ADR-0034-urgent-red-code-definition.md) — ADR-0034 — urgent / Red Code 定義 (STILL_VALID_UNDER_M03_M15)
@@ -395,7 +409,7 @@ source_specs:
 - [FR-0022](docs/analysis/fr/FR-0022-consumer-tracking.md) — 消費者端工單追蹤（LINE + Web 並存）
 - [FR-0026](docs/analysis/fr/FR-0026-chatbot-debounce-merge.md) — Chatbot 進線 Debounce 與訊息合併
 - [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) — Exception Approval Inbox（M15 完整深化）
-- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 5-Tier Flow（取消費分層 + reason code + 師傅 initiated）
+- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 6-Tier Flow（取消費分層 + reason code + 師傅 initiated）
 
 **ADRs**:
 - [ADR-0012-notification-channels](docs/architecture/adr/ADR-0012-notification-channels.md) — 通知 Channel 策略（Notification Channel Strategy） (STILL_VALID_UNDER_M16)
@@ -419,7 +433,7 @@ source_specs:
 - [FR-0043](docs/analysis/fr/FR-0043-m18-admin-config-workflow.md) — M18 Admin Config Workflow（user-maintained runtime config）
 - [FR-0044](docs/analysis/fr/FR-0044-technician-onboarding-suspension.md) — Technician Onboarding 與停權
 - [FR-0049](docs/analysis/fr/FR-0049-exception-approval-inbox.md) — Exception Approval Inbox（M15 完整深化）
-- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 5-Tier Flow（取消費分層 + reason code + 師傅 initiated）
+- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 6-Tier Flow（取消費分層 + reason code + 師傅 initiated）
 - [FR-0053](docs/analysis/fr/FR-0053-dpo-forget-gdpr-flow.md) — DPO Forget / GDPR Right-to-be-Forgotten Flow（cross-cutting）
 
 **ADRs**:
@@ -436,9 +450,10 @@ source_specs:
 **FRs**:
 - [FR-0019](docs/analysis/fr/FR-0019-rbac-dynamic.md) — 動態 RBAC 角色管理
 - [FR-0043](docs/analysis/fr/FR-0043-m18-admin-config-workflow.md) — M18 Admin Config Workflow（user-maintained runtime config）
-- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 5-Tier Flow（取消費分層 + reason code + 師傅 initiated）
+- [FR-0052](docs/analysis/fr/FR-0052-cancellation-fee-tiers-flow.md) — Cancellation Fee 6-Tier Flow（取消費分層 + reason code + 師傅 initiated）
 
 **ADRs**:
+- [ADR-0009-agent-admin-bridge-pattern](docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md) — ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern） (NOT_CLASSIFIED)
 - [ADR-0060-contract-template-schema-freeze-v1](docs/architecture/adr/ADR-0060-contract-template-schema-freeze-v1.md) — ADR-0060: Contract Template Schema Reserved Nullable (V1) (STILL_VALID_UNDER_M14_M18)
 - [ADR-0061-data-governance-service-boundary](docs/architecture/adr/ADR-0061-data-governance-service-boundary.md) — ADR-0061: Data Governance Service (DGS) Boundary — Independent Service (STILL_VALID_UNDER_M17_M18)
 - [ADR-0065-change-request-type-lookup-table](docs/architecture/adr/ADR-0065-change-request-type-lookup-table.md) — ADR-0065: ChangeRequest.type Lookup Table Migration (STILL_VALID_UNDER_M15_M18)
@@ -505,6 +520,16 @@ source_specs:
 **FRs**:
 - [FR-0040](docs/analysis/fr/FR-0040-sync-evidence-writeback.md) — Sync — Evidence 回寫（photo / sign / completion / payment）
 
+### boundary
+
+**ADRs**:
+- [ADR-0009-agent-admin-bridge-pattern](docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md) — ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern） (NOT_CLASSIFIED)
+
+### bridge)
+
+**ADRs**:
+- [ADR-0009-agent-admin-bridge-pattern](docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md) — ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern） (NOT_CLASSIFIED)
+
 ### cross-cutting
 
 **FRs**:
@@ -521,6 +546,16 @@ source_specs:
 - [ADR-0059-smart-lock-iot-signal-ingestion-spec](docs/architecture/adr/ADR-0059-smart-lock-iot-signal-ingestion-spec.md) — ADR-0059 — 電子鎖 IoT 狀態訊號接入規格 (STILL_VALID_UNDER_cross-cutting)
 - [ADR-PII-002-data-minimization-schema-ci-double-defense](docs/architecture/adr/ADR-PII-002-data-minimization-schema-ci-double-defense.md) — ADR-PII-002: 資料極小化雙層防線 (STILL_VALID_UNDER_M17_M02_cross-cutting)
 
+### plane)
+
+**ADRs**:
+- [ADR-0009-agent-admin-bridge-pattern](docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md) — ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern） (NOT_CLASSIFIED)
+
+### ↔
+
+**ADRs**:
+- [ADR-0009-agent-admin-bridge-pattern](docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md) — ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern） (NOT_CLASSIFIED)
+
 ---
 
 ## §4 ADR Migration Status (per ADR-0100 §1)
@@ -534,8 +569,8 @@ source_specs:
 | [ADR-0005-frontend-framework-v2](docs/architecture/adr/ADR-0005-frontend-framework-v2.md) | ADR-005: 選擇 Next.js 作為 V2.0 前端框架 | STILL_VALID_UNDER_cross-cutting | cross-cutting |
 | [ADR-0006-llm-model-selection](docs/architecture/adr/ADR-0006-llm-model-selection.md) | ADR-006: LLM 模型選擇策略 | STILL_VALID_UNDER_M20_A03 | M20, A03 |
 | [ADR-0007-llm-registry-pattern](docs/architecture/adr/ADR-0007-llm-registry-pattern.md) | ADR-007: LLM Registry 形式 — 承認 LiteLLM 字串路由為 dict registry 替代方案 | STILL_VALID_UNDER_M20_A03 | M20, A03 |
-| [ADR-0008-product-info-architecture-canonical](docs/architecture/adr/ADR-0008-product-info-architecture-canonical.md) | ADR-008: Agent 知識庫架構以 `product_info/` 為唯一正典（Architecture Lock） | REVIEW_REQUIRED (Lane A critique pending — A2.4) | - |
-| [ADR-0009-agent-admin-bridge-pattern](docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md) | ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern） | REVIEW_REQUIRED (Lane A critique pending — A2.4) | - |
+| [ADR-0008-product-info-architecture-canonical](docs/architecture/adr/ADR-0008-product-info-architecture-canonical.md) | ADR-008: Agent 知識庫架構以 `product_info/` 為唯一正典（Architecture Lock） | NOT_CLASSIFIED | - |
+| [ADR-0009-agent-admin-bridge-pattern](docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md) | ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern） | NOT_CLASSIFIED | A11 (agent bridge) ↔ M18 (config plane) boundary |
 | [ADR-0010-belief-augmented-react](docs/architecture/adr/ADR-0010-belief-augmented-react.md) | ADR-010: Belief-Augmented ReAct（Turn Cycle 實驗） | STILL_VALID_UNDER_A03 | A03 |
 | [ADR-0011-i18n-strategy](docs/architecture/adr/ADR-0011-i18n-strategy.md) | i18n Strategy — 多語系實作決策 | STILL_VALID_UNDER_cross-cutting | cross-cutting |
 | [ADR-0012-notification-channels](docs/architecture/adr/ADR-0012-notification-channels.md) | 通知 Channel 策略（Notification Channel Strategy） | STILL_VALID_UNDER_M16 | M16 |
@@ -570,13 +605,13 @@ source_specs:
 | [ADR-0041-travel-fee-split](docs/architecture/adr/ADR-0041-travel-fee-split.md) | ADR-0041 — 車馬費歸屬 | STILL_VALID_UNDER_M11_M07 | M11, M07 |
 | [ADR-0042-rbac-four-tier-principle](docs/architecture/adr/ADR-0042-rbac-four-tier-principle.md) | ADR-0042 — 角色權限矩陣 4 層原則 | STILL_VALID_UNDER_M17 | M17 |
 | [ADR-0043-brand-project-tenant-scope](docs/architecture/adr/ADR-0043-brand-project-tenant-scope.md) | ADR-0043 — 品牌 / 建商專案邊界 | STILL_VALID_UNDER_M14_M17 | M14, M17 |
-| [ADR-0044-warranty-start-date-modes](docs/architecture/adr/ADR-0044-warranty-start-date-modes.md) | ADR-0044 — 保固起算多模式 | REVIEW_REQUIRED (Lane A critique pending — A2.4) | - |
+| [ADR-0044-warranty-start-date-modes](docs/architecture/adr/ADR-0044-warranty-start-date-modes.md) | ADR-0044-warranty-start-date-modes | NOT_CLASSIFIED | - |
 | [ADR-0045-acceptance-sla-policy](docs/architecture/adr/ADR-0045-acceptance-sla-policy.md) | ADR-0045 — 接單 SLA | STILL_VALID_UNDER_M06 | M06 |
 | [ADR-0046-change-request-object](docs/architecture/adr/ADR-0046-change-request-object.md) | ADR-0046 — ChangeRequest 物件化 | STILL_VALID_UNDER_M15_M08 | M15, M08 |
 | [ADR-0047-ai-forbidden-list-as-charter](docs/architecture/adr/ADR-0047-ai-forbidden-list-as-charter.md) | ADR-0047 — AI 禁止決策清單入 charter | STILL_VALID_UNDER_A05_M20 | A05, M20 |
 | [ADR-0048-ai-human-handoff-rules](docs/architecture/adr/ADR-0048-ai-human-handoff-rules.md) | ADR-0048 — AI 轉真人 7 條件 | STILL_VALID_UNDER_A07_M16 | A07, M16 |
 | [ADR-0049-onsite-scope-change-protocol](docs/architecture/adr/ADR-0049-onsite-scope-change-protocol.md) | ADR-0049 — 現場加價三件套 | STILL_VALID_UNDER_M08_M15 | M08, M15 |
-| [ADR-0050-evidence-visibility-matrix](docs/architecture/adr/ADR-0050-evidence-visibility-matrix.md) | ADR-0050 — Evidence 可見性矩陣 | PARTIAL_UPDATE (Lane A critique done — 3/3 persona consensus) | - |
+| [ADR-0050-evidence-visibility-matrix](docs/architecture/adr/ADR-0050-evidence-visibility-matrix.md) | ADR-0050-evidence-visibility-matrix | PARTIAL_UPDATE (Lane A critique done — 3/3 persona consensus) | - |
 | [ADR-0051-evidence-retention-policy](docs/architecture/adr/ADR-0051-evidence-retention-policy.md) | ADR-0051 — Evidence 保存期 | STILL_VALID_UNDER_M09_M17 | M09, M17 |
 | [ADR-0052-material-ownership-field](docs/architecture/adr/ADR-0052-material-ownership-field.md) | ADR-0052 — 庫存歸屬 | STILL_VALID_UNDER_M10_M07 | M10, M07 |
 | [ADR-0053-serial-control-policy](docs/architecture/adr/ADR-0053-serial-control-policy.md) | ADR-0053 — Serial 控制範圍 | STILL_VALID_UNDER_M10 | M10 |
@@ -608,18 +643,16 @@ source_specs:
 ## §5 Health Issues
 
 ### 🟡 ADR not yet classified
+- ADR-0008-product-info-architecture-canonical (docs/architecture/adr/ADR-0008-product-info-architecture-canonical.md)
+- ADR-0009-agent-admin-bridge-pattern (docs/architecture/adr/ADR-0009-agent-admin-bridge-pattern.md)
 - ADR-0039-cancellation-fee-tiers (docs/architecture/adr/ADR-0039-cancellation-fee-tiers.md)
 - ADR-0040-refund-approval-tiers (docs/architecture/adr/ADR-0040-refund-approval-tiers.md)
+- ADR-0044-warranty-start-date-modes (docs/architecture/adr/ADR-0044-warranty-start-date-modes.md)
 - ADR-0067-m18-runtime-config-governance (docs/architecture/adr/ADR-0067-m18-runtime-config-governance.md)
 - ADR-0068-m18-anti-corruption-layer (docs/architecture/adr/ADR-0068-m18-anti-corruption-layer.md)
 - ADR-0100-legacy-adr-supersede-index (docs/architecture/adr/ADR-0100-legacy-adr-supersede-index.md)
 - ADR-0101-product-info-extension-final-spec (docs/architecture/adr/ADR-0101-product-info-extension-final-spec.md)
 - ADR-0102-cancellation-fee-tiers-v2-final-spec (docs/architecture/adr/ADR-0102-cancellation-fee-tiers-v2-final-spec.md)
-
-### 🟡 ADR awaiting Lane A critique (A2.4 task)
-- ADR-0008-product-info-architecture-canonical — ADR-008: Agent 知識庫架構以 `product_info/` 為唯一正典（Architecture Lock）
-- ADR-0009-agent-admin-bridge-pattern — ADR-009: Agent ↔ Admin 資料同步機制（Bridge Pattern）
-- ADR-0044-warranty-start-date-modes — ADR-0044 — 保固起算多模式
 
 ---
 

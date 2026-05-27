@@ -25,7 +25,8 @@ owner: 客服主管 / Data steward / AI Specialist
 last_reviewed: 2026-05-28
 related_adrs:
   - ADR-PII-002   # data minimization
-  - ADR-0008      # product-info-architecture (REVIEW_REQUIRED, M10)
+  - ADR-0008      # product-info-architecture (partially_superseded by ADR-0101 §2.1-§2.4)
+  - ADR-0101      # agent-kb × final-spec integration (data lineage + multi-tenant scope + custom SKU fallback)
   - ADR-0030      # tenant-id-propagation
 related:
   - "../../_source/02-ai-chatbot-sync.md#a-m02-品牌型號profile"
@@ -278,7 +279,8 @@ Bot: 沒問題，我先以您現在描述的狀況幫您預約技師，技師到
 | Business Rule | BR-A02-04 | 衝突採信最新 |
 | Business Rule | BR-A02-05 | AI 不可直寫 master |
 | ADR | ADR-PII-002 | data minimization |
-| ADR | ADR-0008 | product-info-architecture (REVIEW_REQUIRED) |
+| ADR | ADR-0008 | product-info-architecture (partially_superseded by ADR-0101) |
+| ADR | ADR-0101 | agent-kb × final-spec integration（data lineage + multi-tenant scope + custom SKU fallback） |
 | ADR | ADR-0030 | tenant-id-propagation |
 | Domain Event | UserFactsUpdated | M02 cascade + M19 BI |
 | Domain Event | UserFactsConflictDetected | CSM inbox |
@@ -292,3 +294,4 @@ Bot: 沒問題，我先以您現在描述的狀況幫您預約技師，技師到
 | Date | Change | Why |
 |:-----|:-------|:----|
 | 2026-05-28 | **新建** Phase I MVP (A02 系列) | Roundtable A 2026-05-27 D5 + Q2=C；§2.1 Example Dialogue 5 條對應 5 AC + a11y variant (Roundtable B D2 強制) |
+| 2026-05-28 | **Cross-ref backfill**：補 ADR-0101（KB × final-spec integration contract），ADR-0008 標 partially_superseded | ADR cascade 2026-05-28 |

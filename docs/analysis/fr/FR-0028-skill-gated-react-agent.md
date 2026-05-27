@@ -31,6 +31,7 @@ related_adrs:
   - ADR-0027   # model-routing-policy
   - ADR-0055   # skill-llm-decoupling-contract
   - ADR-0063   # ai-utterance-boundary
+  - ADR-0101   # agent-kb × final-spec integration（tool extension contract for KB-aware skills）
 related:
   - "../../_source/02-ai-chatbot-sync.md#a-m03-react-agent"
   - "../../_source/02-ai-chatbot-sync.md#12-tool-registry"
@@ -314,6 +315,7 @@ Bot: 沒問題！您指的是三星 SHS-P718 對嗎？讓我重新為您查詢..
 | ADR | ADR-0010 | belief-augmented-react |
 | ADR | ADR-0055 | skill-LLM decoupling |
 | ADR | ADR-0063 | ai-utterance-boundary |
+| ADR | ADR-0101 | agent-kb × final-spec integration（KB-aware tool extension） |
 | Domain Event | SkillInvoked / Result / Forbidden | tool registry audit |
 | Domain Event | ReActLoopExceeded | handoff trigger |
 | Domain Event | ReasoningTraceLogged | M19 BI / audit |
@@ -326,3 +328,4 @@ Bot: 沒問題！您指的是三星 SHS-P718 對嗎？讓我重新為您查詢..
 | Date | Change | Why |
 |:-----|:-------|:----|
 | 2026-05-28 | **新建** Phase I MVP (A03 系列 — chatbot 核心) | Roundtable A D5 + Roundtable B D2 dialogue 強制 |
+| 2026-05-28 | **Cross-ref backfill**：補 ADR-0101（KB-aware tool extension contract） | ADR cascade 2026-05-28 |

@@ -23,6 +23,7 @@ related_adrs:
   - ADR-0055    # SKILL ↔ LLM 解耦合約
   - ADR-0057    # RAG 文件檢索 ban prompt
   - ADR-0058    # external knowledge ingestion
+  - ADR-0101    # agent-kb × final-spec integration（data lineage + multi-tenant scope + custom SKU fallback）
 related:
   - "../../_source/02-ai-chatbot-sync.md#a-m04-skill知識庫"
 ---
@@ -96,6 +97,7 @@ Then schema validate + 寫 index
 |:-----|:---|:-----|
 | BR | BR-A04-01/02/NN | path / output / router / RAG |
 | ADR | ADR-0055/0057/0058 | decouple / RAG / ingestion |
+| ADR | ADR-0101 | agent-kb × final-spec integration（KB authoring + multi-tenant scope rule + custom SKU fallback） |
 | Event | SkillLoaded / RagQueryExecuted | — |
 
 ## §4 Change Log
@@ -103,3 +105,4 @@ Then schema validate + 寫 index
 | Date | Change |
 |:-----|:-------|
 | 2026-05-28 | **新建** — A04 module FR 殼 |
+| 2026-05-28 | **Cross-ref backfill**：補 ADR-0101（agent KB × final-spec integration contract — data lineage / multi-tenant / custom SKU fallback） | ADR cascade 2026-05-28 |

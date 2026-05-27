@@ -1,6 +1,6 @@
 ---
 id: FR-0015
-title: 保固申訴受理（3-mode start_date + RMA 重算 + B2B 覆寫 + Phase I 整機）
+title: 保固申訴受理（3-mode start_date + B2B negotiated + Phase II ship_date placeholder + RMA 重算 + Phase I 整機）
 status: active
 phase: I
 mapped_to:
@@ -57,9 +57,11 @@ related:
 
 1. 客戶 LINE / Web 提交 claim → user-flow:S5-step1
 2. 系統依 case_type 決定 start_date mode（[ref: BR-WARRANTY-001]）：
-   - 零售 → `install_date`
-   - 建商 → `handover_date`
-   - 品牌指定 → `brand_warranty_date`
+   - 零售 → `install_date` (spec 詞 `safety_install_date` / `first_use_date` 對齊；ADR-0044 v2 §mode-enum)
+   - 建商 → `handover_date` (spec G002 / Q107 / BR-M14-02)
+   - 品牌指定 → `brand_warranty_date` (spec G002 部分品牌另計)
+   - B2B 覆寫 → `negotiated_date` (spec G002；走 BR-WARRANTY-006 4 條件 AND，see §A5)
+   - 出貨即生效（庫存件少數場景）→ `ship_date` (spec G002 — Phase II 配 BOM 階層升維後啟用，Phase I 不啟用)
 3. 計算 effective warranty_end_date：
    - Phase I default = start_date + 365 day (整機, [ref: BR-WARRANTY-007])
    - 若有 B2B override → 以 negotiated_date 為主（[ref: BR-WARRANTY-006]）
@@ -257,3 +259,4 @@ Then 進 dispute 表 + `WarrantyClaimDisputed`
 | 2026-05-10 | REQ-015→FR-0015 |
 | 2026-05-28 | D5 殼 rewrite |
 | 2026-05-28 | **3-mode start_date + RMA 重算 + B2B 覆寫 + Phase I 整機 acceptance**（套 BR-WARRANTY-005~007，新增 8 個 AC 對齊 spec install/handover/brand_warranty 用語）by value-decisions Q5-Q7 |
+| 2026-05-28 | **Mode enum 對齊補完**：§1.1 step 2 明列 spec 5 詞彙映射（safety_install_date / first_use_date → install_date；handover_date；brand_warranty_date；negotiated_date 走 B2B override；ship_date 為 Phase II placeholder） | value-decisions 2026-05-28 mode enum 對齊 |

@@ -24,7 +24,7 @@ owner: CSM / 運營主管
 last_reviewed: 2026-05-28
 related_adrs:
   - ADR-0014    # 雙簽終簽人階層 (historical)
-  - ADR-0040    # refund-approval-tiers
+  - ADR-0040    # refund-approval-tiers v2 (PARTIAL_UPDATE 2026-05-28 — dispute → refund 出口)
 legacy_id: REQ-013
 trace_to_flow: F-013
 last-synced-with: 4e9658e90324cbceb26f5e5445f481fc5678df1f
@@ -121,7 +121,8 @@ Then 必須新建 D-001-v2 引用 D-001
 | 類型 | ID | 用途 |
 |:-----|:---|:-----|
 | BR | BR-M15-NN | dual sign / 60d / 撤銷 / reopen |
-| ADR | ADR-0040 | refund tiers |
+| ADR | ADR-0040 v2 | refund tiers + SoD |
+| BR (downstream) | BR-REFUND-001/006 | dispute 若觸發 refund 出口，使用 5-tier + SoD 三維（owner FR-0014） |
 | Event | DisputeOpened/Closed/Escalated | — |
 
 ## §4 Change Log
@@ -130,3 +131,4 @@ Then 必須新建 D-001-v2 引用 D-001
 |:-----|:-------|
 | 2026-05-10 | REQ-013→FR-0013 |
 | 2026-05-28 | **D5 殼 rewrite** |
+| 2026-05-28 | **Cross-ref backfill**：補 BR-REFUND-001/006 為下游引用（dispute → refund 出口時的 5-tier + SoD），ADR-0040 標記 v2 PARTIAL_UPDATE | ADR cascade 2026-05-28 |
