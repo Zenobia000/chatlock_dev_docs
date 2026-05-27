@@ -373,11 +373,20 @@ flowchart TD
 
 | 情況 | 怎麼處理 | P0 / BR 對應 |
 |:---|:---|:---|
-| GDPR forget × legal-hold 衝突 | 拒絕刪除但 7d 內通知客戶 + 預計解除時間 | BR-PII-001 |
-| 取消費分層違反 | 派工後客戶拒絕 → 不能 0 元取消 | **M15 (P0)** |
-| 退款核准分層違反 | 同一 user 同時 create + approve refund → 系統攔截 | **M17 G013 SoD (P0)** |
-| reason_code 缺項 | 客服在 M18 admin UI 提 ChangeRequest 補；走 Flow S5 | M18 config 管轄 |
-| Read 路徑 | flagged item 直接拒；unflagged 用 60s cache + stale header | audit policy |
+| GDPR forget × legal-hold 衝突 | 拒絕刪除但 7d 內通知客戶 + 預計解除時間 | BR-PII-001 / FR-0053 / AC-02 |
+| 取消費分層違反 | 派工後客戶拒絕 → 不能 0 元取消（依 ADR-0039 v2 業主 Q1 NTD 300）| **M15 (P0)** / FR-0052 |
+| 退款核准分層違反 | 同一 user 同時 create + approve refund → 系統攔截（SoD 三維）| **M17 G013 SoD (P0)** / FR-0014 |
+| reason_code 缺項 | 客服在 M18 admin UI 提 ChangeRequest 補；走 Flow S5 | M18 config 管轄 / FR-0043 / FR-0052 |
+| 師傅 initiated cancel 政策（業主 Q3）| 首次免責 / 同月 ≥2 扣款 / 不可抗力憑證 escape | FR-0052 / AC-04 |
+| Read 路徑 | flagged item 直接拒；unflagged 用 60s cache + stale header | audit policy / FR-0053 / AC-04 |
+
+**Phase II FR placeholder backlog（MF-3 cascade）**：
+
+| FR ID | 範圍 | Status | 補建責任 |
+|:------|:-----|:-------|:---------|
+| **FR-0052** | Cancellation Fee 5-Tier Flow + 師傅 initiated 政策 | placeholder（Phase I body 待 Analyst driver D-3） | Analyst driver 依 ADR-0039 v2 補 BR-CANCEL-* + G/W/T |
+| **FR-0053** | DPO Forget / GDPR Right-to-be-Forgotten Flow | placeholder（Phase II） | Analyst driver 依 BR-PII-001 + DGS service spec 補 G/W/T |
+| **FR-0014** | Refund Flow | already draft（Phase I） | 依 ADR-0040 v2 PARTIAL_UPDATE 補 BR-REFUND-006 / SoD 三維 / L1-L5 對應 |
 
 ---
 
